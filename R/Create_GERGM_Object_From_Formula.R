@@ -1,7 +1,12 @@
-# create a gergm from a formula object
-Create_GERGM_Object_From_Formula <- function(object, theta.coef, together = 1, weights = NULL, 
-                     transform.data = NULL, lambda.coef = NULL){
-  res1 <- weighted.ergm.data(object, theta = theta.coef, 
+# create a gergm from a formula object (getgergm)
+Create_GERGM_Object_From_Formula <- function(object,
+                                             theta.coef,
+                                             together = 1,
+                                             weights = NULL,
+                                             transform.data = NULL,
+                                             lambda.coef = NULL){
+
+  res1 <- Parse_Formula_Object(object, theta = theta.coef,
                              alpha = weights)
   thetas <- res1$thetas
   network <- res1$net
@@ -22,7 +27,7 @@ Create_GERGM_Object_From_Formula <- function(object, theta.coef, together = 1, w
         BZ <- BZ + beta[j] * transform.data[, , j]
       }
     }
-    
+
     bounded.network <- pst(network, BZ, sig, 1)
   }
   if (is.null(lambda.coef) == TRUE) {
@@ -33,16 +38,16 @@ Create_GERGM_Object_From_Formula <- function(object, theta.coef, together = 1, w
     lambda.coef <- as.data.frame(rbind(lambda.coef,NA))
     rownames(lambda.coef) <- c("est", "se")
   }
-  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads", 
+  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
                       "edgeweight")
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)
   colnames(thetas) <- possible.stats
   rownames(thetas) <- c("est", "se")
   thetas <- as.data.frame(thetas)
-  
-  object <- gergm.object(network = network, bounded.network = bounded.network, 
-                         formula = object, thetas = thetas, 
-                         lambda = lambda.coef, alpha = alphas, 
+
+  object <- gergm.object(network = network, bounded.network = bounded.network,
+                         formula = object, thetas = thetas,
+                         lambda = lambda.coef, alpha = alphas,
                          together = together)
 }
