@@ -267,7 +267,7 @@ namespace mjd {
 
 
 // [[Rcpp::export]]
-List MH (int number_of_iterations, 
+List Metropolis_Hastings_Sampler (int number_of_iterations, 
           double shape_parameter,
           int number_of_nodes,
           arma::vec statistics_to_use,
