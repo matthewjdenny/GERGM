@@ -36,6 +36,7 @@ Estimate_GERGM <- function(formula_object,
   #' parse the formula object into the network, its raw statistics,
   #' alpha weights, and theta parameters
   Parsed_Formula_Object <- Parse_Formula_Object(formula_object,
+                                                possible.stats,
                                                 theta = NULL,
                                                 alpha = alpha)
 
@@ -47,8 +48,6 @@ Estimate_GERGM <- function(formula_object,
 
   #cat("initial network for estimation")
   #print(head(net))
-  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
-                      "edgeweight")
   rhs.formula <- possible.stats[statistics > 0]
   rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
@@ -102,7 +101,10 @@ Estimate_GERGM <- function(formula_object,
         formula.new <- formula(paste0("net.new ~", rhs))
 
         # Estimate theta
-        res1 <- weighted.ergm.data(formula.new, theta = theta$par, alpha = alpha)
+        res1 <- Parse_Formula_Object(formula.new,
+                                     possible.stats,
+                                     theta = theta$par,
+                                     alpha = alpha)
         statistics <- res1$statistics
         net2 <- res1$net
 
@@ -230,8 +232,14 @@ Estimate_GERGM <- function(formula_object,
     lambda <- rbind(lambda, gpar.std.errors)
     lambda <- as.data.frame(lambda)
     rownames(lambda) <- c("est", "se")
-    return(gergm.object(network, bounded.network, formula.obj, theta, lambda,
-                        alpha = alpha, together = together))
+    return(Create_GERGM_Object(network,
+                               bounded.network,
+                               formula.obj,
+                               theta,
+                               lambda,
+                               alpha = alpha,
+                               together = together,
+                               possible.stats))
   }
 
   # Estimation if no transformation is needed
@@ -241,7 +249,10 @@ Estimate_GERGM <- function(formula_object,
     theta$par <- rep(0, num.theta)
     num.nodes <- nrow(net)
     if(MPLE.only == TRUE){
-      res1 <- weighted.ergm.data(formula_object, theta = theta$par, alpha = alpha)
+      res1 <- Parse_Formula_Object(formula_object,
+                                   possible.stats,
+                                   theta = theta$par,
+                                   alpha = alpha)
       statistics <- res1$statistics
       net2 <- res1$net
 
@@ -271,7 +282,13 @@ Estimate_GERGM <- function(formula_object,
   colnames(theta) <- rhs.formula
   rownames(theta) <- c("est", "se")
   theta <- as.data.frame(theta)
-  return(gergm.object(network, bounded.network, formula.obj, theta, lambda,
-                      alpha = alpha, together = together))
+  return(Create_GERGM_Object(network,
+                             bounded.network,
+                             formula.obj,
+                             theta,
+                             lambda,
+                             alpha = alpha,
+                             together = together,
+                             possible.stats))
 }
 
