@@ -21,9 +21,9 @@ log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together) {
   #return(rbind(theta) %*% temp - max(z) - log(mean(exp(z - max(z)))))
 }
 
-llg <- function(par, formula, alpha, theta, z, together = together) {
+llg <- function(par, formula, alpha, theta, z, together = together, possible.stats = possible.stats) {
   # log likelihood for unbounded network with g function
-  res1 <- weighted.ergm.data(formula, theta = theta, alpha = alpha)
+  res1 <- Parse_Formula_Object(formula, possible.stats, theta = theta, alpha = alpha)
   statistics <- res1$statistics
   alphas <- res1$alphas
   #cat("alphas in llg")
