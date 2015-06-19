@@ -1,8 +1,18 @@
-MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
-                    tolerance, thin = 1, MCMC.burnin, theta = NULL, 
-                    alpha = NULL, directed = c(TRUE, FALSE), 
-                    method = c("Gibbs", "Metropolis"), shape.parameter = 1, 
-                    take.sample.every = 1, together = 0, seed2 = 10000, gain.factor) {
+MCMCMLE <- function(formula.obj,
+                    num.draws,
+                    mc.num.iterations,
+                    tolerance,
+                    thin = 1,
+                    MCMC.burnin,
+                    theta = NULL,
+                    alpha = NULL,
+                    directed = c(TRUE, FALSE),
+                    method = c("Gibbs", "Metropolis"),
+                    shape.parameter = 1,
+                    take.sample.every = 1,
+                    together = 0,
+                    seed2 = 10000,
+                    gain.factor) {
   directed <- directed[1]
   method <- method[1]
   res1 <- weighted.ergm.data(formula.obj, theta = theta, alpha = alpha)
@@ -10,14 +20,10 @@ MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
   alphas <- res1$alphas
   #cat("alphas in mcmcmle")
   #print(alphas)
-  net2 <- res1$net 
-  
-  if(CUSTOM){
-    theta.init <- list()
-    theta.init$par <- MYTHETAS
-  } else{
-    theta.init <- mple(net2, statistics = statistics, directed = directed)
-  }
+  net2 <- res1$net
+
+  theta.init <- mple(net2, statistics = statistics, directed = directed)
+
   # print the Theta parameters
   #theta$par <- My_Parameters
   #cat("Initial Thetas: ", theta$par, "\n")
@@ -31,22 +37,22 @@ MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
   init.statistics <- h2(net2, triples = triples, statistics = rep(1, 6),
                         alphas = alphas, together = together)
   obs.stats <- h2(net2, triples = triples, statistics = statistics, alphas = alphas, together = together)
-  
+
   cat("Observed statistics", "\n", obs.stats, "\n")
   #################################################################################################
   ##JW: Added 3/29/15. This scales the initial estimates for the MPLE theta specification
   ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
-  
-  object <- getgergm(formula.obj, theta.coef = theta.init$par, 
+
+  object <- getgergm(formula.obj, theta.coef = theta.init$par,
                      weights = alps, together = together)
-  temp <- simulate.gergm(object, nsim = ceiling(20/thin), method = method, 
-                         shape.parameter = shape.parameter, 
+  temp <- simulate.gergm(object, nsim = ceiling(20/thin), method = method,
+                         shape.parameter = shape.parameter,
                          together = together, thin = thin,
                          MCMC.burnin = MCMC.burnin, seed1 = seed2)
-  
+
   hsn <- temp$Statistics[,which(statistics == 1)]
-  
+
   #Set gain factor. Here, we will set the default of 0.10, but this may not be enough!
   #gain.factor <- 0.01
   #Calculate covariance estimate (to scale initial guess theta.init)
@@ -61,37 +67,37 @@ MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
   D.inv <- solve(Cov.est)
   #calculate
   theta <- list()
-  theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats) 
+  theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
   cat("Adjusted initial theta", "\n", theta$par, "\n")
-  #################################################################################################  
-  
+  #################################################################################################
+
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
     alps <- alphas[which(statistics == 1)]
-    object <- getgergm(formula.obj, theta.coef = theta$par, 
+    object <- getgergm(formula.obj, theta.coef = theta$par,
                        weights = alps, together = together)
-    temp <- simulate.gergm(object, nsim = num.draws, method = method, 
-                           shape.parameter = shape.parameter, 
+    temp <- simulate.gergm(object, nsim = num.draws, method = method,
+                           shape.parameter = shape.parameter,
                            together = together, thin = thin,
                            MCMC.burnin = MCMC.burnin, seed1 = seed2)
-    
-    
+
+
     #just use what gets returned
-    #snets <- temp$Networks 
+    #snets <- temp$Networks
     #hsn <- t(apply(snets, 3, h2, triples = triples, statistics = statistics,
     #               alphas = alphas, together = together))
     hsn <- temp$Statistics[,which(statistics == 1)]
-    
-    
+
+
     #for(i in 1:length(alps)){
     #    hsn[,i] <- hsn[,i] + runif(length(hsn[,i]),min = -(My_Bounds),max = My_Bounds)
     #}
-    
+
     #hsn.tot <- t(apply(snets, 3, h2, triples = triples, statistics = rep(1, 6),
     #                   alphas = alphas, together = together))
     hsn.tot <- temp$Statistics
     #cat("Simulations Done", "\n")
-    #calculate t.test p-values for calculating the difference in the means of 
+    #calculate t.test p-values for calculating the difference in the means of
     # the newly simulated data with the original network
     t.out <- t.test(hsn.tot[, 1], mu = init.statistics[1])$p.value
     t.in <- t.test(hsn.tot[, 2], mu = init.statistics[2])$p.value
@@ -99,14 +105,14 @@ MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
     t.recip <- t.test(hsn.tot[, 4], mu = init.statistics[4])$p.value
     t.ttriads <- t.test(hsn.tot[, 5], mu = init.statistics[5])$p.value
     t.edge <- t.test(hsn.tot[, 6], mu = init.statistics[6])$p.value
-    
-    stats.data <- data.frame(Observed = init.statistics, 
+
+    stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
     rownames(stats.data) <- c("out2star", "in2star", "ctriads", "recip",
                               "ttriads", "edgeweight")
     print(stats.data)
     #t.stats <- data.frame(out2star = t.out, in2star = t.in, ctriads = t.ctriad,
-    #recip = t.recip, ttriads = t.ttriads, 
+    #recip = t.recip, ttriads = t.ttriads,
     #edgeweight = t.edge)
     #cat("t test p-values:", "\n")
     #print(t.stats)
@@ -114,9 +120,9 @@ MCMCMLE <- function(formula.obj, num.draws, mc.num.iterations,
     #print(alps)
     #cat("theta before optim")
     #print(theta$par)
-    theta.new <- optim(par = theta$par, log.l, alpha = alps, 
-                       formula = formula.obj, hsnet = hsn, ltheta = as.numeric(theta$par), 
-                       together = together, method = "BFGS", hessian = T, 
+    theta.new <- optim(par = theta$par, log.l, alpha = alps,
+                       formula = formula.obj, hsnet = hsn, ltheta = as.numeric(theta$par),
+                       together = together, method = "BFGS", hessian = T,
                        control = list(fnscale = -1, trace = 5))
     print(paste0("Theta = ", theta.new$par))
     theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
