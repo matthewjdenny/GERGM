@@ -12,10 +12,11 @@ MCMCMLE <- function(formula.obj,
                     take.sample.every = 1,
                     together = 0,
                     seed2 = 10000,
-                    gain.factor) {
+                    gain.factor,
+					possible.stats) {
   directed <- directed[1]
   method <- method[1]
-  res1 <- weighted.ergm.data(formula.obj, theta = theta, alpha = alpha)
+  res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
   statistics <- res1$statistics
   alphas <- res1$alphas
   #cat("alphas in mcmcmle")
@@ -44,7 +45,7 @@ MCMCMLE <- function(formula.obj,
   ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
 
-  object <- getgergm(formula.obj, theta.coef = theta.init$par,
+  object <- Create_GERGM_Object_From_Formula(formula.obj, theta.coef = theta.init$par, possible.stats,
                      weights = alps, together = together)
   temp <- simulate.gergm(object, nsim = ceiling(20/thin), method = method,
                          shape.parameter = shape.parameter,
@@ -74,7 +75,7 @@ MCMCMLE <- function(formula.obj,
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
     alps <- alphas[which(statistics == 1)]
-    object <- getgergm(formula.obj, theta.coef = theta$par,
+    object <- Create_GERGM_Object_From_Formula(formula.obj, theta.coef = theta$par, possible.stats,
                        weights = alps, together = together)
     temp <- simulate.gergm(object, nsim = num.draws, method = method,
                            shape.parameter = shape.parameter,
