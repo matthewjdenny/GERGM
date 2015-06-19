@@ -1,13 +1,16 @@
 # create a gergm from a formula object (getgergm)
 Create_GERGM_Object_From_Formula <- function(object,
                                              theta.coef,
+                                             possible.stats,
                                              together = 1,
                                              weights = NULL,
                                              transform.data = NULL,
                                              lambda.coef = NULL){
 
-  res1 <- Parse_Formula_Object(object, theta = theta.coef,
-                             alpha = weights)
+  res1 <- Parse_Formula_Object(object,
+                               possible.stats,
+                               theta = theta.coef,
+                               alpha = weights)
   thetas <- res1$thetas
   network <- res1$net
   alphas <- res1$alphas
@@ -38,16 +41,18 @@ Create_GERGM_Object_From_Formula <- function(object,
     lambda.coef <- as.data.frame(rbind(lambda.coef,NA))
     rownames(lambda.coef) <- c("est", "se")
   }
-  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
-                      "edgeweight")
+
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)
   colnames(thetas) <- possible.stats
   rownames(thetas) <- c("est", "se")
   thetas <- as.data.frame(thetas)
 
-  object <- gergm.object(network = network, bounded.network = bounded.network,
-                         formula = object, thetas = thetas,
-                         lambda = lambda.coef, alpha = alphas,
-                         together = together)
+  object <- Create_GERGM_Object(network = network,
+                                bounded.network = bounded.network,
+                                formula = object,
+                                thetas = thetas,
+                                lambda = lambda.coef,
+                                alpha = alphas,
+                                together = together)
 }
