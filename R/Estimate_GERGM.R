@@ -173,7 +173,7 @@ Estimate_GERGM <- function(formula_object,
 
 
         # Estimate theta
-        theta.new <- mcmcmle(formula.obj = formula.new,
+        theta.new <- MCMCMLE(formula.obj = formula.new,
                              num.draws = nsim,
                              mc.num.iterations = mc.num.iterations,
                              thin = thin, MCMC.burnin = MCMC.burnin,
@@ -263,7 +263,7 @@ Estimate_GERGM <- function(formula_object,
     }
 
     if(MPLE.only != TRUE){
-      theta.new <- mcmcmle(formula.obj = formula_object, num.draws = nsim,
+      theta.new <- MCMCMLE(formula.obj = formula_object, num.draws = nsim,
                            mc.num.iterations = mc.num.iterations, thin = thin,
                            MCMC.burnin = MCMC.burnin,
                            theta = theta$par, alpha = alpha, directed = directed,
