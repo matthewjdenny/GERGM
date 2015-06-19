@@ -55,7 +55,7 @@ Simulate_GERGM <- function(object, nsim, seed = NULL,
     print("Thetas")
     print(thetas)
     
-    samples <- MH(
+    samples <- Metropolis_Hastings_Sampler(
       number_of_iterations = nsim + MCMC.burnin, 
       shape_parameter = shape.parameter, number_of_nodes = num.nodes, 
       statistics_to_use = statistics, initial_network = initial_network, 

@@ -180,7 +180,8 @@ Estimate_GERGM <- function(formula_object,
                              theta = theta$par, alpha = alpha,
                              directed = directed, method = method,
                              shape.parameter = shape.parameter, together = together,
-                             tolerance = tolerance, seed2 = seed, gain.factor = gain.factor)
+                             tolerance = tolerance, seed2 = seed, gain.factor = gain.factor,
+							 possible.stats)
 
         # Calculate standard errors
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
@@ -268,7 +269,8 @@ Estimate_GERGM <- function(formula_object,
                            MCMC.burnin = MCMC.burnin,
                            theta = theta$par, alpha = alpha, directed = directed,
                            method = method, shape.parameter = shape.parameter,
-                           together = together, tolerance = tolerance, gain.factor = gain.factor)
+                           together = together, tolerance = tolerance, gain.factor = gain.factor,
+						   possible.stats)
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
       lambda <- as.data.frame(0)
