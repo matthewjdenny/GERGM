@@ -25,7 +25,12 @@ Create_GERGM_Object <- function(network,
   if(is.null(alpha) == TRUE){
     alpha = 0
   }
-  new("gergm", network = network, bounded.network = bounded.network,
-      formula = formula, stats = statistics, theta.coef = thetas,
-      lambda.coef = lambda, weights = alpha)
+  new("gergm", network = network,
+      bounded.network = bounded.network,
+      formula = formula,
+      stats = statistics,
+      theta.coef = thetas,
+      lambda.coef = lambda,
+      weights = alpha,
+      num_nodes = num.nodes)
 }
