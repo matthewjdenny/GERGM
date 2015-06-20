@@ -37,6 +37,10 @@ gergm <- function(formula,
 
   #' This is the main function to estimate a GERGM model
 
+  #' hard coded possible stats
+  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
+                      "edgeweight")
+
   #' set logical values for whether we are using MPLE only, whether the network
   #' is directed, and which estimation method we are using
   use_MPLE_only <- use_MPLE_only[1] #default is FALSE
@@ -54,25 +58,36 @@ gergm <- function(formula,
 
   #1. Create GERGM object from network
 
+  Model_Output <- Create_GERGM_Object_From_Formula(formula,
+                                                   theta.coef = NULL,
+                                                   possible.stats,
+                                                   together = 1,
+                                                   weights = exponential_weights,
+                                                   transform.data = data_transformation,
+                                                   lambda.coef = NULL)
 
   #2. Estimate GERGM
+  test = T
+  if(!test){
+    Model_Output <- Estimate_GERGM(formula,
+                                   directed = network_is_directed,
+                                   MPLE.only = use_MPLE_only,
+                                   transform.data = data_transformation,
+                                   method = estimation_method,
+                                   max.num.iterations = maximum_number_of_lambda_updates,
+                                   mc.num.iterations = maximum_number_of_theta_updates,
+                                   nsim = number_of_networks_to_simulate,
+                                   thin = thin,
+                                   shape.parameter = proposal_variance,
+                                   exponential_weights = exponential_weights,
+                                   together = downweight_statistics_together,
+                                   MCMC.burnin = MCMC_burnin,
+                                   seed = seed,
+                                   tolerance = convergence_tolerance,
+                                   gain.factor = MPLE_gain_factor,
+                                   possible.stats = possible.stats)
+  }
 
-  Model_Output <- Estimate_GERGM(formula,
-                                 directed = network_is_directed,
-                                 MPLE.only = use_MPLE_only,
-                                 transform.data = data_transformation,
-                                 method = estimation_method,
-                                 max.num.iterations = maximum_number_of_lambda_updates,
-                                 mc.num.iterations = maximum_number_of_theta_updates,
-                                 nsim = number_of_networks_to_simulate,
-                                 thin = thin,
-                                 shape.parameter = proposal_variance,
-                                 exponential_weights = exponential_weights,
-                                 together = downweight_statistics_together,
-                                 MCMC.burnin = MCMC_burnin,
-                                 seed = seed,
-                                 tolerance = convergence_tolerance,
-                                 gain.factor = MPLE_gain_factor)
 
 
   #3. Perform degeneracy diagnostics and create GOF plots
