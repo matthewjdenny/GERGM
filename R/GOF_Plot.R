@@ -7,7 +7,7 @@ Gof_Plot <- function(simulation.obj, gergm.obj){
           medcol="blue", names = F)
 }
 
-Comparison_GOF_Plo <- function(MH.obj, Gibbs.obj, gergm.obj){
+Comparison_GOF_Plot <- function(MH.obj, Gibbs.obj, gergm.obj){
   par(mfrow = c(2,3))
   violins(data.frame(Gibbs.obj$Statistics[,1], MH.obj$Statistics[,1]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Out-2-Stars")
   abline(h = gergm.obj@stats[2,1], col = "red", lty = 2, lwd = 2)
