@@ -173,11 +173,16 @@ Estimate_GERGM <- function(formula_object,
                              num.draws = nsim,
                              mc.num.iterations = mc.num.iterations,
                              thin = thin, MCMC.burnin = MCMC.burnin,
-                             theta = theta$par, alpha = alpha,
-                             directed = directed, method = method,
-                             shape.parameter = shape.parameter, together = together,
-                             tolerance = tolerance, seed2 = seed, gain.factor = gain.factor,
-							 possible.stats)
+                             theta = theta$par,
+                             alpha = alpha,
+                             directed = directed,
+                             method = method,
+                             shape.parameter = shape.parameter,
+                             together = together,
+                             tolerance = tolerance,
+                             seed2 = seed,
+                             gain.factor = gain.factor,
+							               possible.stats = possible.stats)
 
         # Calculate standard errors
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
@@ -260,13 +265,22 @@ Estimate_GERGM <- function(formula_object,
     }
 
     if(MPLE.only != TRUE){
-      theta.new <- MCMCMLE(formula.obj = formula_object, num.draws = nsim,
-                           mc.num.iterations = mc.num.iterations, thin = thin,
+      theta.new <- MCMCMLE(formula.obj = formula_object,
+                           num.draws = nsim,
+                           mc.num.iterations = mc.num.iterations,
+                           thin = thin,
                            MCMC.burnin = MCMC.burnin,
-                           theta = theta$par, alpha = alpha, directed = directed,
-                           method = method, shape.parameter = shape.parameter,
-                           together = together, tolerance = tolerance, gain.factor = gain.factor,
-						   possible.stats)
+                           theta = theta$par,
+                           alpha = alpha,
+                           directed = directed,
+                           method = method,
+                           shape.parameter = shape.parameter,
+                           together = together,
+                           tolerance = tolerance,
+                           seed2 = seed,
+                           gain.factor = gain.factor,
+                           possible.stats = possible.stats)
+
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
       lambda <- as.data.frame(0)
@@ -282,7 +296,7 @@ Estimate_GERGM <- function(formula_object,
   theta <- as.data.frame(theta)
   return(Create_GERGM_Object(network,
                              bounded.network,
-                             formula.obj,
+                             formula_object,
                              theta,
                              lambda,
                              alpha = alpha,
