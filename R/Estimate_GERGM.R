@@ -1,21 +1,21 @@
 
 # Function to estimate gergms
 Estimate_GERGM <- function(formula_object,
-                           directed = c(TRUE, FALSE),
-                           MPLE.only = c(FALSE, TRUE),
+                           directed,
+                           MPLE.only,
                            transform.data = NULL,
-                           method = c("Gibbs", "Metropolis"),
-                           max.num.iterations = 10,
-                           mc.num.iterations = 100,
-                           nsim = 500,
-                           thin = 1,
-                           shape.parameter = 1,
+                           method,
+                           max.num.iterations,
+                           mc.num.iterations,
+                           nsim,
+                           thin,
+                           shape.parameter,
                            exponential_weights = NULL,
-                           together = 0,
-                           MCMC.burnin = 100,
-                           seed = 123,
-                           tolerance = 0.01,
-                           gain.factor = 0) {
+                           together,
+                           MCMC.burnin,
+                           seed,
+                           tolerance,
+                           gain.factor) {
 
   #' set the seed
   set.seed(seed)
@@ -27,11 +27,7 @@ Estimate_GERGM <- function(formula_object,
   #' set our exponential down weights
   alpha <- exponential_weights
 
-  #' set logical values for whether we are using MPLE only, whether the network
-  #' is directed, and which estimation method we are using
-  MPLE.only <- MPLE.only[1] #default is FALSE
-  directed <- directed[1] #default is TRUE
-  method <- method[1] #default is Gibbs
+
 
   #' parse the formula object into the network, its raw statistics,
   #' alpha weights, and theta parameters
