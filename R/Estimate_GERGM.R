@@ -24,7 +24,7 @@ Estimate_GERGM <- function(formula_object,
   #' set our exponential down weights
   alpha <- exponential_weights
 
-
+  coef(Model_Output)
 
   #' parse the formula object into the network, its raw statistics,
   #' alpha weights, and theta parameters
@@ -291,13 +291,15 @@ Estimate_GERGM <- function(formula_object,
   colnames(theta) <- rhs.formula
   rownames(theta) <- c("est", "se")
   theta <- as.data.frame(theta)
-  return(Create_GERGM_Object(network,
-                             bounded.network,
-                             formula_object,
-                             theta,
-                             lambda,
-                             alpha = alpha,
-                             together = together,
-                             possible.stats))
+  Model_Output@theta.coef <<- theta
+  Model_Output@lambda.coef <<- lambda
+#   return(Create_GERGM_Object(network,
+#                              bounded.network,
+#                              formula_object,
+#                              theta,
+#                              lambda,
+#                              alpha = alpha,
+#                              together = together,
+#                              possible.stats))
 }
 
