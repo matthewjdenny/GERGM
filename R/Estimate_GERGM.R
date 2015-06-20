@@ -15,14 +15,11 @@ Estimate_GERGM <- function(formula_object,
                            MCMC.burnin,
                            seed,
                            tolerance,
-                           gain.factor) {
+                           gain.factor,
+                           possible.stats) {
 
   #' set the seed
   set.seed(seed)
-
-  #' hard coded possible stats
-  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
-                      "edgeweight")
 
   #' set our exponential down weights
   alpha <- exponential_weights
