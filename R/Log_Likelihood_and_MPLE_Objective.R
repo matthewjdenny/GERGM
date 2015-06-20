@@ -1,5 +1,5 @@
 # log likelihood
-log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together) {
+log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together, possible.stats) {
   #turn dataframe into matrix
   hsnet <- as.matrix(hsnet)
   if (nrow(hsnet) == 1) {
@@ -12,7 +12,7 @@ log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together) {
     z <- hsnet %*% (theta - ltheta)
   }
 
-  temp <- h(formula, alpha, theta = theta, together = together)[1, ]
+  temp <- h(formula, possible.stats, alpha, theta = theta, together = together)[1, ]
   return(rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z)))))
 
   #theta <- par[1:ncol(hsnet)]
