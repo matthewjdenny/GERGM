@@ -58,7 +58,7 @@ gergm <- function(formula,
 
   #1. Create GERGM object from network
 
-  Model_Output <<- Create_GERGM_Object_From_Formula(formula,
+  GERGM_Object <- Create_GERGM_Object_From_Formula(formula,
                                                    theta.coef = NULL,
                                                    possible.stats,
                                                    together = 1,
@@ -66,29 +66,30 @@ gergm <- function(formula,
                                                    transform.data = data_transformation,
                                                    lambda.coef = NULL)
 
-  Model_Output@observed_network  <<- Model_Output@network
-  Model_Output@observed_bounded_network <<- Model_Output@bounded.network
+  GERGM_Object@observed_network  <- GERGM_Object@network
+  GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
 
   #2. Estimate GERGM
   test = F
   if(!test){
-    Estimate_GERGM(formula,
-                   directed = network_is_directed,
-                   MPLE.only = use_MPLE_only,
-                   transform.data = data_transformation,
-                   method = estimation_method,
-                   max.num.iterations = maximum_number_of_lambda_updates,
-                   mc.num.iterations = maximum_number_of_theta_updates,
-                   nsim = number_of_networks_to_simulate,
-                   thin = thin,
-                   shape.parameter = proposal_variance,
-                   exponential_weights = exponential_weights,
-                   together = downweight_statistics_together,
-                   MCMC.burnin = MCMC_burnin,
-                   seed = seed,
-                   tolerance = convergence_tolerance,
-                   gain.factor = MPLE_gain_factor,
-                   possible.stats = possible.stats)
+    GERGM_Object <- Estimate_GERGM(formula,
+                                   directed = network_is_directed,
+                                   MPLE.only = use_MPLE_only,
+                                   transform.data = data_transformation,
+                                   method = estimation_method,
+                                   max.num.iterations = maximum_number_of_lambda_updates,
+                                   mc.num.iterations = maximum_number_of_theta_updates,
+                                   nsim = number_of_networks_to_simulate,
+                                   thin = thin,
+                                   shape.parameter = proposal_variance,
+                                   exponential_weights = exponential_weights,
+                                   together = downweight_statistics_together,
+                                   MCMC.burnin = MCMC_burnin,
+                                   seed = seed,
+                                   tolerance = convergence_tolerance,
+                                   gain.factor = MPLE_gain_factor,
+                                   possible.stats = possible.stats,
+                                   GERGM_Object = GERGM_Object)
   }
 
 
@@ -98,5 +99,5 @@ gergm <- function(formula,
 
   #4. Return GERGM object
 
-  return(Model_Output)
+  return(GERGM_Object)
 }
