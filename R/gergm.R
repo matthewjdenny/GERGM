@@ -50,6 +50,8 @@ gergm <- function(formula,
     downweight_statistics_together <- 0
   }
 
+  formula <- as.formula(formula)
+
   #1. Create GERGM object from network
 
 
