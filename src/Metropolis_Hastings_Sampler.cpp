@@ -300,7 +300,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   // Set RNG and define uniform distribution 
   boost::mt19937_64 generator(seed);
   boost::random::uniform_real_distribution< >  uniform_distribution(0.0,1.0);
-  Function report("Report");
 
   // Outer loop over the number of samples
   for (int n = 0; n < number_of_iterations; ++n) {
