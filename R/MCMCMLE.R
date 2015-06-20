@@ -39,12 +39,20 @@ MCMCMLE <- function(formula.obj,
   ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
 
-  object <- Create_GERGM_Object_From_Formula(formula.obj, theta.coef = theta.init$par, possible.stats,
-                     weights = alps, together = together)
-  temp <- simulate.gergm(object, nsim = ceiling(20/thin), method = method,
+  object <- Create_GERGM_Object_From_Formula(formula.obj,
+                                             theta.coef = theta.init$par,
+                                             possible.stats = possible.stats,
+                                             weights = alps,
+                                             together = together)
+  temp <- Simulate_GERGM(object,
+                         nsim = ceiling(20/thin),
+                         method = method,
                          shape.parameter = shape.parameter,
-                         together = together, thin = thin,
-                         MCMC.burnin = MCMC.burnin, seed1 = seed2)
+                         together = together,
+                         thin = thin,
+                         MCMC.burnin = MCMC.burnin,
+                         seed1 = seed2,
+                         possible.stats = possible.stats)
 
   hsn <- temp$Statistics[,which(statistics == 1)]
 
@@ -67,12 +75,20 @@ MCMCMLE <- function(formula.obj,
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
     alps <- alphas[which(statistics == 1)]
-    object <- Create_GERGM_Object_From_Formula(formula.obj, theta.coef = theta$par, possible.stats,
-                       weights = alps, together = together)
-    temp <- simulate.gergm(object, nsim = num.draws, method = method,
+    object <- Create_GERGM_Object_From_Formula(formula.obj,
+                                               theta.coef = theta$par,
+                                               possible.stats = possible.stats,
+                                               weights = alps,
+                                               together = together)
+    temp <- Simulate_GERGM(object,
+                           nsim = num.draws,
+                           method = method,
                            shape.parameter = shape.parameter,
-                           together = together, thin = thin,
-                           MCMC.burnin = MCMC.burnin, seed1 = seed2)
+                           together = together,
+                           thin = thin,
+                           MCMC.burnin = MCMC.burnin,
+                           seed1 = seed2,
+                           possible.stats = possible.stats)
 
 
     #just use what gets returned
@@ -96,9 +112,16 @@ MCMCMLE <- function(formula.obj,
                               "ttriads", "edgeweight")
     print(stats.data)
 
-    theta.new <- optim(par = theta$par, log.l, alpha = alps,
-                       formula = formula.obj, hsnet = hsn, ltheta = as.numeric(theta$par),
-                       together = together, method = "BFGS", hessian = T,
+    theta.new <- optim(par = theta$par,
+                       log.l,
+                       alpha = alps,
+                       formula = formula.obj,
+                       hsnet = hsn,
+                       ltheta = as.numeric(theta$par),
+                       together = together,
+                       possible.stats= possible.stats,
+                       method = "BFGS",
+                       hessian = T,
                        control = list(fnscale = -1, trace = 5))
     print(paste0("Theta = ", theta.new$par))
     theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
