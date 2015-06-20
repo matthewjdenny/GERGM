@@ -11,10 +11,10 @@ log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together) {
     #print(str(hsnet))
     z <- hsnet %*% (theta - ltheta)
   }
-  
+
   temp <- h(formula, alpha, theta = theta, together = together)[1, ]
   return(rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z)))))
-  
+
   #theta <- par[1:ncol(hsnet)]
   #z <- hsnet%*%(theta-ltheta)
   #rbind(theta)%*%h(net,triples)-max(z)-log(sum(exp(z-max(z))))
@@ -26,14 +26,7 @@ llg <- function(par, formula, alpha, theta, z, together = together, possible.sta
   res1 <- Parse_Formula_Object(formula, possible.stats, theta = theta, alpha = alpha)
   statistics <- res1$statistics
   alphas <- res1$alphas
-  #cat("alphas in llg")
-  #print(alphas)
   net <- res1$net
-  #cat("net in llg")  #Network is correct
-  #print(head(net))
-  #theta <- res1$thetas
-  #possible.stats <- c("out2star", "in2star", "ctriads", "recip",
-  # "ttriads", "edgeweight")
   beta <- par[1:(length(par) - 1)]
   sig <- 0.01 + exp(par[length(par)])
   BZ <- 0
@@ -48,8 +41,8 @@ llg <- function(par, formula, alpha, theta, z, together = together, possible.sta
   triples <- t(combn(1:num.nodes, 3))
   log.li <- rbind(theta) %*%
     h2(net2, triples = triples, statistics = statistics, alphas = alphas,
-       together = together) + 
-    sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, 1))) + 
+       together = together) +
+    sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, 1))) +
     sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, 1)))
   return(as.numeric(log.li))
 }
@@ -60,7 +53,7 @@ mple <- function(net, statistics, directed) {
   x <- xy$x
   y <- xy$y
   est <- coef(lm(y ~ x - 1))
-  ests <- optim(par = est, pl, y = y, x = x, method = "BFGS", 
+  ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
                 hessian = TRUE,control = list(fnscale = -1, trace = 6))
   return(ests)
 }
