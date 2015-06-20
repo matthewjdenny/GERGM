@@ -1,18 +1,27 @@
 # Simulation Functions
-Gibbs_Sampler <- function(formula, theta, MCMC.burnin, num.draws, 
-                                thin = 1, start = NULL, num.nodes = NULL, 
-                                directed = c(TRUE, FALSE)) {
+Gibbs_Sampler <- function(formula,
+                          theta,
+                          MCMC.burnin,
+                          num.draws,
+                          thin = 1,
+                          start = NULL,
+                          num.nodes = NULL,
+                          directed,
+                          possible.stats) {
   # formula specifies which variables to use MCMC.burnin is the number of
-  # discarded draws n is the total number of draws to be reported dh is a 
-  # function that takes as arguments, i, j, theta, net and returns the partial 
-  # of the hamiltonian theta is the vector-valued parameter thin reduces 
+  # discarded draws n is the total number of draws to be reported dh is a
+  # function that takes as arguments, i, j, theta, net and returns the partial
+  # of the hamiltonian theta is the vector-valued parameter thin reduces
   # autocorrelation in the simulations, every thinth iteration is returned start
-  # is the initial network, if not supplied, a random uniform nodesXnodes 
-  # network is used num.nodes is the number of nodes in the network dir is a 
+  # is the initial network, if not supplied, a random uniform nodesXnodes
+  # network is used num.nodes is the number of nodes in the network dir is a
   # logical indicator of whether the network is directed
-  
+
   # Extract which statistics we use
-  res1 <- weighted.ergm.data(formula, theta = theta, alpha = NULL)
+  res1 <- Parse_Formula_Object(formula,
+                               possible.stats,
+                               theta = theta,
+                               alpha = NULL)
   net <- res1$net
   if (is.null(num.nodes) == TRUE) {
     num.nodes <- nrow(net)
@@ -21,7 +30,7 @@ Gibbs_Sampler <- function(formula, theta, MCMC.burnin, num.draws,
   statistics <- res1$statistics
   sims <- num.draws * thin
   netarray <- array(NA, dim = c(num.nodes, num.nodes, num.draws + 1))
-  if (is.null(start)) 
+  if (is.null(start))
     start <- matrix(rdisp(num.nodes * num.nodes), num.nodes, num.nodes)
   net <- start
   diag(net) = 0
