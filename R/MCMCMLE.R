@@ -13,8 +13,8 @@ MCMCMLE <- function(formula.obj,
                     together ,
                     seed2 ,
                     gain.factor,
-					possible.stats) {
-						
+					          possible.stats) {
+
   res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
   statistics <- res1$statistics
   alphas <- res1$alphas
