@@ -11,3 +11,8 @@ NULL
 
 #' @import methods
 NULL
+
+#' @useDynLib GERGM
+#' @importFrom Rcpp sourceCpp
+NULL
+#> NULL

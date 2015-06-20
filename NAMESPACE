@@ -2,3 +2,5 @@
 
 export(gergm)
 import(methods)
+importFrom(Rcpp,sourceCpp)
+useDynLib(GERGM)
