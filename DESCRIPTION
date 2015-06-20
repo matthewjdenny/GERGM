@@ -8,9 +8,9 @@ Maintainer: Matthew J. Denny <matthewjdenny@gmail.com>
 Description: This package implements estimation and diagnostics for Generalized Exponential Random Graph Models (GERGM). GERGM’s may either be estimated using Gibbs sampling or Metropolis Hastings with exponential down weighting to address issues with model degeneracy. 
 License: GPL3
 LazyData: TRUE
-LinkingTo: Rcpp
-RcppArmadillo
-BH
-Imports: Rcpp
-RcppArmadillo
-BH
+LinkingTo: Rcpp,
+    BH,
+    RcppArmadillo 
+Imports: Rcpp,
+    BH,
+    RcppArmadillo
