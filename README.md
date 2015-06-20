@@ -42,4 +42,4 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 ## Testing
             
-So far, this package has been tested successfully on OSX 10.9.5, Windows 7 and CentOS 6.6. Please email me at <mzd5530@psu.edu> if you have success on another OS or run into any problems.
+So far, this package has been tested successfully on OSX 10.9.5. Please email me at <mzd5530@psu.edu> if you have success on another OS or run into any problems.
