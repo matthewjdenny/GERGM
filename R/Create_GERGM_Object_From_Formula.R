@@ -54,5 +54,6 @@ Create_GERGM_Object_From_Formula <- function(object,
                                 thetas = thetas,
                                 lambda = lambda.coef,
                                 alpha = alphas,
-                                together = together)
+                                together = together,
+                                possible.stats = possible.stats)
 }
