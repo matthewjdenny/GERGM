@@ -68,6 +68,10 @@ gergm <- function(formula,
 
   GERGM_Object@observed_network  <- GERGM_Object@network
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
+  if(!is.null(data_transformation)){
+    GERGM_Object@data_transformation <- data_transformation
+  }
+
 
   #2. Estimate GERGM
   test = F
