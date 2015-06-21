@@ -12,7 +12,13 @@ setClass(Class = "gergm",
            MCMC_output = "list",
            observed_network = "matrix",
            observed_bounded_network = "matrix",
-           data_transformation = "array"
+           data_transformation = "array",
+           stats_to_use = "numeric",
+           previous_theta.coef = "data.frame",
+           previous_lambda.coef = "data.frame",
+           reduced_weights = "numeric",
+           theta.par = "numeric",
+           lambda.par = "numeric"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
@@ -54,6 +60,30 @@ setClass(Class = "gergm",
            }
            if (!"array" %in% class(object@data_transformation)) {
              stop("'data_transformation' must be a 'array' object.")
+           }
+           if (!is.numeric(object@stats_to_use) & is.null(object@stats_to_use)
+               == FALSE) {
+             stop("'stats_to_use' must be a 'numeric' object or 'NULL'.")
+           }
+           if (!is.data.frame(object@previous_lambda.coef) & is.null(object@previous_lambda.coef)
+               == FALSE) {
+             stop("'previous_lambda.coef' must be a 'data.frame' object or 'NULL'.")
+           }
+           if (!is.data.frame(object@previous_theta.coef) & is.null(object@previous_theta.coef)
+               == FALSE) {
+             stop("'previous_theta.coef' must be a 'data.frame' object or 'NULL'.")
+           }
+           if (!is.numeric(object@reduced_weights) & is.null(object@reduced_weights)
+               == FALSE) {
+             stop("'reduced_weights' must be a 'numeric' object or 'NULL'.")
+           }
+           if (!is.numeric(object@theta.par) & is.null(object@theta.par)
+               == FALSE) {
+             stop("'theta.par' must be a 'numeric' object or 'NULL'.")
+           }
+           if (!is.numeric(object@lambda.par) & is.null(object@lambda.par)
+               == FALSE) {
+             stop("'lambda.par' must be a 'numeric' object or 'NULL'.")
            }
            return(TRUE)
          }
