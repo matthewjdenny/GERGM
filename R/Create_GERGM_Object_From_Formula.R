@@ -56,4 +56,6 @@ Create_GERGM_Object_From_Formula <- function(object,
                                 alpha = alphas,
                                 together = together,
                                 possible.stats = possible.stats)
+  object@stats_to_use <- statistics
+  return(object)
 }
