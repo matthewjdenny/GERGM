@@ -25,20 +25,19 @@ Estimate_GERGM <- function(formula_object,
   #' set our exponential down weights
   alpha <- exponential_weights
 
-  coef(GERGM_Object)
 
   #' parse the formula object into the network, its raw statistics,
   #' alpha weights, and theta parameters
-  Parsed_Formula_Object <- Parse_Formula_Object(formula_object,
-                                                possible.stats,
-                                                theta = NULL,
-                                                alpha = alpha)
+#   Parsed_Formula_Object <- Parse_Formula_Object(formula_object,
+#                                                 possible.stats,
+#                                                 theta = NULL,
+#                                                 alpha = alpha)
 
   #' extract raw network statistics, alphas and the sociomatrix from the
   #' Parsed_Formula_Object
-  statistics <- Parsed_Formula_Object$statistics
-  alphas <- Parsed_Formula_Object$alphas
-  net <- Parsed_Formula_Object$net
+  statistics <- GERGM_Object@stats_to_use
+  alphas <- GERGM_Object@weights
+  net <- GERGM_Object@network
 
   #cat("initial network for estimation")
   #print(head(net))
@@ -46,27 +45,30 @@ Estimate_GERGM <- function(formula_object,
   rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
   # Flag if statistics do not meet requirement for Gibbs
-  if (method == "Gibbs" & sum(alphas != 1) > 0) {
+  if (method == "Gibbs" & sum(GERGM_Object@weights != 1) > 0) {
     warning(paste0("Some statistics do not have second order derivative = 0.",
                    " Switching to Metropolis"))
     method = "Metropolis"
   }
 
   # Flag if Metropolis is specified but Gibbs is OK
-  if (method == "Metropolis" & sum(alphas != 1) == 0) {
+  if (method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
     warning(paste0("All statistics have second order derivative = 0.",
                    " Consider switching to Gibbs for speed."))
     # method = "Gibbs"
   }
 
+
   # Estimation if a transformation is needed
-  if (is.null(transform.data) != TRUE) {
-    num.theta <- length(which(statistics > 0))
+  if (length(GERGM_Object@data_transformation) > 0) {
+    num.theta <- length(which(GERGM_Object@stats_to_use > 0))
     gpar <- list()
-    gpar$par <- c(mean(c(net)), rep(0, dim(transform.data)[3] -3), log(sd(c(net))))
+    gpar$par <- c(mean(c(GERGM_Object@network)),
+                  rep(0, dim(GERGM_Object@data_transformation)[3] -3),
+                  log(sd(c(GERGM_Object@network))))
     theta <- list()
     theta$par <- rep(0, num.theta)
-    num.nodes <- nrow(net)
+    num.nodes <- nrow(GERGM_Object@num_nodes)
 
     # Alternately update lambda estimates and theta estimates
     for (i in 1:max.num.iterations) {
@@ -75,10 +77,16 @@ Estimate_GERGM <- function(formula_object,
       if(MPLE.only == TRUE){
         cat("Updating Estimates -- Iteration:", i," \n")
         cat("Lambda Estimates", gpar$par,"\n")
-        gpar.new <- optim(par = as.numeric(gpar$par), llg, formula = formula_object,
-                          alpha = alpha, theta = as.numeric(theta$par), z = transform.data,
-                          method = "BFGS", together = together,
-                          hessian = T, control = list(fnscale = -1, trace = 6))
+        gpar.new <- optim(par = as.numeric(gpar$par),
+                          llg,
+                          formula = GERGM_Object@formula,
+                          alpha = GERGM_Object@weights,
+                          theta = as.numeric(theta$par),
+                          z = transform.data,
+                          method = "BFGS",
+                          together = together,
+                          hessian = T,
+                          control = list(fnscale = -1, trace = 6))
         cat("Lambda estimates", "\n")
         print(gpar.new$par)
         gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
@@ -86,8 +94,8 @@ Estimate_GERGM <- function(formula_object,
         beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
         sig <- 0.01 + exp(gpar.new$par[length(gpar.new$par)])
         BZ <- 0
-        for (j in 1:(dim(transform.data)[3])) {
-          BZ <- BZ + beta[j] * transform.data[, , j]
+        for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
+          BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
         }
         net.new <<- pst(net, BZ, sig, 1) #make this a global variable (JW: not sure why we need this call..)
 
@@ -160,14 +168,14 @@ Estimate_GERGM <- function(formula_object,
         for (j in 1:(dim(transform.data)[3])) {
           BZ <- BZ + beta[j] * transform.data[, , j]
         }
-        net.new <<- pst(net, BZ, sig, 1) #make this a global variable
-
+        #net.new <<- pst(net, BZ, sig, 1) #make this a global variable
+        GERGM_Object@network <- pst(net, BZ, sig, 1)
         # Rewrite the formula for net.new
-        formula.new <- formula(paste0("net.new ~", rhs))
+        #formula.new <- formula(paste0("net.new ~", rhs))
 
 
         # Estimate theta
-        theta.new <- MCMCMLE(formula.obj = formula.new,
+        ret_list <- MCMCMLE(formula.obj = formula_object,
                              num.draws = nsim,
                              mc.num.iterations = mc.num.iterations,
                              thin = thin, MCMC.burnin = MCMC.burnin,
@@ -180,7 +188,11 @@ Estimate_GERGM <- function(formula_object,
                              tolerance = tolerance,
                              seed2 = seed,
                              gain.factor = gain.factor,
-							               possible.stats = possible.stats)
+							               possible.stats = possible.stats,
+							               GERGM_Object= GERGM_Object)
+
+        theta.new <- ret_list[[1]]
+        GERGM_Object <- ret_list[[2]]
 
         # Calculate standard errors
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
@@ -232,38 +244,38 @@ Estimate_GERGM <- function(formula_object,
     lambda <- rbind(lambda, gpar.std.errors)
     lambda <- as.data.frame(lambda)
     rownames(lambda) <- c("est", "se")
-    return(Create_GERGM_Object(network,
-                               bounded.network,
-                               formula.obj,
-                               theta,
-                               lambda,
-                               alpha = alpha,
-                               together = together,
-                               possible.stats))
+    GERGM_Object@theta.coef <- theta
+    GERGM_Object@lambda.coef <- lambda
+    GERGM_Object@network <- net
+    GERGM_Object@bounded.network <- net
+    return(GERGM_Object)
+#     return(Create_GERGM_Object(network,
+#                                bounded.network,
+#                                formula.obj,
+#                                theta,
+#                                lambda,
+#                                alpha = alpha,
+#                                together = together,
+#                                possible.stats))
   }
 
   # Estimation if no transformation is needed
-  if (is.null(transform.data) == TRUE) {
-    num.theta <- length(which(statistics > 0))
+  if (length(GERGM_Object@data_transformation) == 0) {
+    num.theta <- length(which(GERGM_Object@stats_to_use > 0))
     theta <- list()
     theta$par <- rep(0, num.theta)
-    num.nodes <- nrow(net)
+    num.nodes <- GERGM_Object@num_nodes
     if(MPLE.only == TRUE){
-      res1 <- Parse_Formula_Object(formula_object,
-                                   possible.stats,
-                                   theta = theta$par,
-                                   alpha = alpha)
-      statistics <- res1$statistics
-      net2 <- res1$net
-
-      theta.new <- mple(net2, statistics = statistics, directed = directed)
+      theta.new <- mple(GERGM_Object@network,
+                        statistics = GERGM_Object@stats_to_use,
+                        directed = directed)
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
       lambda <- as.data.frame(0)
     }
 
     if(MPLE.only != TRUE){
-      theta.new <- MCMCMLE(formula.obj = formula_object,
+      ret_list <- MCMCMLE(formula.obj = GERGM_Object@formula,
                            num.draws = nsim,
                            mc.num.iterations = mc.num.iterations,
                            thin = thin,
@@ -277,7 +289,11 @@ Estimate_GERGM <- function(formula_object,
                            tolerance = tolerance,
                            seed2 = seed,
                            gain.factor = gain.factor,
-                           possible.stats = possible.stats)
+                           possible.stats = possible.stats,
+                           GERGM_Object= GERGM_Object)
+
+      theta.new <- ret_list[[1]]
+      GERGM_Object <- ret_list[[2]]
 
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
@@ -294,6 +310,8 @@ Estimate_GERGM <- function(formula_object,
   theta <- as.data.frame(theta)
   GERGM_Object@theta.coef <- theta
   GERGM_Object@lambda.coef <- lambda
+  GERGM_Object@network <- net
+  GERGM_Object@bounded.network <- net
   return(GERGM_Object)
 }
 
