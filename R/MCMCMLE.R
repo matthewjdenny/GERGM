@@ -13,25 +13,33 @@ MCMCMLE <- function(formula.obj,
                     together ,
                     seed2 ,
                     gain.factor,
-					          possible.stats) {
+					          possible.stats,
+					          GERGM_Object) {
 
-  res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
-  statistics <- res1$statistics
-  alphas <- res1$alphas
-  net2 <- res1$net
+  #res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
+  statistics <- ERGM_Object@stats
+  alphas <- ERGM_Object@weights
 
-  theta.init <- mple(net2, statistics = statistics, directed = directed)
+  theta.init <- mple(GERGM_Object@network,
+                     statistics = GERGM_Object@stats_to_use,
+                     directed = directed)
 
   cat("MPLE Thetas: ", theta.init$par, "\n")
-  num.nodes <- nrow(net2)
+  num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
-  pairs <- t(combn(1:nrow(net2), 2))
+  pairs <- t(combn(1:num.nodes, 2))
   # initialize the network with the observed network
-  initial_network <- net2
+  initial_network <- ERGM_Object@network
   # calculate the statistics of the original network
-  init.statistics <- h2(net2, triples = triples, statistics = rep(1, 6),
+  init.statistics <- h2(GERGM_Object@network,
+                        triples = triples,
+                        statistics = rep(1, length(possible.stats)),
                         alphas = alphas, together = together)
-  obs.stats <- h2(net2, triples = triples, statistics = statistics, alphas = alphas, together = together)
+  obs.stats <- h2(GERGM_Object@network,
+                  triples = triples,
+                  statistics = GERGM_Object@stats_to_use,
+                  alphas = alphas,
+                  together = together)
 
   cat("Observed statistics", "\n", obs.stats, "\n")
   #################################################################################################
@@ -39,12 +47,15 @@ MCMCMLE <- function(formula.obj,
   ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
 
-  object <- Create_GERGM_Object_From_Formula(formula.obj,
-                                             theta.coef = theta.init$par,
-                                             possible.stats = possible.stats,
-                                             weights = alps,
-                                             together = together)
-  temp <- Simulate_GERGM(object,
+#   object <- Create_GERGM_Object_From_Formula(formula.obj,
+#                                              theta.coef = theta.init$par,
+#                                              possible.stats = possible.stats,
+#                                              weights = alps,
+#                                              together = together)
+  GERGM_Object@reduced_weights <- alps
+  GERGM_Object@theta.par <- theta.init$par
+  GERGM_Object@MCMC_output
+  GERGM_Object <- Simulate_GERGM(GERGM_Object,
                          nsim = ceiling(20/thin),
                          method = method,
                          shape.parameter = shape.parameter,
@@ -54,7 +65,7 @@ MCMCMLE <- function(formula.obj,
                          seed1 = seed2,
                          possible.stats = possible.stats)
 
-  hsn <- temp$Statistics[,which(statistics == 1)]
+  hsn <- GERGM_Object@MCMC_output$Statistics[,which(GERGM_Object@stats_to_use == 1)]
 
   #Calculate covariance estimate (to scale initial guess theta.init)
   z.bar <- colSums(hsn) / 20
@@ -74,13 +85,15 @@ MCMCMLE <- function(formula.obj,
 
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
-    alps <- alphas[which(statistics == 1)]
-    object <- Create_GERGM_Object_From_Formula(formula.obj,
-                                               theta.coef = theta$par,
-                                               possible.stats = possible.stats,
-                                               weights = alps,
-                                               together = together)
-    temp <- Simulate_GERGM(object,
+    #alps <- alphas[which(statistics == 1)]
+#     object <- Create_GERGM_Object_From_Formula(formula.obj,
+#                                                theta.coef = theta$par,
+#                                                possible.stats = possible.stats,
+#                                                weights = alps,
+#                                                together = together)
+#     GERGM_Object@reduced_weights <- alps
+    GERGM_Object@theta.par <- as.numeric(theta$par)
+    GERGM_Object <- Simulate_GERGM(GERGM_Object,
                            nsim = num.draws,
                            method = method,
                            shape.parameter = shape.parameter,
@@ -92,10 +105,10 @@ MCMCMLE <- function(formula.obj,
 
 
     #just use what gets returned
-    hsn <- temp$Statistics[,which(statistics == 1)]
+    hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
 
 
-    hsn.tot <- temp$Statistics
+    hsn.tot <- GERGM_Object@MCMC_output$Statistics
     #cat("Simulations Done", "\n")
     #calculate t.test p-values for calculating the difference in the means of
     # the newly simulated data with the original network
@@ -108,14 +121,13 @@ MCMCMLE <- function(formula.obj,
 
     stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
-    rownames(stats.data) <- c("out2star", "in2star", "ctriads", "recip",
-                              "ttriads", "edgeweight")
+    rownames(stats.data) <- possible.stats
     print(stats.data)
 
     theta.new <- optim(par = theta$par,
                        log.l,
-                       alpha = alps,
-                       formula = formula.obj,
+                       alpha = GERGM_Object@reduced_weights,
+                       formula = GERGM_Object@formula,
                        hsnet = hsn,
                        ltheta = as.numeric(theta$par),
                        together = together,
@@ -146,7 +158,8 @@ MCMCMLE <- function(formula.obj,
     else{
       cat("\n", "Theta Estimates", theta.new$par, "\n")
     }
-    theta = theta.new
+    theta <- theta.new
+    GERGM_Object@theta.par <- as.numeric(theta$par)
   }
-  return(theta)
+  return(list(theta,GERGM_Object))
 }
