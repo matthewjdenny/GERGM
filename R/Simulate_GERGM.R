@@ -5,7 +5,7 @@ Simulate_GERGM <- function(object,
                            method,
                            MCMC.burnin,
                            weights = object@weights,
-                           coef = object@theta.coef,
+                           coef = object@theta.par,
                            formula = object@formula,
                            thin ,
                            shape.parameter ,
@@ -14,7 +14,7 @@ Simulate_GERGM <- function(object,
 						               possible.stats ) {
   # object: an object of class "gergm"
 
-  theta <- as.numeric(coef[1,])  # obtain the estimated thetas
+  theta <- as.numeric(coef)  # obtain the estimated thetas
 
   sample_every <- floor(1/thin)
 
@@ -24,15 +24,16 @@ Simulate_GERGM <- function(object,
   rhs <- paste(rhs, collapse = "+")
   formula.new <- as.formula(paste0("net ~ ", rhs))
 
-  res1 <- Parse_Formula_Object(formula.new,
-                               possible.stats = possible.stats,
-                               theta = theta[abs(theta) > 0],
-                               alpha = alpha[abs(theta) > 0])
-  statistics <- res1$statistics
+#   res1 <- Parse_Formula_Object(formula.new,
+#                                possible.stats = possible.stats,
+#                                theta = theta[abs(theta) > 0],
+#                                alpha = alpha[abs(theta) > 0])
 
-  alphas <- res1$alphas
-  thetas <- res1$thetas
-  num.nodes <- nrow(net)
+  statistics <- object@stats
+
+  alphas <- object@weights
+  thetas <- object@theta.par
+  num.nodes <- object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
 
@@ -103,6 +104,8 @@ Simulate_GERGM <- function(object,
                             ttriads = h.statistics[, 5],
                             edgeweight = h.statistics[, 6])
 
-  return(list(Networks = nets, Statistics = h.statistics,
-              Acceptance.rate = acceptance.rate))
+  object@MCMC_output = list(Networks = nets,
+                            Statistics = h.statistics,
+                            Acceptance.rate = acceptance.rate)
+  return(object)
 }
