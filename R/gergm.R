@@ -74,27 +74,25 @@ gergm <- function(formula,
 
 
   #2. Estimate GERGM
-  test = F
-  if(!test){
-    GERGM_Object <- Estimate_GERGM(formula,
-                                   directed = network_is_directed,
-                                   MPLE.only = use_MPLE_only,
-                                   transform.data = data_transformation,
-                                   method = estimation_method,
-                                   max.num.iterations = maximum_number_of_lambda_updates,
-                                   mc.num.iterations = maximum_number_of_theta_updates,
-                                   nsim = number_of_networks_to_simulate,
-                                   thin = thin,
-                                   shape.parameter = proposal_variance,
-                                   exponential_weights = exponential_weights,
-                                   together = downweight_statistics_together,
-                                   MCMC.burnin = MCMC_burnin,
-                                   seed = seed,
-                                   tolerance = convergence_tolerance,
-                                   gain.factor = MPLE_gain_factor,
-                                   possible.stats = possible.stats,
-                                   GERGM_Object = GERGM_Object)
-  }
+  GERGM_Object <- Estimate_GERGM(formula,
+                                 directed = network_is_directed,
+                                 MPLE.only = use_MPLE_only,
+                                 transform.data = data_transformation,
+                                 method = estimation_method,
+                                 max.num.iterations = maximum_number_of_lambda_updates,
+                                 mc.num.iterations = maximum_number_of_theta_updates,
+                                 nsim = number_of_networks_to_simulate,
+                                 thin = thin,
+                                 shape.parameter = proposal_variance,
+                                 exponential_weights = exponential_weights,
+                                 together = downweight_statistics_together,
+                                 MCMC.burnin = MCMC_burnin,
+                                 seed = seed,
+                                 tolerance = convergence_tolerance,
+                                 gain.factor = MPLE_gain_factor,
+                                 possible.stats = possible.stats,
+                                 GERGM_Object = GERGM_Object)
+
 
 
 
