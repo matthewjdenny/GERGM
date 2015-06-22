@@ -19,7 +19,7 @@ MCMCMLE <- function(num.draws,
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
 
-  theta.init <- mple(GERGM_Object@network,
+  theta.init <- mple(GERGM_Object@bounded.network,
                      statistics = GERGM_Object@stats_to_use,
                      directed = directed)
   cat("MPLE Thetas: ", theta.init$par, "\n")
@@ -27,19 +27,19 @@ MCMCMLE <- function(num.draws,
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
   # initialize the network with the observed network
-  initial_network <- GERGM_Object@network
+  initial_network <- GERGM_Object@bounded.network
   # calculate the statistics of the original network
-  init.statistics <- h2(GERGM_Object@network,
+  init.statistics <- h2(GERGM_Object@bounded.network,
                         triples = triples,
                         statistics = rep(1, length(possible.stats)),
                         alphas = alphas, together = together)
-  obs.stats <- h2(GERGM_Object@observed_network,
+  obs.stats <- h2(GERGM_Object@bounded.network,
                   triples = triples,
                   statistics = GERGM_Object@stats_to_use,
                   alphas = alphas,
                   together = together)
 
-  cat("Observed statistics", "\n", obs.stats, "\n")
+  cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
   #################################################################################################
   ##JW: Added 3/29/15. This scales the initial estimates for the MPLE theta specification
   ## This is according to the initialization the Fisher Scoring method for optimization
@@ -78,7 +78,7 @@ MCMCMLE <- function(num.draws,
   #calculate
   theta <- list()
   theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
-  cat("Adjusted initial theta", "\n", theta$par, "\n")
+  cat("Adjusted Initial Thetas After Fisher Update:", "\n", theta$par, "\n")
   #################################################################################################
 
   ## Simulate new networks
@@ -107,7 +107,7 @@ MCMCMLE <- function(num.draws,
 
 
     hsn.tot <- GERGM_Object@MCMC_output$Statistics
-    #cat("Simulations Done", "\n")
+    cat("Simulations Done", "\n")
     #calculate t.test p-values for calculating the difference in the means of
     # the newly simulated data with the original network
     t.out <- t.test(hsn.tot[, 1], mu = init.statistics[1])$p.value
@@ -130,6 +130,7 @@ MCMCMLE <- function(num.draws,
                        ltheta = as.numeric(theta$par),
                        together = together,
                        possible.stats= possible.stats,
+                       GERGM_Object = GERGM_Object,
                        method = "BFGS",
                        hessian = T,
                        control = list(fnscale = -1, trace = 5))
@@ -147,7 +148,7 @@ MCMCMLE <- function(num.draws,
       if(p.value[i] < tolerance){count[i] = 1}
     }
     cat("p.values", "\n")
-    print(p.value)
+    cat(p.value, "\n")
 
     if (sum(count) == 0){
       message("Parameter estimates have converged")
