@@ -1,5 +1,12 @@
 # log likelihood
-log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together, possible.stats) {
+log.l <- function(thetas,
+                  formula,
+                  alpha,
+                  hsnet,
+                  ltheta,
+                  together = together,
+                  possible.stats,
+                  GERGM_Object = GERGM_Object) {
   #turn dataframe into matrix
   hsnet <- as.matrix(hsnet)
   if (nrow(hsnet) == 1) {
@@ -12,7 +19,12 @@ log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together, po
     z <- hsnet %*% (theta - ltheta)
   }
 
-  temp <- h(formula, possible.stats, alpha, theta = theta, together = together)[1, ]
+  temp <- h(formula,
+            possible.stats,
+            alpha,
+            theta = theta,
+            together = together,
+            GERGM_Object)[1, ]
   return(rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z)))))
 
   #theta <- par[1:ncol(hsnet)]
@@ -21,7 +33,14 @@ log.l <- function(thetas, formula, alpha, hsnet, ltheta, together = together, po
   #return(rbind(theta) %*% temp - max(z) - log(mean(exp(z - max(z)))))
 }
 
-llg <- function(par, formula, alpha, theta, z, together = together, possible.stats = possible.stats) {
+llg <- function(par,
+                formula,
+                alpha,
+                theta,
+                z,
+                together = together,
+                possible.stats = possible.stats,
+                GERGM_Object = GERGM_Object) {
   # log likelihood for unbounded network with g function
   res1 <- Parse_Formula_Object(formula, possible.stats, theta = theta, alpha = alpha)
   statistics <- res1$statistics
