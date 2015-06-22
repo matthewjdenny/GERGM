@@ -1,5 +1,5 @@
 # Simulation Functions
-Gibbs_Sampler <- function(formula,
+Gibbs_Sampler <- function(GERGM_Object,
                           theta,
                           MCMC.burnin,
                           num.draws,
@@ -18,16 +18,17 @@ Gibbs_Sampler <- function(formula,
   # logical indicator of whether the network is directed
 
   # Extract which statistics we use
-  res1 <- Parse_Formula_Object(formula,
-                               possible.stats,
-                               theta = theta,
-                               alpha = NULL)
-  net <- res1$net
+#   res1 <- Parse_Formula_Object(formula,
+#                                possible.stats,
+#                                theta = theta,
+#                                alpha = NULL)
+  net <- GERGM_Object@network
   if (is.null(num.nodes) == TRUE) {
-    num.nodes <- nrow(net)
+    num.nodes <- GERGM_Object@num_nodes
   }
-  thetas <- res1$thetas
-  statistics <- res1$statistics
+
+  statistics <- GERGM_Object@stats_to_use
+
   sims <- num.draws * thin
   netarray <- array(NA, dim = c(num.nodes, num.nodes, num.draws + 1))
   if (is.null(start))
