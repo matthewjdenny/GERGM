@@ -17,11 +17,6 @@ Gibbs_Sampler <- function(GERGM_Object,
   # network is used num.nodes is the number of nodes in the network dir is a
   # logical indicator of whether the network is directed
 
-  # Extract which statistics we use
-#   res1 <- Parse_Formula_Object(formula,
-#                                possible.stats,
-#                                theta = theta,
-#                                alpha = NULL)
   net <- GERGM_Object@network
   if (is.null(num.nodes) == TRUE) {
     num.nodes <- GERGM_Object@num_nodes

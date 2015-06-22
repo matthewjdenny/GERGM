@@ -13,27 +13,12 @@ Simulate_GERGM <- function(GERGM_Object,
 						               possible.stats ) {
   # object: an object of class "gergm"
 
-  theta <- as.numeric(coef)  # obtain the estimated thetas
   sample_every <- floor(1/thin)
-
-  # obtain the bounded network object
-#   rhs <- names(GERGM_Object@theta.coef)[abs(theta) > 0]
-#   rhs <- paste(rhs, collapse = "+")
-#   formula.new <- as.formula(paste0("net ~ ", rhs))
-
-#   res1 <- Parse_Formula_Object(formula.new,
-#                                possible.stats = possible.stats,
-#                                theta = theta[abs(theta) > 0],
-#                                alpha = alpha[abs(theta) > 0])
-
   thetas <- GERGM_Object@theta.par
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
 
-  # Initial Network is a graph with uniform random edgeweights
-  #initial_network = matrix(runif(num.nodes^2, 1e-05, 0.99999), nrow = num.nodes,
-  #ncol = num.nodes)
   # Gibbs Simulation
   if (method == "Gibbs") {
     nets <- Gibbs_Sampler(GERGM_Object,
@@ -54,8 +39,6 @@ Simulate_GERGM <- function(GERGM_Object,
 
   # Metropolis Hastings Simulation
   if (method == "Metropolis") {
-    #fix alphas for MH sims
-
     #need to put the thetas into a full length vector for MH function
     stat.indx <- which(GERGM_Object@stats_to_use > 0)
     cat("stat.idx",stat.indx,"\n" )
@@ -82,15 +65,12 @@ Simulate_GERGM <- function(GERGM_Object,
     start <- floor(MCMC.burnin/sample_every) + 1
     end <- length(samples[[3]][,1])
     nets <- samples[[2]][, , start:end]
-    # Calculate the network statistics over all of the simulated networks
     # Note: these statistics will be the adjusted statistics (for use in the
     # MCMCMLE procedure)
 
     h.statistics <- samples[[3]][start:end,]
-
-
     acceptance.rate <- mean(samples[[1]])
-    cat("acceptance.rate", acceptance.rate, "\n")
+    cat("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n")
 
   }
   h.statistics = data.frame(out2stars = h.statistics[, 1],

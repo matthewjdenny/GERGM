@@ -15,7 +15,6 @@ MCMCMLE <- function(num.draws,
 					          possible.stats,
 					          GERGM_Object) {
 
-  #res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
 
@@ -40,16 +39,10 @@ MCMCMLE <- function(num.draws,
                   together = together)
 
   cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
-  #################################################################################################
+  ####################################################################
   ##JW: Added 3/29/15. This scales the initial estimates for the MPLE theta specification
   ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
-
-#   object <- Create_GERGM_Object_From_Formula(formula.obj,
-#                                              theta.coef = theta.init$par,
-#                                              possible.stats = possible.stats,
-#                                              weights = alps,
-#                                              together = together)
   GERGM_Object@reduced_weights <- alps
   GERGM_Object@theta.par <- theta.init$par
   GERGM_Object@MCMC_output
@@ -79,17 +72,9 @@ MCMCMLE <- function(num.draws,
   theta <- list()
   theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
   cat("Adjusted Initial Thetas After Fisher Update:", "\n", theta$par, "\n")
-  #################################################################################################
-
+  ##########################################################################
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
-    #alps <- alphas[which(statistics == 1)]
-#     object <- Create_GERGM_Object_From_Formula(formula.obj,
-#                                                theta.coef = theta$par,
-#                                                possible.stats = possible.stats,
-#                                                weights = alps,
-#                                                together = together)
-#     GERGM_Object@reduced_weights <- alps
     GERGM_Object@theta.par <- as.numeric(theta$par)
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                            nsim = num.draws,
