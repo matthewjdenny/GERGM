@@ -1,5 +1,4 @@
-MCMCMLE <- function(formula.obj,
-                    num.draws,
+MCMCMLE <- function(num.draws,
                     mc.num.iterations,
                     tolerance,
                     thin = 1,
@@ -17,25 +16,24 @@ MCMCMLE <- function(formula.obj,
 					          GERGM_Object) {
 
   #res1 <- Parse_Formula_Object(formula.obj, possible.stats, theta = theta, alpha = alpha)
-  statistics <- ERGM_Object@stats
-  alphas <- ERGM_Object@weights
+  statistics <- GERGM_Object@stats_to_use
+  alphas <- GERGM_Object@weights
 
   theta.init <- mple(GERGM_Object@network,
                      statistics = GERGM_Object@stats_to_use,
                      directed = directed)
-
   cat("MPLE Thetas: ", theta.init$par, "\n")
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
   # initialize the network with the observed network
-  initial_network <- ERGM_Object@network
+  initial_network <- GERGM_Object@network
   # calculate the statistics of the original network
   init.statistics <- h2(GERGM_Object@network,
                         triples = triples,
                         statistics = rep(1, length(possible.stats)),
                         alphas = alphas, together = together)
-  obs.stats <- h2(GERGM_Object@network,
+  obs.stats <- h2(GERGM_Object@observed_network,
                   triples = triples,
                   statistics = GERGM_Object@stats_to_use,
                   alphas = alphas,
@@ -153,7 +151,7 @@ MCMCMLE <- function(formula.obj,
 
     if (sum(count) == 0){
       message("Parameter estimates have converged")
-      return(theta.new)
+      return(list(theta.new,GERGM_Object))
     }
     else{
       cat("\n", "Theta Estimates", theta.new$par, "\n")
