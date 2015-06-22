@@ -25,22 +25,10 @@ Estimate_GERGM <- function(formula_object,
   #' set our exponential down weights
   alpha <- exponential_weights
 
-
-  #' parse the formula object into the network, its raw statistics,
-  #' alpha weights, and theta parameters
-#   Parsed_Formula_Object <- Parse_Formula_Object(formula_object,
-#                                                 possible.stats,
-#                                                 theta = NULL,
-#                                                 alpha = alpha)
-
-  #' extract raw network statistics, alphas and the sociomatrix from the
-  #' Parsed_Formula_Object
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
   net <- GERGM_Object@network
 
-  #cat("initial network for estimation")
-  #print(head(net))
   rhs.formula <- possible.stats[statistics > 0]
   rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
@@ -98,28 +86,18 @@ Estimate_GERGM <- function(formula_object,
           BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
         }
 
-        GERGM_Object@network <- pst(net, BZ, sig, 1)
+        GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
 
-        GERGM_Object@stats <- h2(GERGM_Object@network,
+        GERGM_Object@stats <- h2(GERGM_Object@bounded.network,
                               triples = triples,
                               statistics = rep(1, length(possible.stats)),
                               alphas = alphas, together = together)
-        # Rewrite the formula for net.new
-#         formula.new <- formula(paste0("net.new ~", rhs))
-#
-#         # Estimate theta
-#         res1 <- Parse_Formula_Object(formula.new,
-#                                      possible.stats,
-#                                      theta = theta$par,
-#                                      alpha = alpha)
-#         statistics <- res1$statistics
-#         net2 <- res1$net
 
-        theta.new <- mple(GERGM_Object@network,
+        theta.new <- mple(GERGM_Object@bounded.network,
                           statistics = GERGM_Object@stats_to_use,
                           directed = directed)
         cat("theta.new", theta.new$par, "\n")
@@ -180,13 +158,13 @@ Estimate_GERGM <- function(formula_object,
           BZ <- BZ + beta[j] * transform.data[, , j]
         }
         #net.new <<- pst(net, BZ, sig, 1) #make this a global variable
-        GERGM_Object@network <- pst(net, BZ, sig, 1)
+        GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
 
-        GERGM_Object@stats <- h2(GERGM_Object@network,
+        GERGM_Object@stats <- h2(GERGM_Object@bounded.network,
                                  triples = triples,
                                  statistics = rep(1, length(possible.stats)),
                                  alphas = alphas, together = together)
@@ -263,7 +241,6 @@ Estimate_GERGM <- function(formula_object,
     rownames(lambda) <- c("est", "se")
     GERGM_Object@theta.coef <- theta
     GERGM_Object@lambda.coef <- lambda
-    GERGM_Object@network <- net
     GERGM_Object@bounded.network <- net
     return(GERGM_Object)
 #     return(Create_GERGM_Object(network,
@@ -283,7 +260,7 @@ Estimate_GERGM <- function(formula_object,
     theta$par <- rep(0, num.theta)
     num.nodes <- GERGM_Object@num_nodes
     if(MPLE.only == TRUE){
-      theta.new <- mple(GERGM_Object@network,
+      theta.new <- mple(GERGM_Object@bounded.network,
                         statistics = GERGM_Object@stats_to_use,
                         directed = directed)
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
@@ -326,7 +303,6 @@ Estimate_GERGM <- function(formula_object,
   theta <- as.data.frame(theta)
   GERGM_Object@theta.coef <- theta
   GERGM_Object@lambda.coef <- lambda
-  GERGM_Object@network <- net
   GERGM_Object@bounded.network <- net
   return(GERGM_Object)
 }
