@@ -1,12 +1,12 @@
 # Simulate a gergm
-Simulate_GERGM <- function(object,
+Simulate_GERGM <- function(GERGM_Object,
                            nsim,
                            seed = NULL,
                            method,
                            MCMC.burnin,
-                           weights = object@weights,
-                           coef = object@theta.par,
-                           formula = object@formula,
+                           weights = GERGM_Object@weights,
+                           coef = GERGM_Object@theta.par,
+                           formula = GERGM_Object@formula,
                            thin ,
                            shape.parameter ,
                            together ,
@@ -15,25 +15,24 @@ Simulate_GERGM <- function(object,
   # object: an object of class "gergm"
 
   theta <- as.numeric(coef)  # obtain the estimated thetas
-
   sample_every <- floor(1/thin)
 
-  net <- object@bounded.network  # obtain the bounded network object
+  net <- GERGM_Object@bounded.network  # obtain the bounded network object
   alpha <- weights
-  rhs <- names(object@theta.coef)[abs(theta) > 0]
-  rhs <- paste(rhs, collapse = "+")
-  formula.new <- as.formula(paste0("net ~ ", rhs))
+#   rhs <- names(GERGM_Object@theta.coef)[abs(theta) > 0]
+#   rhs <- paste(rhs, collapse = "+")
+#   formula.new <- as.formula(paste0("net ~ ", rhs))
 
 #   res1 <- Parse_Formula_Object(formula.new,
 #                                possible.stats = possible.stats,
 #                                theta = theta[abs(theta) > 0],
 #                                alpha = alpha[abs(theta) > 0])
 
-  statistics <- object@stats
+  statistics <- GERGM_Object@stats
 
-  alphas <- object@weights
-  thetas <- object@theta.par
-  num.nodes <- object@num_nodes
+  alphas <- GERGM_Object@weights
+  thetas <- GERGM_Object@theta.par
+  num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
 
@@ -41,11 +40,10 @@ Simulate_GERGM <- function(object,
   #initial_network = matrix(runif(num.nodes^2, 1e-05, 0.99999), nrow = num.nodes,
   #ncol = num.nodes)
   initial_network <- net
-
   # Gibbs Simulation
   if (method == "Gibbs") {
-    nets <- Gibbs_Sampler(formula.new,
-                          thetas[statistics > 0],
+    nets <- Gibbs_Sampler(GERGM_Object,
+                          thetas,
                           MCMC.burnin = MCMC.burnin,
                           num.draws = nsim,
                           thin = thin,
@@ -66,8 +64,14 @@ Simulate_GERGM <- function(object,
     alphas[which(is.na(alphas))] = 1
     alphas[which(alphas == 0)] = 1
 
-    print("Thetas")
-    print(thetas)
+    #need to put the thetas into a full length vector for MH function
+    stat.indx <- which(GERGM_Object@stats_to_use > 0)
+    cat("stat.idx",stat.indx,"\n" )
+    full_thetas <- rep(0, length(GERGM_Object@stats_to_use))
+    for (i in 1:length(thetas)) {
+      full_thetas[stat.indx[i]] <- thetas[i]
+    }
+    cat("Current Theta Estimates:",thetas,"\n")
 
     samples <- Metropolis_Hastings_Sampler(
       number_of_iterations = nsim + MCMC.burnin,
@@ -76,7 +80,7 @@ Simulate_GERGM <- function(object,
       statistics_to_use = statistics,
       initial_network = initial_network,
       take_sample_every = sample_every,
-      thetas = thetas,
+      thetas = full_thetas,
       triples = triples - 1,
       pairs = pairs - 1,
       alphas = alphas,
@@ -104,8 +108,8 @@ Simulate_GERGM <- function(object,
                             ttriads = h.statistics[, 5],
                             edgeweight = h.statistics[, 6])
 
-  object@MCMC_output = list(Networks = nets,
+  GERGM_Object@MCMC_output = list(Networks = nets,
                             Statistics = h.statistics,
                             Acceptance.rate = acceptance.rate)
-  return(object)
+  return(GERGM_Object)
 }
