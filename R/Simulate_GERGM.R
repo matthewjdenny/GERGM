@@ -1,7 +1,6 @@
 # Simulate a gergm
 Simulate_GERGM <- function(GERGM_Object,
                            nsim,
-                           seed = NULL,
                            method,
                            MCMC.burnin,
                            weights = GERGM_Object@weights,
@@ -17,8 +16,7 @@ Simulate_GERGM <- function(GERGM_Object,
   theta <- as.numeric(coef)  # obtain the estimated thetas
   sample_every <- floor(1/thin)
 
-  net <- GERGM_Object@bounded.network  # obtain the bounded network object
-  alpha <- weights
+  # obtain the bounded network object
 #   rhs <- names(GERGM_Object@theta.coef)[abs(theta) > 0]
 #   rhs <- paste(rhs, collapse = "+")
 #   formula.new <- as.formula(paste0("net ~ ", rhs))
@@ -28,9 +26,6 @@ Simulate_GERGM <- function(GERGM_Object,
 #                                theta = theta[abs(theta) > 0],
 #                                alpha = alpha[abs(theta) > 0])
 
-  statistics <- GERGM_Object@stats
-
-  alphas <- GERGM_Object@weights
   thetas <- GERGM_Object@theta.par
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
@@ -39,7 +34,6 @@ Simulate_GERGM <- function(GERGM_Object,
   # Initial Network is a graph with uniform random edgeweights
   #initial_network = matrix(runif(num.nodes^2, 1e-05, 0.99999), nrow = num.nodes,
   #ncol = num.nodes)
-  initial_network <- net
   # Gibbs Simulation
   if (method == "Gibbs") {
     nets <- Gibbs_Sampler(GERGM_Object,
@@ -61,8 +55,6 @@ Simulate_GERGM <- function(GERGM_Object,
   # Metropolis Hastings Simulation
   if (method == "Metropolis") {
     #fix alphas for MH sims
-    alphas[which(is.na(alphas))] = 1
-    alphas[which(alphas == 0)] = 1
 
     #need to put the thetas into a full length vector for MH function
     stat.indx <- which(GERGM_Object@stats_to_use > 0)
@@ -77,13 +69,13 @@ Simulate_GERGM <- function(GERGM_Object,
       number_of_iterations = nsim + MCMC.burnin,
       shape_parameter = shape.parameter,
       number_of_nodes = num.nodes,
-      statistics_to_use = statistics,
-      initial_network = initial_network,
+      statistics_to_use = GERGM_Object@stats_to_use,
+      initial_network = GERGM_Object@bounded.network,
       take_sample_every = sample_every,
       thetas = full_thetas,
       triples = triples - 1,
       pairs = pairs - 1,
-      alphas = alphas,
+      alphas = GERGM_Object@weights,
       together = together,
       seed = seed1)
     # keep only the networks after the burnin
