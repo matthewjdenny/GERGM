@@ -97,20 +97,31 @@ Estimate_GERGM <- function(formula_object,
         for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
           BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
         }
-        net.new <<- pst(net, BZ, sig, 1) #make this a global variable (JW: not sure why we need this call..)
 
+        GERGM_Object@network <- pst(net, BZ, sig, 1)
+
+        num.nodes <- GERGM_Object@num_nodes
+        triples <- t(combn(1:num.nodes, 3))
+        pairs <- t(combn(1:num.nodes, 2))
+
+        GERGM_Object@stats <- h2(GERGM_Object@network,
+                              triples = triples,
+                              statistics = rep(1, length(possible.stats)),
+                              alphas = alphas, together = together)
         # Rewrite the formula for net.new
-        formula.new <- formula(paste0("net.new ~", rhs))
+#         formula.new <- formula(paste0("net.new ~", rhs))
+#
+#         # Estimate theta
+#         res1 <- Parse_Formula_Object(formula.new,
+#                                      possible.stats,
+#                                      theta = theta$par,
+#                                      alpha = alpha)
+#         statistics <- res1$statistics
+#         net2 <- res1$net
 
-        # Estimate theta
-        res1 <- Parse_Formula_Object(formula.new,
-                                     possible.stats,
-                                     theta = theta$par,
-                                     alpha = alpha)
-        statistics <- res1$statistics
-        net2 <- res1$net
-
-        theta.new <- mple(net2, statistics = statistics, directed = directed)
+        theta.new <- mple(GERGM_Object@network,
+                          statistics = GERGM_Object@stats_to_use,
+                          directed = directed)
         cat("theta.new", theta.new$par, "\n")
         cat("theta", theta$par, "\n")
         cat("statistics", statistics, "\n")
@@ -170,13 +181,19 @@ Estimate_GERGM <- function(formula_object,
         }
         #net.new <<- pst(net, BZ, sig, 1) #make this a global variable
         GERGM_Object@network <- pst(net, BZ, sig, 1)
-        # Rewrite the formula for net.new
-        #formula.new <- formula(paste0("net.new ~", rhs))
+
+        num.nodes <- GERGM_Object@num_nodes
+        triples <- t(combn(1:num.nodes, 3))
+        pairs <- t(combn(1:num.nodes, 2))
+
+        GERGM_Object@stats <- h2(GERGM_Object@network,
+                                 triples = triples,
+                                 statistics = rep(1, length(possible.stats)),
+                                 alphas = alphas, together = together)
 
 
         # Estimate theta
-        ret_list <- MCMCMLE(formula.obj = formula_object,
-                             num.draws = nsim,
+        ret_list <- MCMCMLE( num.draws = nsim,
                              mc.num.iterations = mc.num.iterations,
                              thin = thin, MCMC.burnin = MCMC.burnin,
                              theta = theta$par,
@@ -275,8 +292,7 @@ Estimate_GERGM <- function(formula_object,
     }
 
     if(MPLE.only != TRUE){
-      ret_list <- MCMCMLE(formula.obj = GERGM_Object@formula,
-                           num.draws = nsim,
+      ret_list <- MCMCMLE( num.draws = nsim,
                            mc.num.iterations = mc.num.iterations,
                            thin = thin,
                            MCMC.burnin = MCMC.burnin,
@@ -290,7 +306,7 @@ Estimate_GERGM <- function(formula_object,
                            seed2 = seed,
                            gain.factor = gain.factor,
                            possible.stats = possible.stats,
-                           GERGM_Object= GERGM_Object)
+                           GERGM_Object = GERGM_Object)
 
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]
