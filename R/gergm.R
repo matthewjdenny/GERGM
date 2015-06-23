@@ -17,6 +17,7 @@
 #' @param convergence_tolerance Threshold designated for stopping criterion. If the difference of parameter estimates from one iteration to the next all have a p-value (under a paired t-test) greater than this value, the parameter estimates are declared to have converged. Default is 0.01.
 #' @param MPLE_gain_factor Multiplicative constant between 0 and 1 that controls how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested to use a value of 0.10. Default is 0.
 #' @param acceptable_fit_p_value_threshold A p-value threshold for how closely statistics of observed network conform to statistics of networks simulated from GERGM parameterized by converged final parameter estimates. Default value is 0.05.
+#' @param force_second_theta_update Defaults to FALSE, if TRUE, then theta estimation is not allowed to converge after only one iteration of updates. Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops at first update.
 #' @return A gergm object containing parameter estimates.
 #' @export
 gergm <- function(formula,
@@ -35,7 +36,8 @@ gergm <- function(formula,
                   seed = 123,
                   convergence_tolerance = 0.01,
                   MPLE_gain_factor = 0,
-                  acceptable_fit_p_value_threshold = 0.05){
+                  acceptable_fit_p_value_threshold = 0.05,
+                  force_second_theta_update = FALSE){
 
   #' This is the main function to estimate a GERGM model
 
@@ -95,7 +97,8 @@ gergm <- function(formula,
                                  tolerance = convergence_tolerance,
                                  gain.factor = MPLE_gain_factor,
                                  possible.stats = possible.stats,
-                                 GERGM_Object = GERGM_Object)
+                                 GERGM_Object = GERGM_Object,
+                                 force_second_theta_update = force_second_theta_update)
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if(!GERGM_Object@theta_estimation_converged){
@@ -129,7 +132,6 @@ gergm <- function(formula,
                         together = downweight_statistics_together)
 
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
-  cat("Simulations Done", "\n")
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
   statistic_test_p_values <- rep(NA,length(possible.stats))
@@ -144,9 +146,11 @@ gergm <- function(formula,
   cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
   print(stats.data)
 
-  statistic_test_p_values <- cbind(statistic_test_p_values,possible.stats)
-  cat("\n t-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+  statistic_test_p_values <- data.frame(statistic_test_p_values)
+  rownames(statistic_test_p_values) <- possible.stats
+  cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
+  colnames(statistic_test_p_values) <- "p_values"
 
   #test to see if we have an acceptable fit
   acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1),1]

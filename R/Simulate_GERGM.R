@@ -41,12 +41,12 @@ Simulate_GERGM <- function(GERGM_Object,
   if (method == "Metropolis") {
     #need to put the thetas into a full length vector for MH function
     stat.indx <- which(GERGM_Object@stats_to_use > 0)
-    cat("stat.idx",stat.indx,"\n" )
+    #cat("stat.idx",stat.indx,"\n" )
     full_thetas <- rep(0, length(GERGM_Object@stats_to_use))
     for (i in 1:length(thetas)) {
       full_thetas[stat.indx[i]] <- thetas[i]
     }
-    cat("Current Theta Estimates:",thetas,"\n")
+    #cat("Current Theta Estimates:",thetas,"\n")
 
     samples <- Metropolis_Hastings_Sampler(
       number_of_iterations = nsim + MCMC.burnin,

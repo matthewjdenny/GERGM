@@ -13,7 +13,8 @@ MCMCMLE <- function(num.draws,
                     seed2 ,
                     gain.factor,
 					          possible.stats,
-					          GERGM_Object) {
+					          GERGM_Object,
+					          force_second_theta_update) {
 
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
@@ -38,7 +39,7 @@ MCMCMLE <- function(num.draws,
                   alphas = alphas,
                   together = together)
 
-  cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
+  #cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
   ####################################################################
   ##JW: Added 3/29/15. This scales the initial estimates for the MPLE theta specification
   ## This is according to the initialization the Fisher Scoring method for optimization
@@ -60,7 +61,7 @@ MCMCMLE <- function(num.draws,
 
   #Calculate covariance estimate (to scale initial guess theta.init)
   z.bar <- colSums(hsn) / 20
-  cat("z.bar", "\n", z.bar, "\n")
+  #cat("z.bar", "\n", z.bar, "\n")
   Cov.est <- 0
   for(i in 1:dim(hsn)[1]){
     Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*% t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
@@ -89,24 +90,13 @@ MCMCMLE <- function(num.draws,
 
     #just use what gets returned
     hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
-
-
     hsn.tot <- GERGM_Object@MCMC_output$Statistics
-    #cat("Simulations Done", "\n")
-    #calculate t.test p-values for calculating the difference in the means of
-    # the newly simulated data with the original network
-    t.out <- t.test(hsn.tot[, 1], mu = init.statistics[1])$p.value
-    t.in <- t.test(hsn.tot[, 2], mu = init.statistics[2])$p.value
-    t.ctriad <- t.test(hsn.tot[, 3], mu = init.statistics[3])$p.value
-    t.recip <- t.test(hsn.tot[, 4], mu = init.statistics[4])$p.value
-    t.ttriads <- t.test(hsn.tot[, 5], mu = init.statistics[5])$p.value
-    t.edge <- t.test(hsn.tot[, 6], mu = init.statistics[6])$p.value
-
     stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
     rownames(stats.data) <- possible.stats
     print(stats.data)
-
+    cat("\n")
+    cat("Updating theta estimates... \n")
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -119,30 +109,44 @@ MCMCMLE <- function(num.draws,
                        method = "BFGS",
                        hessian = T,
                        control = list(fnscale = -1, trace = 5))
-    print(paste0("Theta = ", theta.new$par))
+    cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
     theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
     # Calculate the p-value based on a z-test of differences
     # The tolerance is the alpha at which differences are significant
-    p.value <- rep(0,length(theta$par))
-    count <- rep(0, length(theta$par))
-    for(i in 1:length(theta$par)){
+    p.value <- rep(0,length(as.numeric(theta$par)))
+    count <- rep(0, length(as.numeric(theta$par)))
+    for(j in 1:length(theta$par)){
       #two sided z test
-      p.value[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
+      p.value[j] <- 2*pnorm(-abs((as.numeric(theta.new$par)[j] - as.numeric(theta$par)[j])/theta.std.errors[j]))
       #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
       #if we reject any of the tests then convergence has not been reached!
-      if(p.value[i] < tolerance){count[i] = 1}
+      if(p.value[j] < tolerance){count[j] = 1}
     }
-    cat("p.values", "\n")
-    cat(p.value, "\n")
+    cat("\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
+    cat(p.value, "\n \n")
+
+    if(max(abs(theta.new$par)) > 10000000){
+      message("Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
+      return(list(theta,GERGM_Object))
+    }
 
     if (sum(count) == 0){
-      message("Parameter estimates have converged")
-      GERGM_Object@theta_estimation_converged <- TRUE
-      return(list(theta.new,GERGM_Object))
+      #conditional to check and see if we are requiring a second update
+      if(i == 1){
+        if(!force_second_theta_update){
+          message("Parameter estimates have converged")
+          GERGM_Object@theta_estimation_converged <- TRUE
+          return(list(theta.new,GERGM_Object))
+        }else{
+          message("Forcing second iteration of theta updates...")
+        }
+      }else{
+        message("Parameter estimates have converged")
+        GERGM_Object@theta_estimation_converged <- TRUE
+        return(list(theta.new,GERGM_Object))
+      }
     }
-    else{
-      cat("\n", "Theta Estimates", theta.new$par, "\n")
-    }
+    cat("\n", "Theta Estimates", theta.new$par, "\n",sep = "")
     theta <- theta.new
     GERGM_Object@theta.par <- as.numeric(theta$par)
   }
