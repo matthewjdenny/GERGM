@@ -16,6 +16,7 @@
 #' @param seed Seed used for reproducibility. Default is 123.
 #' @param convergence_tolerance Threshold designated for stopping criterion. If the difference of parameter estimates from one iteration to the next all have a p-value (under a paired t-test) greater than this value, the parameter estimates are declared to have converged. Default is 0.01.
 #' @param MPLE_gain_factor Multiplicative constant between 0 and 1 that controls how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested to use a value of 0.10. Default is 0.
+#' @param acceptable_fit_p_value_threshold A p-value threshold for how closely statistics of observed network conform to statistics of networks simulated from GERGM parameterized by converged final parameter estimates. Default value is 0.05.
 #' @return A gergm object containing parameter estimates.
 #' @export
 gergm <- function(formula,
@@ -33,7 +34,8 @@ gergm <- function(formula,
                   MCMC_burnin = 100,
                   seed = 123,
                   convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0){
+                  MPLE_gain_factor = 0,
+                  acceptable_fit_p_value_threshold = 0.05){
 
   #' This is the main function to estimate a GERGM model
 
@@ -66,6 +68,8 @@ gergm <- function(formula,
                                                    transform.data = data_transformation,
                                                    lambda.coef = NULL)
 
+  GERGM_Object@theta_estimation_converged <- FALSE
+  GERGM_Object@lambda_estimation_converged <- FALSE
   GERGM_Object@observed_network  <- GERGM_Object@network
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
   if(!is.null(data_transformation)){
@@ -93,12 +97,70 @@ gergm <- function(formula,
                                  possible.stats = possible.stats,
                                  GERGM_Object = GERGM_Object)
 
-
-
-
   #3. Perform degeneracy diagnostics and create GOF plots
+  if(!GERGM_Object@theta_estimation_converged){
+    warning("Estimation proceedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+  }
+  if(!GERGM_Object@lambda_estimation_converged){
+    warning("Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+  }
 
+  #now simulate from last update of theta parameters and
+  GERGM_Object <- Simulate_GERGM(GERGM_Object,
+                                 nsim = number_of_networks_to_simulate,
+                                 method = estimation_method,
+                                 MCMC.burnin = MCMC_burnin,
+                                 thin = thin,
+                                 shape.parameter = proposal_variance,
+                                 together = downweight_statistics_together,
+                                 seed1 = seed,
+                                 possible.stats = possible.stats)
 
+  #which(GERGM_Object@stats_to_use == 1)
+
+  num.nodes <- GERGM_Object@num_nodes
+  triples <- t(combn(1:num.nodes, 3))
+  pairs <- t(combn(1:num.nodes, 2))
+  # initialize the network with the observed network
+  init.statistics <- h2(GERGM_Object@bounded.network,
+                        triples = triples,
+                        statistics = rep(1, length(possible.stats)),
+                        alphas = GERGM_Object@weights,
+                        together = downweight_statistics_together)
+
+  hsn.tot <- GERGM_Object@MCMC_output$Statistics
+  cat("Simulations Done", "\n")
+  #calculate t.test p-values for calculating the difference in the means of
+  # the newly simulated data with the original network
+  statistic_test_p_values <- rep(NA,length(possible.stats))
+  for(i in 1:length(possible.stats)){
+    statistic_test_p_values[i] <- t.test(hsn.tot[, i],
+                                      mu = init.statistics[i])$p.value
+  }
+
+  stats.data <- data.frame(Observed = init.statistics,
+                           Simulated = colMeans(hsn.tot))
+  rownames(stats.data) <- possible.stats
+  cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
+  print(stats.data)
+
+  statistic_test_p_values <- cbind(statistic_test_p_values,possible.stats)
+  cat("\n t-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+  print(statistic_test_p_values)
+
+  #test to see if we have an acceptable fit
+  acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1),1]
+
+  if(min(acceptable_fit) > acceptable_fit_p_value_threshold){
+    GERGM_Object@acceptable_fit <- TRUE
+    message("Parameter estimates simulate networks that are statistically indistinguishable from observed network. ")
+  }else{
+    GERGM_Object@acceptable_fit <- FALSE
+    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
+  }
+
+  # make GOF plot
+  Gof_Plot(GERGM_Object)
   #4. Return GERGM object
 
   return(GERGM_Object)
