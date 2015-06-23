@@ -14,15 +14,15 @@ MCMCMLE <- function(num.draws,
                     gain.factor,
 					          possible.stats,
 					          GERGM_Object,
-					          force_second_theta_update) {
+					          force_x_theta_updates) {
 
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
-
+  cat("Estimating Initial Values for Theta via MPLE... \n")
   theta.init <- mple(GERGM_Object@bounded.network,
                      statistics = GERGM_Object@stats_to_use,
                      directed = directed)
-  cat("MPLE Thetas: ", theta.init$par, "\n")
+  cat("\nMPLE Thetas: ", theta.init$par, "\n")
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
@@ -72,7 +72,7 @@ MCMCMLE <- function(num.draws,
   #calculate
   theta <- list()
   theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
-  cat("Adjusted Initial Thetas After Fisher Update:", "\n", theta$par, "\n")
+  cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
   ##########################################################################
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
@@ -96,7 +96,7 @@ MCMCMLE <- function(num.draws,
     rownames(stats.data) <- possible.stats
     print(stats.data)
     cat("\n")
-    cat("Updating theta estimates... \n")
+    cat("Optimizing Theta Estimates... \n")
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -132,21 +132,15 @@ MCMCMLE <- function(num.draws,
 
     if (sum(count) == 0){
       #conditional to check and see if we are requiring a second update
-      if(i == 1){
-        if(!force_second_theta_update){
-          message("Parameter estimates have converged")
-          GERGM_Object@theta_estimation_converged <- TRUE
-          return(list(theta.new,GERGM_Object))
-        }else{
-          message("Forcing second iteration of theta updates...")
-        }
-      }else{
+      if(i >= force_x_theta_updates){
         message("Parameter estimates have converged")
         GERGM_Object@theta_estimation_converged <- TRUE
         return(list(theta.new,GERGM_Object))
+      }else{
+        message(paste("Forcing",force_x_theta_updates,"iterations of theta updates..."),sep = " ")
       }
     }
-    cat("\n", "Theta Estimates", theta.new$par, "\n",sep = "")
+    #cat("\n", "Theta Estimates", theta.new$par, "\n",sep = "")
     theta <- theta.new
     GERGM_Object@theta.par <- as.numeric(theta$par)
   }

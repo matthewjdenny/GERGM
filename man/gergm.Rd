@@ -13,7 +13,7 @@ gergm(formula, network_is_directed = c(TRUE, FALSE),
   exponential_weights = NULL, downweight_statistics_together = TRUE,
   MCMC_burnin = 100, seed = 123, convergence_tolerance = 0.01,
   MPLE_gain_factor = 0, acceptable_fit_p_value_threshold = 0.05,
-  force_second_theta_update = FALSE)
+  force_x_theta_updates = 1)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads", "edgeweight").}
@@ -50,7 +50,7 @@ gergm(formula, network_is_directed = c(TRUE, FALSE),
 
 \item{acceptable_fit_p_value_threshold}{A p-value threshold for how closely statistics of observed network conform to statistics of networks simulated from GERGM parameterized by converged final parameter estimates. Default value is 0.05.}
 
-\item{force_second_theta_update}{Defaults to FALSE, if TRUE, then theta estimation is not allowed to converge after only one iteration of updates. Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops at first update.}
+\item{force_x_theta_updates}{Defaults to 1 where theta estimation is not allowed to converge until thetas have updated for x iterations . Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops after first x updates.}
 }
 \value{
 A gergm object containing parameter estimates.

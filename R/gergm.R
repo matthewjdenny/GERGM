@@ -17,7 +17,7 @@
 #' @param convergence_tolerance Threshold designated for stopping criterion. If the difference of parameter estimates from one iteration to the next all have a p-value (under a paired t-test) greater than this value, the parameter estimates are declared to have converged. Default is 0.01.
 #' @param MPLE_gain_factor Multiplicative constant between 0 and 1 that controls how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested to use a value of 0.10. Default is 0.
 #' @param acceptable_fit_p_value_threshold A p-value threshold for how closely statistics of observed network conform to statistics of networks simulated from GERGM parameterized by converged final parameter estimates. Default value is 0.05.
-#' @param force_second_theta_update Defaults to FALSE, if TRUE, then theta estimation is not allowed to converge after only one iteration of updates. Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops at first update.
+#' @param force_x_theta_updates Defaults to 1 where theta estimation is not allowed to converge until thetas have updated for x iterations . Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops after first x updates.
 #' @return A gergm object containing parameter estimates.
 #' @export
 gergm <- function(formula,
@@ -37,7 +37,7 @@ gergm <- function(formula,
                   convergence_tolerance = 0.01,
                   MPLE_gain_factor = 0,
                   acceptable_fit_p_value_threshold = 0.05,
-                  force_second_theta_update = FALSE){
+                  force_x_theta_updates = 1){
 
   #' This is the main function to estimate a GERGM model
 
@@ -98,7 +98,7 @@ gergm <- function(formula,
                                  gain.factor = MPLE_gain_factor,
                                  possible.stats = possible.stats,
                                  GERGM_Object = GERGM_Object,
-                                 force_second_theta_update = force_second_theta_update)
+                                 force_x_theta_updates = force_x_theta_updates)
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if(!GERGM_Object@theta_estimation_converged){

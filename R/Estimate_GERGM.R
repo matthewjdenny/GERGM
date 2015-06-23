@@ -18,7 +18,7 @@ Estimate_GERGM <- function(formula_object,
                            gain.factor,
                            possible.stats,
                            GERGM_Object,
-                           force_second_theta_update) {
+                           force_x_theta_updates) {
 
   #' set the seed
   set.seed(seed)
@@ -188,7 +188,7 @@ Estimate_GERGM <- function(formula_object,
                              gain.factor = gain.factor,
 							               possible.stats = possible.stats,
 							               GERGM_Object= GERGM_Object,
-							               force_second_theta_update = force_second_theta_update)
+							               force_x_theta_updates = force_x_theta_updates)
 
         theta.new <- ret_list[[1]]
         GERGM_Object <- ret_list[[2]]
@@ -292,7 +292,7 @@ Estimate_GERGM <- function(formula_object,
                            gain.factor = gain.factor,
                            possible.stats = possible.stats,
                            GERGM_Object = GERGM_Object,
-                           force_second_theta_update = force_second_theta_update)
+                           force_x_theta_updates = force_x_theta_updates)
 
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]
