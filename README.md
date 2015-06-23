@@ -31,6 +31,10 @@ I have  had success installing with R 3.2.0+ installed but if you do not have th
 
     install.packages( pkgs = c("BH","RcppArmadillo"), dependencies = TRUE)
 
+Once the `GERGM` package is installed, you may access its functionality as you would any other package by calling:
+
+    library(GERGM)
+
 If all went well, check out the `?GERGM` help file to see a full working example with info on how the data should look. 
 
 ## Basic Useage
@@ -39,6 +43,7 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 Here is a simple working example using the `gergm( )` function: 
 
+    library(GERGM)
     net <- matrix(runif(100),10,10)
     diag(net) <- 0
     formula <- "net ~ recip + edgeweight"  
@@ -58,7 +63,8 @@ Here is a simple working example using the `gergm( )` function:
                   MCMC_burnin = 1000,
                   seed = 123,
                   convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0)
+                  MPLE_gain_factor = 0,
+                  force_x_theta_update = 2)
 
 ## Output
 
