@@ -37,6 +37,28 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 ## Example
 
+Here is a simple working example using the `gergm( )` function: 
+
+    net <- matrix(runif(100),10,10)
+    diag(net) <- 0
+    formula <- "net ~ recip + edgeweight"  
+      
+    test <- gergm(formula,
+                  network_is_directed = TRUE,
+                  use_MPLE_only = FALSE,
+                  data_transformation = NULL,
+                  estimation_method = "Gibbs",
+                  maximum_number_of_lambda_updates = 1,
+                  maximum_number_of_theta_updates = 5,
+                  number_of_networks_to_simulate = 5000,
+                  thin = 1/10,
+                  proposal_variance = 0.5,
+                  exponential_weights = NULL,
+                  downweight_statistics_together = TRUE,
+                  MCMC_burnin = 1000,
+                  seed = 123,
+                  convergence_tolerance = 0.01,
+                  MPLE_gain_factor = 0)
 
 ## Output
 
