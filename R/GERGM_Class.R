@@ -18,7 +18,11 @@ setClass(Class = "gergm",
            previous_lambda.coef = "data.frame",
            reduced_weights = "numeric",
            theta.par = "numeric",
-           lambda.par = "numeric"
+           lambda.par = "numeric",
+           theta_estimation_converged = "logical",
+           simulated_vs_observed_p_values = "numeric",
+           acceptable_fit = "logical",
+           lambda_estimation_converged  = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
@@ -84,6 +88,19 @@ setClass(Class = "gergm",
            if (!is.numeric(object@lambda.par) & is.null(object@lambda.par)
                == FALSE) {
              stop("'lambda.par' must be a 'numeric' object or 'NULL'.")
+           }
+           if (!is.numeric(object@simulated_vs_observed_p_values)
+               & is.null(object@simulated_vs_observed_p_values) == FALSE) {
+             stop("'simulated_vs_observed_p_values' must be a 'numeric' object or 'NULL'.")
+           }
+           if (!"logical" %in% class(object@theta_estimation_converged)) {
+             stop("'theta_estimation_converged' must be a 'logical' value.")
+           }
+           if (!"logical" %in% class(object@lambda_estimation_converged)) {
+             stop("'lambda_estimation_converged' must be a 'logical' value.")
+           }
+           if (!"logical" %in% class(object@acceptable_fit)) {
+             stop("'acceptable_fit' must be a 'logical' value.")
            }
            return(TRUE)
          }
