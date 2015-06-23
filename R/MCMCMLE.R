@@ -92,7 +92,7 @@ MCMCMLE <- function(num.draws,
 
 
     hsn.tot <- GERGM_Object@MCMC_output$Statistics
-    cat("Simulations Done", "\n")
+    #cat("Simulations Done", "\n")
     #calculate t.test p-values for calculating the difference in the means of
     # the newly simulated data with the original network
     t.out <- t.test(hsn.tot[, 1], mu = init.statistics[1])$p.value
@@ -137,6 +137,7 @@ MCMCMLE <- function(num.draws,
 
     if (sum(count) == 0){
       message("Parameter estimates have converged")
+      GERGM_Object@theta_estimation_converged <- TRUE
       return(list(theta.new,GERGM_Object))
     }
     else{
