@@ -130,6 +130,8 @@ Estimate_GERGM <- function(formula_object,
           print(p.value2)
           if (sum(count1) + sum(count2) == 0){
             message("Parameter estimates have converged")
+            GERGM_Object@theta_estimation_converged <- TRUE
+            GERGM_Object@lambda_estimation_converged <- TRUE
             theta <- theta.new
             gpar <- gpar.new
             break
@@ -220,6 +222,8 @@ Estimate_GERGM <- function(formula_object,
 
         if (sum(count1) + sum(count2) == 0){
           message("Parameter estimates have converged")
+          GERGM_Object@theta_estimation_converged <- TRUE
+          GERGM_Object@lambda_estimation_converged <- TRUE
           theta <- theta.new
           gpar <- gpar.new
           break
@@ -255,11 +259,13 @@ Estimate_GERGM <- function(formula_object,
 
   # Estimation if no transformation is needed
   if (length(GERGM_Object@data_transformation) == 0) {
+    GERGM_Object@lambda_estimation_converged <- TRUE
     num.theta <- length(which(GERGM_Object@stats_to_use > 0))
     theta <- list()
     theta$par <- rep(0, num.theta)
     num.nodes <- GERGM_Object@num_nodes
     if(MPLE.only == TRUE){
+      GERGM_Object@theta_estimation_converged <- TRUE
       theta.new <- mple(GERGM_Object@bounded.network,
                         statistics = GERGM_Object@stats_to_use,
                         directed = directed)
