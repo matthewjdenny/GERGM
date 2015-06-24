@@ -29,7 +29,7 @@ Now we can install from Github using the following line:
 
 I have  had success installing with R 3.2.0+ installed but if you do not have the latest version of R installed, or run into some install errors (please email if you do), it should work as long as you install the dependencies first with the following block of code:
 
-    install.packages( pkgs = c("BH","RcppArmadillo"), dependencies = TRUE)
+    install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods"), dependencies = TRUE)
 
 Once the `GERGM` package is installed, you may access its functionality as you would any other package by calling:
 
@@ -38,6 +38,8 @@ Once the `GERGM` package is installed, you may access its functionality as you w
 If all went well, check out the `?GERGM` help file to see a full working example with info on how the data should look. 
 
 ## Basic Useage
+
+We are currently in the process of completing adding functionality for using node level covariates in the model and should have this functionality included in the package by the beginning of July. The model is fully functioning for networks that do not require transformation. **Note that if you are not using covariates, the network you supply to the `gergm()` function must have all edge values on the [0,1] interval.** You may do this in a number of ways, for example, we have found it works well to log and then normalize financial data so it lies on the [0,1] interval due to its heavly tailed nature.
 
 ## Example
 
@@ -67,6 +69,8 @@ Here is a simple working example using the `gergm( )` function:
               force_x_theta_update = 2,
               output_directory = getwd(),
               output_name= "Testing")
+
+Finally you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
 
 ## Output
 
