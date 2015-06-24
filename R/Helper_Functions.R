@@ -172,6 +172,9 @@ pl <- function(theta, y, x) {
 # add to console output field in GERGM_Object
 #GERGM_Object <- store_console_output(GERGM_Object,addition)
 store_console_output <- function(GERGM_Object,addition){
+  if("list" %in% class(addition)){
+    addition <- as.character(unlist(addition))
+  }
   if(is.null(GERGM_Object@console_output)){
     GERGM_Object@console_output <- addition
   }else{
