@@ -28,25 +28,28 @@ Relevant papers detailing the model can be found at the links below. Please cite
 * James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". http://arxiv.org/abs/1505.04015
 }
 \examples{
-net <- matrix(runif(100),10,10)
+network <- matrix(runif(100),10,10)
 diag(net) <- 0
-formula <- "net ~ recip + edgeweight"  
-      
+
+formula <- "network ~ recip + edgeweight"
+
 test <- gergm(formula,
               network_is_directed = TRUE,
               use_MPLE_only = FALSE,
               data_transformation = NULL,
-              estimation_method = "Gibbs",
+              estimation_method = "Metropolis",
               maximum_number_of_lambda_updates = 1,
               maximum_number_of_theta_updates = 5,
-              number_of_networks_to_simulate = 5000,
+              number_of_networks_to_simulate = 40000,
               thin = 1/10,
               proposal_variance = 0.5,
               exponential_weights = NULL,
               downweight_statistics_together = TRUE,
-              MCMC_burnin = 1000,
-              seed = 123,
+              MCMC_burnin = 10000,
+              seed = 456,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
-              force_x_theta_update = 2)
+              force_x_theta_update = 2,
+              output_directory = getwd(),
+              output_name= "Testing")
 }
