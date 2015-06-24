@@ -16,6 +16,38 @@ Gof_Plot <- function(GERGM_Object){
   boxplot(zero_plot, add =T, medcol=UMASS_BLUE, names = F)
 }
 
+Estimate_Plot <- function(GERGM_Object){
+  #define colors
+  UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
+  UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
+  GERGM_Object@theta.coef
+  modelFrame <- data.frame(Variable = colnames(GERGM_Object@theta.coef) ,
+                            Coefficient = GERGM_Object@theta.coef[,1],
+                            SE = GERGM_Object@theta.coef[,2],
+                            Model = "Theta Estimates"
+  )
+  data <- data.frame(modelFrame)
+
+  # Plot
+  zp1 <- ggplot2::ggplot(data, aes(colour = Model)) +
+    ggplot2::scale_color_manual(values = rgb(51,51,153,255,maxColorValue = 255))
+  zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0, colour = gray(1/2), lty = 2)
+  zp1 <- zp1 + ggplot2::geom_linerange(aes(x = Variable,
+                                           ymin = Coefficient - SE*(-qnorm((1-0.9)/2)),
+                                           ymax = Coefficient + SE*(-qnorm((1-0.9)/2))),
+                                      lwd = 1,
+                                      position = position_dodge(width = 1/2))
+  zp1 <- zp1 + ggplot2::geom_pointrange(aes(x = Variable,
+                                            y = Coefficient,
+                                            ymin = Coefficient - SE*(-qnorm((1-0.95)/2)),
+                                         ymax = Coefficient + SE*(-qnorm((1-0.95)/2))),
+                                         lwd = 1/2,
+                                        position = position_dodge(width = 1/2),
+                                        shape = 21, fill = "WHITE")
+  zp1 <- zp1  + ggplot2::theme_bw() + ggplot2::coord_flip() + theme(legend.position="none")
+  print(zp1)
+}
+
 Comparison_GOF_Plot <- function(MH.obj, Gibbs.obj, gergm.obj){
   par(mfrow = c(2,3))
   violins(data.frame(Gibbs.obj$Statistics[,1], MH.obj$Statistics[,1]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Out-2-Stars")
