@@ -105,8 +105,7 @@ edgeweight <- function(net, alpha = 1, together) {
 }
 
 # Calculate the statistics of a formula object
-h <- function(formula,
-              possible.stats,
+h <- function(possible.stats,
               alpha = NULL,
               theta = NULL,
               together = together,
@@ -115,12 +114,7 @@ h <- function(formula,
   alphas <- GERGM_Object@weights
   num.nodes <- GERGM_Object@num_nodes
   statistics <- GERGM_Object@stats_to_use
-#   res1 <- Parse_Formula_Object(formula = formula, possible.stats, alpha = alpha, theta = theta)
-#   net <- res1$net
-#   alphas <- res1$alphas
-#   num.nodes <- nrow(net)
   triples = t(combn(1:num.nodes, 3))
-  # statistics <- res1$statistics
   temp <- c(out2star(net, triples, alphas[1], together),
             in2star(net, triples, alphas[2], together),
             ctriads(net, triples, alphas[3], together),

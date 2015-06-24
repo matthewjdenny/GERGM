@@ -70,12 +70,12 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
         gpar.new <- optim(par = as.numeric(gpar$par),
                           llg,
-                          formula = GERGM_Object@formula,
                           alpha = GERGM_Object@weights,
                           theta = as.numeric(theta$par),
                           z = transform.data,
                           method = "BFGS",
                           together = together,
+                          GERGM_Object = GERGM_Object,
                           hessian = T,
                           control = list(fnscale = -1, trace = 6))
         cat("Lambda estimates", "\n")
@@ -160,9 +160,14 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
         cat("Lambda Estimates", gpar$par,"\n")
         GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
-        gpar.new <- optim(par = as.numeric(gpar$par), llg, formula = formula_object,
-                          alpha = alpha, theta = as.numeric(theta$par), z = transform.data,
-                          method = "BFGS", together = together,
+        gpar.new <- optim(par = as.numeric(gpar$par),
+                          llg,
+                          alpha = GERGM_Object@weights,
+                          theta = as.numeric(theta$par),
+                          z = transform.data,
+                          method = "BFGS",
+                          together = together,
+                          GERGM_Object = GERGM_Object,
                           hessian = T, control = list(fnscale = -1, trace = 6))
         cat("Lambda estimates", "\n")
         GERGM_Object <- store_console_output(GERGM_Object,"Lambda estimates\n")

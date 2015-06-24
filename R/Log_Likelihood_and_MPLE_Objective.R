@@ -1,6 +1,5 @@
 # log likelihood
 log.l <- function(thetas,
-                  formula,
                   alpha,
                   hsnet,
                   ltheta,
@@ -19,22 +18,15 @@ log.l <- function(thetas,
     z <- hsnet %*% (theta - ltheta)
   }
 
-  temp <- h(formula,
-            possible.stats,
+  temp <- h(possible.stats,
             alpha,
             theta = theta,
             together = together,
             GERGM_Object)[1, ]
   return(rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z)))))
-
-  #theta <- par[1:ncol(hsnet)]
-  #z <- hsnet%*%(theta-ltheta)
-  #rbind(theta)%*%h(net,triples)-max(z)-log(sum(exp(z-max(z))))
-  #return(rbind(theta) %*% temp - max(z) - log(mean(exp(z - max(z)))))
 }
 
 llg <- function(par,
-                formula,
                 alpha,
                 theta,
                 z,
@@ -42,24 +34,23 @@ llg <- function(par,
                 possible.stats = possible.stats,
                 GERGM_Object = GERGM_Object) {
   # log likelihood for unbounded network with g function
-  res1 <- Parse_Formula_Object(formula, possible.stats, theta = theta, alpha = alpha)
-  statistics <- res1$statistics
-  alphas <- res1$alphas
-  net <- res1$net
+  statistics <- GERGM_Object@stats_to_use
+  alphas <- GERGM_Object@weights
+  net <- GERGM_Object@network
   beta <- par[1:(length(par) - 1)]
   sig <- 0.01 + exp(par[length(par)])
   BZ <- 0
-  #print(gpar)
   for (i in 1:(dim(z)[3])) {
     BZ <- BZ + beta[i] * z[, , i]
   }
-  #print(beta) #added this for check
   net2 <- pst(net, BZ, sig, 1)
   num.nodes <- nrow(net2)
-  #print(net.new)
   triples <- t(combn(1:num.nodes, 3))
   log.li <- rbind(theta) %*%
-    h2(net2, triples = triples, statistics = statistics, alphas = alphas,
+    h2(net2,
+       triples = triples,
+       statistics = statistics,
+       alphas = alphas,
        together = together) +
     sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, 1))) +
     sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, 1)))
