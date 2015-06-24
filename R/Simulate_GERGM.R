@@ -71,6 +71,7 @@ Simulate_GERGM <- function(GERGM_Object,
     h.statistics <- samples[[3]][start:end,]
     acceptance.rate <- mean(samples[[1]])
     cat("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n")
+    GERGM_Object <- store_console_output(GERGM_Object,paste("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n"))
 
   }
   h.statistics = data.frame(out2stars = h.statistics[, 1],

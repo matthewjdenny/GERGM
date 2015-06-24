@@ -19,10 +19,12 @@ MCMCMLE <- function(num.draws,
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
   cat("Estimating Initial Values for Theta via MPLE... \n")
+  GERGM_Object <- store_console_output(GERGM_Object,"Estimating Initial Values for Theta via MPLE... \n")
   theta.init <- mple(GERGM_Object@bounded.network,
                      statistics = GERGM_Object@stats_to_use,
                      directed = directed)
   cat("\nMPLE Thetas: ", theta.init$par, "\n")
+  GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
@@ -73,6 +75,7 @@ MCMCMLE <- function(num.draws,
   theta <- list()
   theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
   cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
+  GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
   ##########################################################################
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
@@ -95,8 +98,9 @@ MCMCMLE <- function(num.draws,
                              Simulated = colMeans(hsn.tot))
     rownames(stats.data) <- possible.stats
     print(stats.data)
-    cat("\n")
-    cat("Optimizing Theta Estimates... \n")
+    GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
+    cat("\nOptimizing Theta Estimates... \n")
+    GERGM_Object <- store_console_output(GERGM_Object,"\nOptimizing Theta Estimates... \n")
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -110,6 +114,7 @@ MCMCMLE <- function(num.draws,
                        hessian = T,
                        control = list(fnscale = -1, trace = 5))
     cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
+    GERGM_Object <- store_console_output(GERGM_Object,paste("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = ""))
     theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
     # Calculate the p-value based on a z-test of differences
     # The tolerance is the alpha at which differences are significant
@@ -123,10 +128,13 @@ MCMCMLE <- function(num.draws,
       if(p.value[j] < tolerance){count[j] = 1}
     }
     cat("\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
+    GERGM_Object <- store_console_output(GERGM_Object,"\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
     cat(p.value, "\n \n")
+    GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
 
     if(max(abs(theta.new$par)) > 10000000){
       message("Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
+      GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
       return(list(theta,GERGM_Object))
     }
 
@@ -134,10 +142,12 @@ MCMCMLE <- function(num.draws,
       #conditional to check and see if we are requiring a second update
       if(i >= force_x_theta_updates){
         message("Parameter estimates have converged")
+        GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
         GERGM_Object@theta_estimation_converged <- TRUE
         return(list(theta.new,GERGM_Object))
       }else{
         message(paste("Forcing",force_x_theta_updates,"iterations of theta updates..."),sep = " ")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Forcing",force_x_theta_updates,"iterations of theta updates..."))
       }
     }
     #cat("\n", "Theta Estimates", theta.new$par, "\n",sep = "")

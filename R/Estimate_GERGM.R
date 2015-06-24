@@ -65,7 +65,9 @@ Estimate_GERGM <- function(formula_object,
       ## the MPLEs for the theta parameters at each iteration.
       if(MPLE.only == TRUE){
         cat("Updating Estimates -- Iteration:", i," \n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
         cat("Lambda Estimates", gpar$par,"\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
         gpar.new <- optim(par = as.numeric(gpar$par),
                           llg,
                           formula = GERGM_Object@formula,
@@ -77,7 +79,9 @@ Estimate_GERGM <- function(formula_object,
                           hessian = T,
                           control = list(fnscale = -1, trace = 6))
         cat("Lambda estimates", "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,"Lambda estimates\n")
         print(gpar.new$par)
+        GERGM_Object <- store_console_output(GERGM_Object,toString(gpar.new$par))
         gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
         # Transform the unbounded weights to bounded weights via a t-distribution
         beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
@@ -102,8 +106,11 @@ Estimate_GERGM <- function(formula_object,
                           statistics = GERGM_Object@stats_to_use,
                           directed = directed)
         cat("theta.new", theta.new$par, "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("theta.new", theta.new$par, "\n"))
         cat("theta", theta$par, "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("theta", theta$par, "\n"))
         cat("statistics", statistics, "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", statistics, "\n"))
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
 
         if(i > 1){
@@ -126,11 +133,16 @@ Estimate_GERGM <- function(formula_object,
             if(p.value2[i] < tolerance){count2[i] = 1}
           }
           cat("Theta p.values", "\n")
+          GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
           print(p.value1)
+          GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
           cat("Lambda p.values", "\n")
+          GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
           print(p.value2)
+          GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
           if (sum(count1) + sum(count2) == 0){
             message("Parameter estimates have converged")
+            GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
             GERGM_Object@theta_estimation_converged <- TRUE
             GERGM_Object@lambda_estimation_converged <- TRUE
             theta <- theta.new
@@ -145,13 +157,17 @@ Estimate_GERGM <- function(formula_object,
       if(MPLE.only != TRUE){
         # Estimate lambda
         cat("Updating Estimates -- Iteration:", i," \n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
         cat("Lambda Estimates", gpar$par,"\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
         gpar.new <- optim(par = as.numeric(gpar$par), llg, formula = formula_object,
                           alpha = alpha, theta = as.numeric(theta$par), z = transform.data,
                           method = "BFGS", together = together,
                           hessian = T, control = list(fnscale = -1, trace = 6))
         cat("Lambda estimates", "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,"Lambda estimates\n")
         print(gpar.new$par)
+        GERGM_Object <- store_console_output(GERGM_Object,toString(gpar.new$par))
         gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
         # Transform the unbounded weights to bounded weights via a t-distribution
         beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
@@ -218,12 +234,17 @@ Estimate_GERGM <- function(formula_object,
           if(p.value2[i] < tolerance){count2[i] = 1}
         }
         cat("Theta p.values", "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
         print(p.value1)
+        GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
         cat("Lambda p.values", "\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
         print(p.value2)
+        GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
 
         if (sum(count1) + sum(count2) == 0){
           message("Parameter estimates have converged")
+          GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
           GERGM_Object@theta_estimation_converged <- TRUE
           GERGM_Object@lambda_estimation_converged <- TRUE
           theta <- theta.new
@@ -249,14 +270,6 @@ Estimate_GERGM <- function(formula_object,
     GERGM_Object@lambda.coef <- lambda
     GERGM_Object@bounded.network <- net
     return(GERGM_Object)
-#     return(Create_GERGM_Object(network,
-#                                bounded.network,
-#                                formula.obj,
-#                                theta,
-#                                lambda,
-#                                alpha = alpha,
-#                                together = together,
-#                                possible.stats))
   }
 
   # Estimation if no transformation is needed
