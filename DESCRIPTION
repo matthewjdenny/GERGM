@@ -11,7 +11,8 @@ Imports:
 	Rcpp,
 	RcppArmadillo,
 	BH,
-    ggplot2
+    ggplot2,
+    methods
 LinkingTo: 
 	BH,
 	Rcpp, 
