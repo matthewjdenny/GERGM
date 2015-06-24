@@ -29,7 +29,7 @@ Relevant papers detailing the model can be found at the links below. Please cite
 }
 \examples{
 network <- matrix(runif(100),10,10)
-diag(net) <- 0
+diag(network) <- 0
 
 formula <- "network ~ recip + edgeweight"
 
