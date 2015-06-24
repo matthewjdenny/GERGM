@@ -5,12 +5,13 @@ Version: 0.2
 Date: 2015-06-19
 Author: Matthew J. Denny, James D. Wilson, Skyler Cranmer, Bruce A. Desmarais, Shankar Bhamidi
 Maintainer: Matthew J. Denny <mzd5530@psu.edu>
-Description:  This package (STILL VERY MUCH IN DEVELOPMENT) provides functions to estimate  and diagnose the convergence of Generalized Exponential Random Graph Models (GERGM) via Gibbs sampling or Metropolis Hastings with exponential down weighting.
+Description: This package (STILL VERY MUCH IN DEVELOPMENT) provides functions to estimate  and diagnose the convergence of Generalized Exponential Random Graph Models (GERGM) via Gibbs sampling or Metropolis Hastings with exponential down weighting.
 License: GPL (>= 2)
 Imports: 
 	Rcpp,
 	RcppArmadillo,
-	BH
+	BH,
+    ggplot2
 LinkingTo: 
 	BH,
 	Rcpp, 
