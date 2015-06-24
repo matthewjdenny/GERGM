@@ -1,7 +1,29 @@
 #Loading and pre-processing the migration data
 Prepare_Covariates <- function(raw_network,
                                covariate_data,
-                               type_of_effect){
+                               covariates_to_use,
+                               type_of_effect,
+                               additional_network_covariates){
+
+  # Calculate number of nodes in network
+  num_nodes <- nrow(raw_network)
+
+  # Check if network is square
+  if (nrow(raw_network) != nrow(raw_network)) {
+    stop("Network must be a square matrix or data frame!")
+  }
+
+  # If network is a data.frame, make it a matrix
+  if (is.data.frame(raw_network)) {
+    raw_network <- as.matrix(raw_network)
+  }
+
+  #determine total number of covariates
+
+
+  # Generate array which covaries will be transformed into
+  Z <- array(0,dim=c(num_nodes,num_nodes,10))
+
 
   #1. generate sender and reciever effects
   #2. tack on any user supplied effects
@@ -11,7 +33,7 @@ Prepare_Covariates <- function(raw_network,
   #########################################################
   #Construct Z: An array of covariates which parameterize the latent space #
 
-  Z <- array(0,dim=c(nrow(migr05),nrow(migr05),10))
+
   Z[,,1] <- 1
 
   Z[,,2] <- pops07-pops06
