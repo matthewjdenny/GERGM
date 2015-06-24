@@ -29,22 +29,24 @@ Estimate_Plot <- function(GERGM_Object){
   data <- data.frame(modelFrame)
 
   # Plot
-  zp1 <- ggplot2::ggplot(data, aes(colour = Model)) +
+  zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
     ggplot2::scale_color_manual(values = rgb(51,51,153,255,maxColorValue = 255))
   zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0, colour = gray(1/2), lty = 2)
-  zp1 <- zp1 + ggplot2::geom_linerange(aes(x = Variable,
-                                           ymin = Coefficient - SE*(-qnorm((1-0.9)/2)),
-                                           ymax = Coefficient + SE*(-qnorm((1-0.9)/2))),
-                                      lwd = 1,
-                                      position = position_dodge(width = 1/2))
-  zp1 <- zp1 + ggplot2::geom_pointrange(aes(x = Variable,
-                                            y = Coefficient,
-                                            ymin = Coefficient - SE*(-qnorm((1-0.95)/2)),
-                                         ymax = Coefficient + SE*(-qnorm((1-0.95)/2))),
-                                         lwd = 1/2,
-                                        position = position_dodge(width = 1/2),
-                                        shape = 21, fill = "WHITE")
-  zp1 <- zp1  + ggplot2::theme_bw() + ggplot2::coord_flip() + theme(legend.position="none")
+  zp1 <- zp1 + ggplot2::geom_linerange( ggplot2::aes(x = Variable,
+                ymin = Coefficient - SE*(-qnorm((1-0.9)/2)),
+                ymax = Coefficient + SE*(-qnorm((1-0.9)/2))),
+                lwd = 1,
+                position = ggplot2::position_dodge(width = 1/2))
+  zp1 <- zp1 + ggplot2::geom_pointrange(ggplot2::aes(x = Variable,
+                y = Coefficient,
+                ymin = Coefficient - SE*(-qnorm((1-0.95)/2)),
+                ymax = Coefficient + SE*(-qnorm((1-0.95)/2))),
+                lwd = 1/2,
+                position = ggplot2::position_dodge(width = 1/2),
+                shape = 21, fill = "WHITE")
+  zp1 <- zp1  + ggplot2::theme_bw() +
+                ggplot2::coord_flip() +
+                ggplot2::theme(legend.position="none")
   print(zp1)
 }
 
@@ -54,7 +56,7 @@ Trace_Plot <- function(GERGM_Object){
   stats <- GERGM_Object@MCMC_output$Statistics
   indexes <- 1:length(stats[,1])
   stats <- cbind(stats,indexes)
-  p <- ggplot2::ggplot(stats, aes(x=indexes, y=edgeweight ))
+  p <- ggplot2::ggplot(stats, ggplot2::aes(x=indexes, y=edgeweight ))
   p  <- p + ggplot2::geom_line(color = UMASS_BLUE) +
     ggplot2::xlab("Iteration") +
     ggplot2::ylab("Network Density") +
@@ -62,24 +64,3 @@ Trace_Plot <- function(GERGM_Object){
   print(p)
 }
 
-
-Comparison_GOF_Plot <- function(MH.obj, Gibbs.obj, gergm.obj){
-  par(mfrow = c(2,3))
-  violins(data.frame(Gibbs.obj$Statistics[,1], MH.obj$Statistics[,1]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Out-2-Stars")
-  abline(h = gergm.obj@stats[2,1], col = "red", lty = 2, lwd = 2)
-
-  violins(data.frame(Gibbs.obj$Statistics[,2], MH.obj$Statistics[,2]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "In-2-Stars")
-  abline(h = gergm.obj@stats[2,2], col = "red", lty = 2, lwd = 2)
-
-  violins(data.frame(Gibbs.obj$Statistics[,3], MH.obj$Statistics[,3]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Cyclic Triads")
-  abline(h = gergm.obj@stats[2,3], col = "red", lty = 2, lwd = 2)
-
-  violins(data.frame(Gibbs.obj$Statistics[,4], MH.obj$Statistics[,4]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Reciprocity")
-  abline(h = gergm.obj@stats[2,4], col = "red", lty = 2, lwd = 2)
-
-  violins(data.frame(Gibbs.obj$Statistics[,5], MH.obj$Statistics[,5]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Transitive Triads")
-  abline(h = gergm.obj@stats[2,5], col = "red", lty = 2, lwd = 2)
-
-  violins(data.frame(Gibbs.obj$Statistics[,6], MH.obj$Statistics[,6]), names = c("Gibbs", "M-H"), col = c("blue", "green"), connectcol = "transparent", main = "Total Edge Weight")
-  abline(h = gergm.obj@stats[2,6], col = "red", lty = 2, lwd = 2)
-}
