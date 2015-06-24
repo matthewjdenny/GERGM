@@ -48,7 +48,7 @@ dttriads <- function(i, j, net) {
 # dh function weight w_{i,j} will be conditioned upon
 # Calculate the marginal change in the network
 dh <- function(net, statistics, i, j) {
-  temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net), 
+  temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net),
             drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j))
   value <- temp[statistics > 0]
   return(value)
@@ -62,19 +62,19 @@ dh <- function(net, statistics, i, j) {
 
 dgam01 <- function(x, exbz, exlam) {
   x <- x + 0.1
-  return(dgamma(x, shape = exbz / exlam, scale = exlam) / 
+  return(dgamma(x, shape = exbz / exlam, scale = exlam) /
            (1 - pgamma(0.1, shape = exbz / exlam, scale = exlam)))
 }
 
 pgam01 <- function(x, exbz, exlam) {
   x <- x + 0.1
-  return((pgamma(x, shape = exbz / exlam, scale = exlam) - 
-            pgamma(0.1, shape = exbz / exlam, scale = exlam)) / 
+  return((pgamma(x, shape = exbz / exlam, scale = exlam) -
+            pgamma(0.1, shape = exbz / exlam, scale = exlam)) /
            (1 - pgamma(0.1, shape = exbz / exlam, scale = exlam)))
 }
 
 qgam01 <- function(p, exbz, exlam) {
-  x <- qgamma(pgamma(0.1, shape = exbz / exlam, scale = exlam) + 
+  x <- qgamma(pgamma(0.1, shape = exbz / exlam, scale = exlam) +
                 p * (1 - pgamma(0.1, shape = exbz / exlam, scale = exlam)),
               shape = exbz / exlam, scale = exlam)
   return(x - 0.1)
@@ -121,7 +121,7 @@ net2xy <- function(net, statistics, directed) {
         x <- rbind(x, dh(net, statistics, i, j))
       }
     }
-    
+
   }
   if (directed == FALSE) {
     for (i in 2:nodes) {
@@ -130,7 +130,7 @@ net2xy <- function(net, statistics, directed) {
         x <- rbind(x, dh(net, statistics, i, j))
       }
     }
-    
+
   }
   return(list(y = y, x = x))
 }
@@ -150,8 +150,8 @@ rtexp <- function(n, lambda) {
 # The conditional density of each weight from a sample
 dtexp <- function(x, lambda) {
   den <- numeric(length(x))
-  den[which(lambda != 0)] <- exp(x[which(lambda != 0)] * 
-                                   lambda[which(lambda != 0)]) / 
+  den[which(lambda != 0)] <- exp(x[which(lambda != 0)] *
+                                   lambda[which(lambda != 0)]) /
     (1 / lambda[which(lambda != 0)] * (exp(lambda[which(lambda != 0)]) - 1))
   den[which(lambda == 0)] <- 1
   return(den)
@@ -168,3 +168,15 @@ rdisp <- function(n) {
 pl <- function(theta, y, x) {
   return(sum(log(dtexp(y, x %*% theta))))
 }
+
+# add to console output field in GERGM_Object
+#GERGM_Object <- store_console_output(GERGM_Object,addition)
+store_console_output <- function(GERGM_Object,addition){
+  if(is.null(GERGM_Object@console_output)){
+    GERGM_Object@console_output <- addition
+  }else{
+    GERGM_Object@console_output <- c(GERGM_Object@console_output,addition)
+  }
+  return(GERGM_Object)
+}
+
