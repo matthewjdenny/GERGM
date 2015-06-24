@@ -49,22 +49,24 @@ Here is a simple working example using the `gergm( )` function:
     formula <- "net ~ recip + edgeweight"  
       
     test <- gergm(formula,
-                  network_is_directed = TRUE,
-                  use_MPLE_only = FALSE,
-                  data_transformation = NULL,
-                  estimation_method = "Gibbs",
-                  maximum_number_of_lambda_updates = 1,
-                  maximum_number_of_theta_updates = 5,
-                  number_of_networks_to_simulate = 5000,
-                  thin = 1/10,
-                  proposal_variance = 0.5,
-                  exponential_weights = NULL,
-                  downweight_statistics_together = TRUE,
-                  MCMC_burnin = 1000,
-                  seed = 123,
-                  convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0,
-                  force_x_theta_update = 2)
+              network_is_directed = TRUE,
+              use_MPLE_only = FALSE,
+              data_transformation = NULL,
+              estimation_method = "Metropolis",
+              maximum_number_of_lambda_updates = 1,
+              maximum_number_of_theta_updates = 5,
+              number_of_networks_to_simulate = 40000,
+              thin = 1/10,
+              proposal_variance = 0.5,
+              exponential_weights = NULL,
+              downweight_statistics_together = TRUE,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.01,
+              MPLE_gain_factor = 0,
+              force_x_theta_update = 2,
+              output_directory = getwd(),
+              output_name= "Testing")
 
 ## Output
 
