@@ -22,7 +22,9 @@ setClass(Class = "gergm",
            theta_estimation_converged = "logical",
            simulated_vs_observed_p_values = "numeric",
            acceptable_fit = "logical",
-           lambda_estimation_converged  = "logical"
+           lambda_estimation_converged  = "logical",
+           observed_simulated_t_test = "data.frame",
+           console_output = "character"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
@@ -101,6 +103,15 @@ setClass(Class = "gergm",
            }
            if (!"logical" %in% class(object@acceptable_fit)) {
              stop("'acceptable_fit' must be a 'logical' value.")
+           }
+           if (!is.data.frame(object@observed_simulated_t_test)
+               & is.null(object@observed_simulated_t_test)
+               == FALSE) {
+             stop("'observed_simulated_t_test' must be a 'data.frame' object or 'NULL'.")
+           }
+           if (!is.character(object@console_output) & is.null(object@console_output)
+               == FALSE) {
+             stop("'console_output' must be a 'character' object or 'NULL'.")
            }
            return(TRUE)
          }
