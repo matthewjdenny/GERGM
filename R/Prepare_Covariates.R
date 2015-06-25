@@ -201,15 +201,18 @@ Prepare_Network_and_Covariates <- function(raw_network,
     if(min(raw_network) < 0){
       raw_network <- raw_network - min(raw_network)
     }
+    if(max(raw_network) > 1){
+      if(normalization_type[1] == "log"){
+        raw_network <- raw_network + 1
+        network <- log(raw_network)
+        network <- network/max(network)
+      }
 
-    if(normalization_type[1] == "log"){
-      raw_network <- raw_network + 1
-      network <- log(raw_network)
-      network <- network/max(network)
-    }
-
-    if(normalization_type[1] == "division"){
-      network <- raw_network/max(raw_network)
+      if(normalization_type[1] == "division"){
+        network <- raw_network/max(raw_network)
+      }
+    }else{
+      network <- raw_network
     }
 
     return(network)
