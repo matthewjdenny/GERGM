@@ -5,7 +5,8 @@ Prepare_Network_and_Covariates <- function(raw_network,
                                     covariates_to_use = NULL,
                                     type_of_effect = NULL,
                                     network_covariates = NULL,
-                                    network_covariate_names = NULL){
+                                    network_covariate_names = NULL,
+                                    normalization_type = c("log","division")){
 
   # Calculate number of nodes in network
   num_nodes <- nrow(raw_network)
@@ -91,9 +92,16 @@ Prepare_Network_and_Covariates <- function(raw_network,
     return(return_matrix)
   }
 
+  #########################################################
+  #' Construct transformed_covariates: An array of covariates which parameterize
+  #' the latent space.
+
   # Generate array which covaries will be transformed into
   transformed_covariates <- array(0,dim=c(num_nodes,num_nodes,num_covariates))
   transformed_covariates[,,1] <- 1
+  #' Set a slice counter to keep track of where we should add the covariates
+  #' in the resulting covariate array.
+  slice_counter <- 2
 
   #1. generate sender and reciever effects
   if(node_covariates_provided){
@@ -107,10 +115,6 @@ Prepare_Network_and_Covariates <- function(raw_network,
         stop("The lengths of type_of_effect and covariates_to_use are not equal, please specify vectors of equal length.")
       }
     }
-
-    #' Set a slice counter to keep track of where we should add the covariates\
-    #' in the resulting covariate array.
-    slice_counter <- 2
 
     #' Loop through covariates
     for(i in 1:length(type_of_effect)){
@@ -169,38 +173,40 @@ Prepare_Network_and_Covariates <- function(raw_network,
 
 
   #2. tack on any user supplied effects
+  if(network_covariates_provided){
+    if(num_additional_covars == 1){
+      transformed_covariates[,,slice_counter] <- network_covariates
+    }else{
+      for(i in 1:num_additional_covars){
+        transformed_covariates[,,slice_counter] <- network_covariates[,,i]
+        slice_counter <- slice_counter + 1
+      }
+    }
+  }
+
   #3. standardize covariates
+  for(i in 2:num_covariates){
+    transformed_covariates[,,i] <- (transformed_covariates[,,i]-mean(c(transformed_covariates[,,i])))/sd(c(transformed_covariates[,,i]))
+  }
+
   #4. return list object
 
-  #########################################################
-  #Construct Z: An array of covariates which parameterize the latent space #
+  if(!node_covariates_provided & !network_covariates_provided){
+    #' If no covariates were provided, then make sure the network lives on the
+    #' [0,1] interval and standardize it by one of the provided methods if it
+    #' does not. Then return the network and no covariates.
+    if(normalization_type == "log"){
+      raw_network <- raw_network
+      network <-
+    }
+
+    return(network)
+  }else{
+    #' If covariates were provided, put the network and the covariates in a list
+    #' object and return it.
 
 
-  Z[,,1] <- 1
-
-  Z[,,2] <- pops07-pops06
-
-  Z[,,3] <- popr07-popr06
-
-  Z[,,4] <- unes07-unes06
-
-  Z[,,5] <- uner07-uner06
-
-  Z[,,6] <- incs07-incs06
-
-  Z[,,7] <- incr07-incr06
-
-  Z[,,8] <- jtemps
-
-  Z[,,9] <- jtempr
-
-  Z[,,10] <- statedist
-
-
-  #Standardize the covariates
-  for(i in 2:10){
-    Z[,,i] <- (Z[,,i]-mean(c(Z[,,i])))/sd(c(Z[,,i]))
+    return(list(network = raw_network, transformed_covariates = transformed_covariates))
   }
-  #return migr07, migr06, and Z
-  return(list(Graph = migr07 - migr06, Z = Z))
-}
+
+} # End of function definition.
