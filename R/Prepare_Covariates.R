@@ -10,7 +10,9 @@ Prepare_Network_and_Covariates <- function(raw_network,
 
   # Calculate number of nodes in network
   num_nodes <- nrow(raw_network)
-  node_names <- colnames(raw_network)
+  if(is.null(node_names)){
+    node_names <- colnames(raw_network)
+  }
   # Check if network is square
   if (nrow(raw_network) != nrow(raw_network)) {
     stop("Network must be a square matrix or data frame!")
@@ -195,15 +197,32 @@ Prepare_Network_and_Covariates <- function(raw_network,
     #' If no covariates were provided, then make sure the network lives on the
     #' [0,1] interval and standardize it by one of the provided methods if it
     #' does not. Then return the network and no covariates.
-    if(normalization_type == "log"){
-      raw_network <- raw_network
-      network <-
+
+    if(min(raw_network) < 0){
+      raw_network <- raw_network - min(raw_network)
+    }
+
+    if(normalization_type[1] == "log"){
+      raw_network <- raw_network + 1
+      network <- log(raw_network)
+      network <- network/max(network)
+    }
+
+    if(normalization_type[1] == "division"){
+      network <- raw_network/max(raw_network)
     }
 
     return(network)
   }else{
     #' If covariates were provided, put the network and the covariates in a list
     #' object and return it.
+    slice_names <- "intercept"
+    slice_counter <- 2
+    if(node_covariates_provided){
+
+    }
+
+    dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
 
 
     return(list(network = raw_network, transformed_covariates = transformed_covariates))
