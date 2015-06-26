@@ -24,6 +24,10 @@ Prepare_Network_and_Covariates <- function(raw_network,
   if(is.null(node_names)){
     node_names <- colnames(raw_network)
   }
+
+  # Make sure that the diagnoal terms in the network are zeros
+  diag(raw_network) <- 0
+
   # Check if network is square
   if (nrow(raw_network) != nrow(raw_network)) {
     stop("Network must be a square matrix or data frame!")
@@ -202,12 +206,10 @@ Prepare_Network_and_Covariates <- function(raw_network,
     }
   }
 
-  #3. standardize covariates
-  for(i in 2:num_covariates){
-    transformed_covariates[,,i] <- (transformed_covariates[,,i]-mean(c(transformed_covariates[,,i])))/sd(c(transformed_covariates[,,i]))
-  }
 
-  #4. return list object
+
+
+  #3. return list object
 
   if(!node_covariates_provided & !network_covariates_provided){
     #' If no covariates were provided, then make sure the network lives on the
@@ -233,6 +235,11 @@ Prepare_Network_and_Covariates <- function(raw_network,
 
     return(network)
   }else{
+    #4. standardize covariates
+    for(i in 2:num_covariates){
+      transformed_covariates[,,i] <- (transformed_covariates[,,i]-mean(c(transformed_covariates[,,i])))/sd(c(transformed_covariates[,,i]))
+    }
+
     #' If covariates were provided, put the network and the covariates in a list
     #' object and return it. First we want to build up a list of covariate names
     #' which we will use as the slice names for the transformed covariate object
