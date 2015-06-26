@@ -1,4 +1,15 @@
-#Loading and pre-processing the migration data
+#' A Function to prepare network and covariate data for use in the gergm() function.
+#'
+#' @param raw_network A square matrix or data frame object containing the network we wish to estimate the gergm parameters for. If not providing node_names but using covariate_data, it should have identical row and column names that correspond to the rownames in the covariate_data matrix so as to facilitate matching of the node level covariates to rows/columns in the adjacency matrix.
+#' @param node_names An optional character vector of node names that will be used to match the row observations of covariate_data to the corresponding nodes in the network. If specified, these will override existing row and column names in the raw_network object.
+#' @param covariate_data A matrix or data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in node_names or colnames(raw_network) if node_names = NULL, should have descriptive column names. More rows may be provided than will be used in the analysis and additional columns may also be provided if specifying covariates_to_use. If left NULL, then no sender or reciever effects will be added.
+#' @param covariates_to_use A vector of column names that correspond to a subset of the columns (and their exact column names) in the covariate_data. This is an easy way to only specify a subset of covariates in a node level dataset. If covariates_to_use = NULL, then all columns will be used.
+#' @param type_of_effect A character vector specifying the type of effec(s) to be included in the resulting transformed covariates array for each covariate. Each entry may be one of "sender", "receiver", or "both", correponding to the relevant effects being included for each covariate. If left NULL, then no covariate effects will be specified.
+#' @param network_covariates A matrix (or array, for multiple effects) containing additional network covariates the user wishes to include in the model that are not sender or receiver effects (such as geographic distance, or group co-membership). The user may specify arbitrary effects in this matrix (array) to be included in the estimation.
+#' @param network_covariate_names A vector of names for each of the slices (or the single matrix) of network_covariates. If no names are specified, the each of these covariates will be automatically named network_covariate_1, network_covariate_2, ...
+#' @param normalization_type If only a raw_network is provided then, the function will automatically check to determine if all edges fall in the [0,1] interval. If edges are determined to fall outside of this interval, then a trasformation onto the interval may be specified. If "division" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary) and then all edge values will be divided by the maximum to ensure that the maximum value is in [0,1]. If "log" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary), then 1 will be added to all edge values before they are logged and then divided by the largest value, again ensuring that the resulting network is on [0,1]. Defaults to "log" and need not be set to NULL if providing covariates as it will be ignored.
+#' @return If only the raw_network is provided then, this function returns the normalized bounded network (if normalization is required). If covariates are provided, then it returns a list object with a $network field that can be assigned to the network object to be included in the formula for the gergm() function for estimation and a $transformed_covariates field that can be assigned to the data_transformation parameter of the gergm() function.
+#' @export
 Prepare_Network_and_Covariates <- function(raw_network,
                                     node_names = NULL,
                                     covariate_data = NULL,
@@ -16,6 +27,11 @@ Prepare_Network_and_Covariates <- function(raw_network,
   # Check if network is square
   if (nrow(raw_network) != nrow(raw_network)) {
     stop("Network must be a square matrix or data frame!")
+  }
+
+  # Just to make sure the code does not break!
+  if(is.null(normalization_type)){
+    normalization_type <- "log"
   }
 
   # If network is a data.frame, make it a matrix
@@ -218,15 +234,56 @@ Prepare_Network_and_Covariates <- function(raw_network,
     return(network)
   }else{
     #' If covariates were provided, put the network and the covariates in a list
-    #' object and return it.
+    #' object and return it. First we want to build up a list of covariate names
+    #' which we will use as the slice names for the transformed covariate object
     slice_names <- "intercept"
     slice_counter <- 2
     if(node_covariates_provided){
+      for(i in 1:length(type_of_effect)){
+        if(type_of_effect[i] == "sender"){
+          if(!is.null(covariates_to_use)){
+            slice_names <- c(slice_names, paste(covariates_to_use[i],"_sender",sep = ""))
+          }else{
+            slice_names <- c(slice_names,paste(colnames(covariate_data)[i],"_sender",sep = ""))
+          }
+        }
+        if(type_of_effect[i] == "reciever"){
+          if(!is.null(covariates_to_use)){
+            slice_names <- c(slice_names,paste(covariates_to_use[i],"_receiver",sep = ""))
+          }else{
+            slice_names <- c(slice_names,paste(colnames(covariate_data)[i],"_reciever",sep = ""))
+          }
 
+        }
+        if(type_of_effect[i] == "both"){
+          if(!is.null(covariates_to_use)){
+            slice_names <- c(slice_names,paste(covariates_to_use[i],"_sender",sep = ""))
+          }else{
+            slice_names <- c(slice_names,paste(colnames(covariate_data)[i],"_sender",sep = ""))
+          }
+          if(!is.null(covariates_to_use)){
+            slice_names <- c(slice_names,paste(covariates_to_use[i],"_receiver",sep = ""))
+          }else{
+            slice_names <- c(slice_names,paste(colnames(covariate_data)[i],"_reciever",sep = ""))
+          }
+        }
+      }
+    }#node covariates provided conditional
+
+    if(network_covariates_provided){
+      if(!is.null(network_covariate_names)){
+        slice_names <- c(slice_names,network_covariate_names)
+      }else{
+        temp <- NULL
+        for(i in 1:num_additional_covars){
+          temp <- c(temp,paste("network_covariate_",i,sep = ""))
+        }
+        slice_names <- c(slice_names,temp)
+      }
     }
 
+    #assign the dimnames to the array object
     dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
-
 
     return(list(network = raw_network, transformed_covariates = transformed_covariates))
   }
