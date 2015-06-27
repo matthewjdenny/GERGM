@@ -229,6 +229,8 @@ Prepare_Network_and_Covariates <- function(raw_network,
       if(normalization_type[1] == "division"){
         network <- raw_network/max(raw_network)
       }
+
+      diag(network) <- 0
     }else{
       network <- raw_network
     }
