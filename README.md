@@ -136,7 +136,8 @@ Here we illustate the use of the `Prepare_Network_and_Covariates()` function to 
       
     formula <- "network ~ recip + edgeweight"
       
-    #note that this model is currently degenerate -- illustrating automatic stopping
+    #' Note that this toy model is currently degenerate -- illustrating automatic stopping.
+    #' We will be updating this section with a convergent model soon.
     test <- gergm(formula,
                   network_is_directed = TRUE,
                   use_MPLE_only = FALSE,
