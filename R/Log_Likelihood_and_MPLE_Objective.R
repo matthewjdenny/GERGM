@@ -46,6 +46,11 @@ llg <- function(par,
   net2 <- pst(net, BZ, sig, 1)
   num.nodes <- nrow(net2)
   triples <- t(combn(1:num.nodes, 3))
+  temp <- h2(net2,
+             triples = triples,
+             statistics = statistics,
+             alphas = alphas,
+             together = together)
   log.li <- rbind(theta) %*%
     h2(net2,
        triples = triples,

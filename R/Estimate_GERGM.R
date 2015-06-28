@@ -53,7 +53,7 @@ Estimate_GERGM <- function(formula_object,
     num.theta <- length(which(GERGM_Object@stats_to_use > 0))
     gpar <- list()
     gpar$par <- c(mean(c(GERGM_Object@network)),
-                  rep(0, dim(GERGM_Object@data_transformation)[3] -3),
+                  rep(0, dim(GERGM_Object@data_transformation)[3] -1),
                   log(sd(c(GERGM_Object@network))))
     theta <- list()
     theta$par <- rep(0, num.theta)
@@ -72,7 +72,7 @@ Estimate_GERGM <- function(formula_object,
                           llg,
                           alpha = GERGM_Object@weights,
                           theta = as.numeric(theta$par),
-                          z = transform.data,
+                          z = GERGM_Object@data_transformation,
                           method = "BFGS",
                           together = together,
                           GERGM_Object = GERGM_Object,
@@ -164,7 +164,7 @@ Estimate_GERGM <- function(formula_object,
                           llg,
                           alpha = GERGM_Object@weights,
                           theta = as.numeric(theta$par),
-                          z = transform.data,
+                          z = GERGM_Object@data_transformation,
                           method = "BFGS",
                           together = together,
                           GERGM_Object = GERGM_Object,
