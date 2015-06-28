@@ -28,8 +28,12 @@ Relevant papers detailing the model can be found at the links below. Please cite
 * James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". http://arxiv.org/abs/1505.04015
 }
 \examples{
-network <- matrix(runif(100),10,10)
-diag(network) <- 0
+########################### 1. No Covariates #############################
+# Preparing an unbounded network without covariates for gergm estimation #
+net <- matrix(rnorm(100,0,20),10,10)
+colnames(net) <- rownames(net) <- letters[1:10]
+network <- Prepare_Network_and_Covariates(raw_network = net,
+                                          normalization_type = "division")
 
 formula <- "network ~ recip + edgeweight"
 
@@ -37,7 +41,7 @@ test <- gergm(formula,
               network_is_directed = TRUE,
               use_MPLE_only = FALSE,
               data_transformation = NULL,
-              estimation_method = "Metropolis",
+              estimation_method = "Gibbs",
               maximum_number_of_lambda_updates = 1,
               maximum_number_of_theta_updates = 5,
               number_of_networks_to_simulate = 40000,
@@ -49,7 +53,49 @@ test <- gergm(formula,
               seed = 456,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
-              force_x_theta_update = 2,
+              force_x_theta_update = 4,
+              output_directory = getwd(),
+              output_name= "Testing")
+
+########################### 2. Covariates #############################
+# Preparing an unbounded network with covariates for gergm estimation #
+net <- matrix(rnorm(100,0,20),10,10)
+# necessary to identify nodes
+colnames(net) <- rownames(net) <- letters[1:10]
+node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                                    Height = c(70,70,67,58,65,67,64,74,76,80))
+# necessary to identify nodes									
+rownames(node_level_covariates) <- letters[1:10]
+network_covariate <- net + matrix(rnorm(100,0,.5),10,10) %*% matrix(1:100,10,10)
+output <- Prepare_Network_and_Covariates(raw_network = net,
+                                         covariate_data = node_level_covariates,
+                                         type_of_effect = c("sender","both"),
+                                         network_covariates = network_covariate,
+                                         network_covariate_names = "My_Net")
+
+transformed_covariates <- output$transformed_covariates
+network <- output$network
+
+formula <- "network ~ recip + edgeweight"
+
+#note that this model is currently degenerate -- illustrating automatic stopping
+test <- gergm(formula,
+              network_is_directed = TRUE,
+              use_MPLE_only = FALSE,
+              data_transformation = transformed_covariates,
+              estimation_method = "Metropolis",
+              maximum_number_of_lambda_updates = 1,
+              maximum_number_of_theta_updates = 5,
+              number_of_networks_to_simulate = 100000,
+              thin = 1/10,
+              proposal_variance = 0.5,
+              exponential_weights = NULL,
+              downweight_statistics_together = TRUE,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.01,
+              MPLE_gain_factor = 0,
+              force_x_theta_update = 1,
               output_directory = getwd(),
               output_name= "Testing")
 }
