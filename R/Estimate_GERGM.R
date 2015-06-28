@@ -97,11 +97,6 @@ Estimate_GERGM <- function(formula_object,
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
 
-        GERGM_Object@stats <- h2(GERGM_Object@bounded.network,
-                              triples = triples,
-                              statistics = rep(1, length(possible.stats)),
-                              alphas = alphas, together = together)
-
         theta.new <- mple(GERGM_Object@bounded.network,
                           statistics = GERGM_Object@stats_to_use,
                           directed = directed)
@@ -187,12 +182,6 @@ Estimate_GERGM <- function(formula_object,
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
-
-        GERGM_Object@stats <- h2(GERGM_Object@bounded.network,
-                                 triples = triples,
-                                 statistics = rep(1, length(possible.stats)),
-                                 alphas = alphas, together = together)
-
 
         # Estimate theta
         ret_list <- MCMCMLE( num.draws = nsim,
