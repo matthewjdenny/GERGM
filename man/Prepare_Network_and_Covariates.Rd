@@ -14,13 +14,13 @@ Prepare_Network_and_Covariates(raw_network, node_names = NULL,
 
 \item{node_names}{An optional character vector of node names that will be used to match the row observations of covariate_data to the corresponding nodes in the network. If specified, these will override existing row and column names in the raw_network object.}
 
-\item{covariate_data}{A matrix or data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in node_names or colnames(raw_network) if node_names = NULL, should have descriptive column names. More rows may be provided than will be used in the analysis and additional columns may also be provided if specifying covariates_to_use. If left NULL, then no sender or reciever effects will be added.}
+\item{covariate_data}{A matrix or data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in node_names or colnames(raw_network) if node_names = NULL, should have descriptive column names. More rows may be provided than will be used in the analysis and additional columns may also be provided if specifying covariates_to_use. If left NULL, then no sender or reciever effects will be added. Note that all covariates must be numeric. Categorical covariates will be supported in the near future.}
 
 \item{covariates_to_use}{A vector of column names that correspond to a subset of the columns (and their exact column names) in the covariate_data. This is an easy way to only specify a subset of covariates in a node level dataset. If covariates_to_use = NULL, then all columns will be used.}
 
 \item{type_of_effect}{A character vector specifying the type of effec(s) to be included in the resulting transformed covariates array for each covariate. Each entry may be one of "sender", "receiver", or "both", correponding to the relevant effects being included for each covariate. If left NULL, then no covariate effects will be specified.}
 
-\item{network_covariates}{A matrix (or array, for multiple effects) containing additional network covariates the user wishes to include in the model that are not sender or receiver effects (such as geographic distance, or group co-membership). The user may specify arbitrary effects in this matrix (array) to be included in the estimation.}
+\item{network_covariates}{A matrix (or array, for multiple effects) containing additional network covariates the user wishes to include in the model that are not sender or receiver effects (such as geographic distance, or group co-membership). The user may specify arbitrary effects in this matrix (array) to be included in the estimation. Note that all covariates must be numeric. Categorical covariates will be supported in the near future.}
 
 \item{network_covariate_names}{A vector of names for each of the slices (or the single matrix) of network_covariates. If no names are specified, the each of these covariates will be automatically named network_covariate_1, network_covariate_2, ...}
 
