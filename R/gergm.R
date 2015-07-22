@@ -48,8 +48,10 @@ gergm <- function(formula,
   #' This is the main function to estimate a GERGM model
 
   #' hard coded possible stats
-  possible.stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
+  possible_stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
                       "edgeweight")
+
+  possible_transformations <- c("cauchy","logcauchy","gaussian","lognormal")
 
   #' set logical values for whether we are using MPLE only, whether the network
   #' is directed, and which estimation method we are using as well as the
@@ -58,7 +60,11 @@ gergm <- function(formula,
   network_is_directed <- network_is_directed[1] #default is TRUE
   estimation_method <- estimation_method[1] #default is Gibbs
   transformation_type <- transformation_type[1] #default is "Cauchy"
+  transformation_type <- tolower(transformation_type)
 
+  if(length(which(possible_transformations %in% transformation_type  == T)) != 1){
+    stop("You have specified a transformation that is not recognized. Please specify one of: Cauchy, LogCauchy, Gaussian, or LogNormal")
+  }
   #' convert logical to numeric indicator
   if(downweight_statistics_together){
     downweight_statistics_together <- 1
@@ -72,7 +78,7 @@ gergm <- function(formula,
 
   GERGM_Object <- Create_GERGM_Object_From_Formula(formula,
                                                    theta.coef = NULL,
-                                                   possible.stats,
+                                                   possible_stats,
                                                    together = 1,
                                                    weights = exponential_weights,
                                                    transform.data = data_transformation,
@@ -105,7 +111,7 @@ gergm <- function(formula,
                                  seed = seed,
                                  tolerance = convergence_tolerance,
                                  gain.factor = MPLE_gain_factor,
-                                 possible.stats = possible.stats,
+                                 possible.stats = possible_stats,
                                  GERGM_Object = GERGM_Object,
                                  force_x_theta_updates = force_x_theta_updates,
                                  transformation_type = transformation_type)
@@ -129,7 +135,7 @@ gergm <- function(formula,
                                  shape.parameter = proposal_variance,
                                  together = downweight_statistics_together,
                                  seed1 = seed,
-                                 possible.stats = possible.stats)
+                                 possible.stats = possible_stats)
 
   #which(GERGM_Object@stats_to_use == 1)
 
@@ -139,22 +145,22 @@ gergm <- function(formula,
   # initialize the network with the observed network
   init.statistics <- h2(GERGM_Object@bounded.network,
                         triples = triples,
-                        statistics = rep(1, length(possible.stats)),
+                        statistics = rep(1, length(possible_stats)),
                         alphas = GERGM_Object@weights,
                         together = downweight_statistics_together)
 
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
-  statistic_test_p_values <- rep(NA,length(possible.stats))
-  for(i in 1:length(possible.stats)){
+  statistic_test_p_values <- rep(NA,length(possible_stats))
+  for(i in 1:length(possible_stats)){
     statistic_test_p_values[i] <- t.test(hsn.tot[, i],
                                       mu = init.statistics[i])$p.value
   }
 
   stats.data <- data.frame(Observed = init.statistics,
                            Simulated = colMeans(hsn.tot))
-  rownames(stats.data) <- possible.stats
+  rownames(stats.data) <- possible_stats
   cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
   GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
 
@@ -162,7 +168,7 @@ gergm <- function(formula,
   GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
 
   statistic_test_p_values <- data.frame(statistic_test_p_values)
-  rownames(statistic_test_p_values) <- possible.stats
+  rownames(statistic_test_p_values) <- possible_stats
   cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
