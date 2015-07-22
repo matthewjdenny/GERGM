@@ -5,7 +5,8 @@ Create_GERGM_Object_From_Formula <- function(object,
                                              together = 1,
                                              weights = NULL,
                                              transform.data = NULL,
-                                             lambda.coef = NULL){
+                                             lambda.coef = NULL,
+                                             transformation_type){
 
   res1 <- Parse_Formula_Object(object,
                                possible.stats,

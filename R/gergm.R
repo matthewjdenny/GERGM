@@ -4,6 +4,7 @@
 #' @param network_is_directed Logical specifying whether or not the observed network is directed. Default is TRUE.
 #' @param use_MPLE_only Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.
 #' @param data_transformation An n x n x m array where each of m layers contains a covariate that models the transform of the unbounded weighted network to a network whose edges are all on the unit interval. Default is NULL.
+#' @param transformation_type Specifies how covariates are transformed onto the raw network. When working with heavly tailed data that are not strictly positive, select "Cauchy" to transform the data using a Cauchy distribution. If data are strictly positive and heavy tailed (such as financial data) it is suggested the user select "LogCauchy" to perform a Log-Cauchy transformation of the data. For a tranformation of the data using a Gaussian distribution, select "Gaussian" and for strictly positive raw networks, select "LogNormal". The Default value is "Cauchy".
 #' @param estimation_method Simulation method for MCMC estimation. Default is "Gibbs" which will generally be faster with well behaved networks but will not allow for exponential downweighting.
 #' @param maximum_number_of_lambda_updates Maximum number of iterations of outer MCMC loop which alternately estimates transform parameters and ERGM parameters. In the case that data_transformation = NULL, this argument does not matter. Default is 10.
 #' @param maximum_number_of_theta_updates Maximum number of iterations within the MCMC inner loop which estimates the ERGM parameters. Default is 100.
@@ -26,6 +27,7 @@ gergm <- function(formula,
                   network_is_directed = c(TRUE, FALSE),
                   use_MPLE_only = c(FALSE, TRUE),
                   data_transformation = NULL,
+                  transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal")
                   estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_lambda_updates = 10,
                   maximum_number_of_theta_updates = 100,
@@ -50,10 +52,12 @@ gergm <- function(formula,
                       "edgeweight")
 
   #' set logical values for whether we are using MPLE only, whether the network
-  #' is directed, and which estimation method we are using
+  #' is directed, and which estimation method we are using as well as the
+  #' transformation type
   use_MPLE_only <- use_MPLE_only[1] #default is FALSE
   network_is_directed <- network_is_directed[1] #default is TRUE
   estimation_method <- estimation_method[1] #default is Gibbs
+  transformation_type <- transformation_type[1] #default is "Cauchy"
 
   #' convert logical to numeric indicator
   if(downweight_statistics_together){
@@ -72,7 +76,8 @@ gergm <- function(formula,
                                                    together = 1,
                                                    weights = exponential_weights,
                                                    transform.data = data_transformation,
-                                                   lambda.coef = NULL)
+                                                   lambda.coef = NULL,
+                                                   transformation_type = transformation_type)
 
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
@@ -102,7 +107,8 @@ gergm <- function(formula,
                                  gain.factor = MPLE_gain_factor,
                                  possible.stats = possible.stats,
                                  GERGM_Object = GERGM_Object,
-                                 force_x_theta_updates = force_x_theta_updates)
+                                 force_x_theta_updates = force_x_theta_updates,
+                                 transformation_type = transformation_type)
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if(!GERGM_Object@theta_estimation_converged){

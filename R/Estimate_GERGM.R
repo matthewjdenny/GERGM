@@ -18,7 +18,8 @@ Estimate_GERGM <- function(formula_object,
                            gain.factor,
                            possible.stats,
                            GERGM_Object,
-                           force_x_theta_updates) {
+                           force_x_theta_updates,
+                           transformation_type) {
 
   #' set the seed
   set.seed(seed)
