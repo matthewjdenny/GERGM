@@ -20,6 +20,12 @@ Create_GERGM_Object_From_Formula <- function(object,
   # if there are no lambda.coefficients, we assume there is no transformation
   # if there is a transformation specified, transform the observed network
   if (!is.null(lambda.coef) == TRUE){
+    if(transformation_type == "LogCauchy" | transformation_type == "LogNormal"){
+      if(min(network) <= 0){
+        stop(paste("You have selected either a log-Cauchy or log-normal transformation but you have provided a network with values that are less than or equal to zero. Please ensure that the minimum value of the network you provide is greater than zero, or select a cauchy or normal transformation. The minimum value of the network provided is:",min(network)))
+      }
+      network <- log(network)
+    }
     beta <- lambda.coef[1:(length(lambda.coef) - 1)]
     sig <- 0.01 + exp(lambda.coef[length(lambda.coef)])
     BZ <- 0
@@ -31,8 +37,13 @@ Create_GERGM_Object_From_Formula <- function(object,
         BZ <- BZ + beta[j] * transform.data[, , j]
       }
     }
+    if(transformation_type == "LogCauchy" | transformation_type == "Cauchy"){
+      bounded.network <- pst(network, BZ, sig, 1)
+    }
+    if(transformation_type == "LogNormal" | transformation_type == "Gaussian"){
+      bounded.network <- pst(network, BZ, sig, Inf)
+    }
 
-    bounded.network <- pst(network, BZ, sig, 1)
   }
   if (is.null(lambda.coef) == TRUE) {
     bounded.network <- network

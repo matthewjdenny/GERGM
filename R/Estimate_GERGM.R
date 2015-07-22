@@ -92,7 +92,12 @@ Estimate_GERGM <- function(formula_object,
           BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
         }
 
-        GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
+        if(transformation_type == "LogCauchy" | transformation_type == "Cauchy"){
+          GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
+        }
+        if(transformation_type == "LogNormal" | transformation_type == "Gaussian"){
+          GERGM_Object@bounded.network <- pst(net, BZ, sig, Inf)
+        }
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
@@ -177,8 +182,13 @@ Estimate_GERGM <- function(formula_object,
         for (j in 1:(dim(transform.data)[3])) {
           BZ <- BZ + beta[j] * transform.data[, , j]
         }
-        #net.new <<- pst(net, BZ, sig, 1) #make this a global variable
-        GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
+
+        if(transformation_type == "LogCauchy" | transformation_type == "Cauchy"){
+          GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
+        }
+        if(transformation_type == "LogNormal" | transformation_type == "Gaussian"){
+          GERGM_Object@bounded.network <- pst(net, BZ, sig, Inf)
+        }
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
