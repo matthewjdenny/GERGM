@@ -27,7 +27,7 @@ gergm <- function(formula,
                   network_is_directed = c(TRUE, FALSE),
                   use_MPLE_only = c(FALSE, TRUE),
                   data_transformation = NULL,
-                  transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal")
+                  transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
                   estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_lambda_updates = 10,
                   maximum_number_of_theta_updates = 100,
