@@ -6,6 +6,7 @@
 \usage{
 gergm(formula, network_is_directed = c(TRUE, FALSE),
   use_MPLE_only = c(FALSE, TRUE), data_transformation = NULL,
+  transformation_type = c("Cauchy", "LogCauchy", "Gaussian", "LogNormal"),
   estimation_method = c("Gibbs", "Metropolis"),
   maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 100,
@@ -23,6 +24,8 @@ gergm(formula, network_is_directed = c(TRUE, FALSE),
 \item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.}
 
 \item{data_transformation}{An n x n x m array where each of m layers contains a covariate that models the transform of the unbounded weighted network to a network whose edges are all on the unit interval. Default is NULL.}
+
+\item{transformation_type}{Specifies how covariates are transformed onto the raw network. When working with heavly tailed data that are not strictly positive, select "Cauchy" to transform the data using a Cauchy distribution. If data are strictly positive and heavy tailed (such as financial data) it is suggested the user select "LogCauchy" to perform a Log-Cauchy transformation of the data. For a tranformation of the data using a Gaussian distribution, select "Gaussian" and for strictly positive raw networks, select "LogNormal". The Default value is "Cauchy".}
 
 \item{estimation_method}{Simulation method for MCMC estimation. Default is "Gibbs" which will generally be faster with well behaved networks but will not allow for exponential downweighting.}
 
