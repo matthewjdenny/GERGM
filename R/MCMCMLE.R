@@ -134,7 +134,7 @@ MCMCMLE <- function(num.draws,
     if(max(abs(theta.new$par)) > 10000000){
       message("Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
       GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
-      return(list(theta,GERGM_Object))
+      return(list(theta.new,GERGM_Object))
     }
 
     if (sum(count) == 0){
@@ -153,5 +153,5 @@ MCMCMLE <- function(num.draws,
     theta <- theta.new
     GERGM_Object@theta.par <- as.numeric(theta$par)
   }
-  return(list(theta,GERGM_Object))
+  return(list(theta.new,GERGM_Object))
 }
