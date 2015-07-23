@@ -17,3 +17,5 @@ LinkingTo:
 	BH,
 	Rcpp, 
 	RcppArmadillo
+Depends:
+        R (>= 3.0.1)
