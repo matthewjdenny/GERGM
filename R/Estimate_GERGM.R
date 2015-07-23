@@ -217,7 +217,6 @@ Estimate_GERGM <- function(formula_object,
         # Calculate standard errors
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
 
-
         # Stop if lambda and theta estimates converge.
         # Convergence criterion is based on individual z-tests for each estimate
         p.value1 <- rep(0,length(theta$par))
@@ -229,7 +228,10 @@ Estimate_GERGM <- function(formula_object,
           p.value1[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
           #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
           #if we reject any of the tests then convergence has not been reached!
-          if(p.value1[i] < tolerance){count1[i] = 1}
+          # break if we have hit model degeneracy
+          if(GERGM_Object@theta_estimation_converged){
+            if(p.value1[i] < tolerance){count1[i] = 1}
+          }
         }
         for(i in 1:length(gpar$par)){
           #two sided z test
@@ -260,8 +262,6 @@ Estimate_GERGM <- function(formula_object,
         gpar <- gpar.new
       }
     }
-    network <- net
-    bounded.network <- net.new
     theta <- t(as.matrix(theta$par))
     theta <- rbind(theta, theta.std.errors)
     colnames(theta) <- rhs.formula
@@ -273,7 +273,6 @@ Estimate_GERGM <- function(formula_object,
     rownames(lambda) <- c("est", "se")
     GERGM_Object@theta.coef <- theta
     GERGM_Object@lambda.coef <- lambda
-    GERGM_Object@bounded.network <- net
     return(GERGM_Object)
   }
 
@@ -320,9 +319,6 @@ Estimate_GERGM <- function(formula_object,
       lambda <- as.data.frame(0)
     }
   }
-
-  network <- net
-  bounded.network <- net
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
   colnames(theta) <- rhs.formula
@@ -330,7 +326,6 @@ Estimate_GERGM <- function(formula_object,
   theta <- as.data.frame(theta)
   GERGM_Object@theta.coef <- theta
   GERGM_Object@lambda.coef <- lambda
-  GERGM_Object@bounded.network <- net
   return(GERGM_Object)
 }
 
