@@ -1,3 +1,5 @@
+# Network Statistics in R
+
 # Statistics out2stars
 out2star <- function(net, triples, alpha = 1, together = together) {
   if(together == 0){
@@ -14,6 +16,7 @@ out2star <- function(net, triples, alpha = 1, together = together) {
   }
 }
 
+#-------------------------------------------------------
 # in2stars
 in2star <- function(net, triples, alpha = 1, together = together) {
   if(together == 0){
@@ -30,6 +33,7 @@ in2star <- function(net, triples, alpha = 1, together = together) {
   }
 }
 
+#-------------------------------------------------------
 # transitive triads
 ttriads <- function(net, triples, alpha = 1, together) {
   if(together == 0){
@@ -64,6 +68,7 @@ ttriads <- function(net, triples, alpha = 1, together) {
   }
 }
 
+#-------------------------------------------------------
 # cyclic triads
 ctriads <- function(net, triples, alpha = 1, together) {
   if(together == 0){
@@ -82,6 +87,7 @@ ctriads <- function(net, triples, alpha = 1, together) {
   }
 }
 
+#-------------------------------------------------------
 # reciprocity
 recip <- function(net, alpha = 1, together) {
   pairs <- t(combn(1:nrow(net), 2))
@@ -93,6 +99,7 @@ recip <- function(net, alpha = 1, together) {
   }
 }
 
+#-------------------------------------------------------
 # edgeweight
 edgeweight <- function(net, alpha = 1, together) {
   pairs <- t(combn(1:nrow(net), 2))
@@ -103,6 +110,138 @@ edgeweight <- function(net, alpha = 1, together) {
     return(sum((net[pairs] + net[pairs[, c(2, 1)]]))^(alpha))
   }
 }
+
+#-------------------------------------------------------
+
+## GERGM endogeneous and exogenous statistics
+##Most of these functions are slight modifications of the available terms in the "ergm" package
+##Note: See
+#file:////Library/Frameworks/R.framework/Versions/3.1/Resources/library/ergm/doc/ergm-term-crossRef.html#term_absdiff_1
+#for more information
+
+## Here, "attrname" refers to the name of a nodal covariate. For this, we should add a "attribute" dataframe
+## whose columns contain desired nodal covariates
+
+#-------------------------------------------------------
+absdiff = function(attrname, pow = 1, directed = c(TRUE, FALSE)){
+  #sum of the absolute difference of the nodal attribute "attrname"
+  #between every pair of nodes
+  directed <- directed[1]
+  diff <- numeric()
+  for(i in 1:length(attrname)){
+    for(j in 1:length(attrname)){
+      diff <- diff + abs(attrname[i] - attrname[j])^pow
+    }
+  }
+  if(directed == FALSE){
+    diff <- diff/2
+  }
+  return(diff)
+}
+#-------------------------------------------------------
+
+atleast = function(network, threshold = 0, directed = c(TRUE, FALSE)){
+  #number of edges that have weight that exceed specified threshold
+  #if threshold = 0, this is just the number of edges
+  directed <- directed[1]
+  stat <- length(which(network > threshold | network == threshold))
+  if(directed == FALSE){
+    stat <- stat/2
+  }
+  return(stat)
+}
+
+#-------------------------------------------------------
+
+degree.atleast = function(network, threshold = 0, directed = c(TRUE, FALSE)){
+  #the sum of edgeweights that exceed specified threshold
+  #if threshold = 0, this is just the total edgeweight of the network
+  directed <- directed[1]
+  stat <- sum(network[which(network > threshold | network == threshold)])
+  if(directed == FALSE){
+    stat <- stat/2
+  }
+  return(stat)
+}
+
+#-------------------------------------------------------
+
+density.atleast = function(network, threshold = 0, directed = c(TRUE, FALSE)){
+  #the sum of edgeweights that exceed specified threshold
+  #if threshold = 0, this is just the total edgeweight of the network
+  directed <- directed[1]
+  stat <- sum(network[which(network > threshold | network == threshold)])/length(which(network > threshold | network == threshold))
+  return(stat)
+}
+
+#-------------------------------------------------------
+
+mutual = function(network, threshold = 0, form = c("min", "product", "geometric")){
+  #mutuality statistic calculated for each pair of mutual edges
+  #that have edgeweights that exceed threshold. The form specifies which statistic is calculated
+  #DEFAULT is "min"
+  #This can only be used for a directed network
+  form <- form[1]
+  indx <- which(network < threshold)
+  network[indx] <- 0
+  values <- c(0,0)
+  for(i in 1:dim(network)[1]){
+    for(j in 1:dim(network)[1]){
+      if(i != j){
+        values <- rbind(values, c(network[i,j], network[j,i]))
+      }
+    }
+  }
+  if(form == "min"){
+    stat <- sum(apply(values, 1, min))
+  }
+  if(form == "product"){
+    stat <- sum(values[, 1]*values[, 2])
+  }
+  if(form == "geometric"){
+    stat <- sum(sqrt(values[, 1])*sqrt(values[, 2]))
+  }
+  return(stat)
+}
+
+#-------------------------------------------------------
+
+nodecov = function(network, attrname, threshold = 0){
+  #statistic that adds the sum of attribute[i] and attribute[j] for all edges (i,j)
+  #such that its corresponding edgeweight exceeds the specified threshold
+  #NOTE: attrname must be numeric (not categorical)
+  indx <- which(network > threshold | network == threshold, arr.ind = TRUE)
+  stat <- 0
+  for(i in 1:dim(indx)[1]){
+    stat <- stat + attrname[indx[i,1]] + attrname[indx[i,2]]
+  }
+  return(stat)
+}
+
+#-------------------------------------------------------
+
+nodefactor = function(attrname, base = 1){
+  #adds several statistics where each statistic counts
+  #the number of instances attrname takes a discrete (categorical) value
+  #the base specifies which categorical value should not be counted. For instance, base = 1, there
+  #will be no statistic for the number of times 1 occurs. It is recommended to avoid counting all values
+  #NOTE: attrname must be categorical (not numeric)
+  attrname.factor <- as.factor(attrname)
+  names <- unique(attrname.factor)
+  num.vars <- length(unique(attrname.factor))
+  stat <- numeric()
+  for(i in 1:num.vars){
+    stat[i] <- length(which(attrname.factor == names[i]))
+  }
+  indx <- which(1:num.vars != base)
+  result <- data.frame(stat[indx])
+  rownames(result) <- unique(attrname)[indx]
+  colnames(result) <- "Count"
+  result <- t(result)
+  return(result)
+}
+
+#-------------------------------------------------------
 
 # Calculate the statistics of a formula object
 h <- function(possible.stats,
