@@ -1,4 +1,5 @@
-# convert a formula object to statistics and network of interest (formerly weighted.ergm.data)
+#' convert a formula object to statistics and network of interest
+#' (formerly weighted.ergm.data)
 Parse_Formula_Object <- function(formula,
                                  possible.stats,
                                  theta = NULL,
