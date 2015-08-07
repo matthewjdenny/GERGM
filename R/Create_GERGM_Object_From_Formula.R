@@ -1,17 +1,23 @@
 # create a gergm from a formula object (getgergm)
 Create_GERGM_Object_From_Formula <- function(object,
                                              theta.coef,
-                                             possible.stats,
+                                             possible_structural_terms,
+                                             possible_covariate_terms,
+                                             possible_network_terms,
+                                             raw_network,
                                              together = 1,
-                                             weights = NULL,
                                              transform.data = NULL,
                                              lambda.coef = NULL,
-                                             transformation_type){
+                                             transformation_type
+                                             ){
 
   res1 <- Parse_Formula_Object(object,
-                               possible.stats,
+                               possible_structural_terms,
+                               possible_covariate_terms,
+                               possible_network_terms,
+                               raw_network = raw_network,
                                theta = theta.coef,
-                               alpha = weights)
+                               terms_to_parse = "structural")
   thetas <- res1$thetas
   network <- res1$net
   alphas <- res1$alphas
@@ -56,7 +62,7 @@ Create_GERGM_Object_From_Formula <- function(object,
 
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)
-  colnames(thetas) <- possible.stats
+  colnames(thetas) <- possible_structural_terms
   rownames(thetas) <- c("est", "se")
   thetas <- as.data.frame(thetas)
 
@@ -67,7 +73,7 @@ Create_GERGM_Object_From_Formula <- function(object,
                                 lambda = lambda.coef,
                                 alpha = alphas,
                                 together = together,
-                                possible.stats = possible.stats)
+                                possible.stats = possible_structural_terms)
   object@stats_to_use <- statistics
   return(object)
 }
