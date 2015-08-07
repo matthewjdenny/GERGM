@@ -2,7 +2,7 @@
 #' Graph Models
 #'
 #' @section GERGM functions:
-#' There will be a few
+#' To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: "out2star", "in2star", "ctriads", "recip", "ttriads", "edges", "absdiff(covariate)", "edgecov(covariate)", "sender(covariate)", "reciever(covariate)", "nodefactor(covariate)", "netcov(network_covariate)". The gergm() function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing ?gergm into the R console.
 #'
 #' @docType package
 #' @name GERGM
