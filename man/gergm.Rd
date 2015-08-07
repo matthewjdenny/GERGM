@@ -4,26 +4,28 @@
 \alias{gergm}
 \title{A Function to estimate a GERGM.}
 \usage{
-gergm(formula, network_is_directed = c(TRUE, FALSE),
-  use_MPLE_only = c(FALSE, TRUE), data_transformation = NULL,
-  transformation_type = c("Cauchy", "LogCauchy", "Gaussian", "LogNormal"),
-  estimation_method = c("Gibbs", "Metropolis"),
-  maximum_number_of_lambda_updates = 10,
+gergm(formula, covariate_data = NULL, normalization_type = c("log",
+  "division"), network_is_directed = c(TRUE, FALSE),
+  use_MPLE_only = c(FALSE, TRUE), transformation_type = c("Cauchy",
+  "LogCauchy", "Gaussian", "LogNormal"), estimation_method = c("Gibbs",
+  "Metropolis"), maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 100,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
-  exponential_weights = NULL, downweight_statistics_together = TRUE,
-  MCMC_burnin = 100, seed = 123, convergence_tolerance = 0.01,
-  MPLE_gain_factor = 0, acceptable_fit_p_value_threshold = 0.05,
-  force_x_theta_updates = 1, output_directory = NULL, output_name = NULL)
+  downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
+  convergence_tolerance = 0.01, MPLE_gain_factor = 0,
+  acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
+  output_directory = NULL, output_name = NULL)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads", "edgeweight").}
 
+\item{covariate_data}{A data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in colnames(raw_network), should have descriptive column names.  If left NULL, then no sender or reciever effects will be added.}
+
+\item{normalization_type}{If only a raw_network is provided then, the function will automatically check to determine if all edges fall in the [0,1] interval. If edges are determined to fall outside of this interval, then a trasformation onto the interval may be specified. If "division" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary) and then all edge values will be divided by the maximum to ensure that the maximum value is in [0,1]. If "log" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary), then 1 will be added to all edge values before they are logged and then divided by the largest value, again ensuring that the resulting network is on [0,1]. Defaults to "log" and need not be set to NULL if providing covariates as it will be ignored.}
+
 \item{network_is_directed}{Logical specifying whether or not the observed network is directed. Default is TRUE.}
 
 \item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.}
-
-\item{data_transformation}{An n x n x m array where each of m layers contains a covariate that models the transform of the unbounded weighted network to a network whose edges are all on the unit interval. Default is NULL.}
 
 \item{transformation_type}{Specifies how covariates are transformed onto the raw network. When working with heavly tailed data that are not strictly positive, select "Cauchy" to transform the data using a Cauchy distribution. If data are strictly positive and heavy tailed (such as financial data) it is suggested the user select "LogCauchy" to perform a Log-Cauchy transformation of the data. For a tranformation of the data using a Gaussian distribution, select "Gaussian" and for strictly positive raw networks, select "LogNormal". The Default value is "Cauchy".}
 
@@ -38,8 +40,6 @@ gergm(formula, network_is_directed = c(TRUE, FALSE),
 \item{thin}{The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.}
 
 \item{proposal_variance}{The variance specified for the Metropolis Hastings simulation method. This parameter is inversely proportional to the average acceptance rate of the M-H sampler and should be adjusted so that the average acceptance rate is approximately 0.25.         Default is 0.1.}
-
-\item{exponential_weights}{A vector of weights specifying the down weighting (via exponentiation) of each possible statistic. This vector must be the same length as the number of statistics used in object. Values are between 0 and 1. Default is NULL specifying a 1 for each statistic.}
 
 \item{downweight_statistics_together}{Logical specifying whether or not the weights should be applied inside or outside the sum. Default is TRUE and user should not select FALSE under normal circumstances.}
 
