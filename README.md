@@ -41,34 +41,64 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 We are currently in the process of completing adding functionality for using node level covariates in the model and should have this functionality included in the package by the beginning of July. The model is fully functioning  and tested for specification that do not include node leve covariates. **Note that if you are not using covariates, the network you supply to the `gergm()` function must have all edge values on the [0,1] interval.** The easiest way to do this is to use the included `Prepare_Network_and_Covariates()` function to transform the network onto the [0,1] interval. If you wish to include node level covariates in your specification, then you may specify additional parameters in the `Prepare_Network_and_Covariates()` function. A working example is provided in the following section.
 
-## Example
+## Examples
 
-Here is a simple working example using the `gergm( )` function: 
+Here are two simple working examples using the `gergm( )` function: 
 
     library(GERGM)
-    net <- matrix(runif(100),10,10)
-    diag(net) <- 0
-    formula <- "net ~ recip + edgeweight"  
+    ########################### 1. No Covariates #############################
+    # Preparing an unbounded network without covariates for gergm estimation #
+    net <- matrix(rnorm(100,0,20),10,10)
+    colnames(net) <- rownames(net) <- letters[1:10]
+    formula <- net ~ recip + edges  
       
     test <- gergm(formula,
-              network_is_directed = TRUE,
-              use_MPLE_only = FALSE,
-              data_transformation = NULL,
-              estimation_method = "Metropolis",
-              maximum_number_of_lambda_updates = 1,
-              maximum_number_of_theta_updates = 5,
-              number_of_networks_to_simulate = 40000,
-              thin = 1/10,
-              proposal_variance = 0.5,
-              exponential_weights = NULL,
-              downweight_statistics_together = TRUE,
-              MCMC_burnin = 10000,
-              seed = 456,
-              convergence_tolerance = 0.01,
-              MPLE_gain_factor = 0,
-              force_x_theta_update = 2,
-              output_directory = getwd(),
-              output_name= "Testing")
+                  normalization_type = "division",
+                  network_is_directed = TRUE,
+                  use_MPLE_only = FALSE,
+                  estimation_method = "Metropolis",
+                  maximum_number_of_lambda_updates = 1,
+                  maximum_number_of_theta_updates = 5,
+                  number_of_networks_to_simulate = 40000,
+                  thin = 1/10,
+                  proposal_variance = 0.5,
+                  downweight_statistics_together = TRUE,
+                  MCMC_burnin = 10000,
+                  seed = 456,
+                  convergence_tolerance = 0.01,
+                  MPLE_gain_factor = 0,
+                  force_x_theta_update = 4,
+                  output_directory = "/Users/matthewjdenny/Desktop",
+                  output_name= "No_Covariates")  
+                  
+    ########################### 2. Covariates #############################
+    # Preparing an unbounded network with covariates for gergm estimation #
+    net <- matrix(runif(100,0,1),10,10)
+    colnames(net) <- rownames(net) <- letters[1:10]
+    node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                                        Height = c(70,70,67,58,65,67,64,74,76,80))
+    rownames(node_level_covariates) <- letters[1:10]
+    network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
+    formula <- net ~ recip + edges + sender("Age") + nodecov("Height") + netcov("network_covariate")
+         
+    test <- gergm(formula,
+                  covariate_data = node_level_covariates,
+                  network_is_directed = TRUE,
+                  use_MPLE_only = FALSE,
+                  estimation_method = "Metropolis",
+                  maximum_number_of_lambda_updates = 5,
+                  maximum_number_of_theta_updates = 5,
+                  number_of_networks_to_simulate = 500000,
+                  thin = 1/10,
+                  proposal_variance = 0.5,
+                  downweight_statistics_together = TRUE,
+                  MCMC_burnin = 200000,
+                  seed = 456,
+                  convergence_tolerance = 0.01,
+                  MPLE_gain_factor = 0,
+                  force_x_theta_update = 2,
+                  output_directory = "/Users/matthewjdenny/Desktop",
+                  output_name= "Covariates")
 
 Finally you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
 
@@ -82,81 +112,6 @@ If `output_name` is specified in the `gergm()` function, then five files will be
 * **"Test_Estimation_Log.txt"** -- A log of all console output generated by the `gergm()` function.
 * **"Test_Trace_Plot.pdf"** -- Trace plot from last round of network simulations used to generate GOF plot, useful for diagnosing an acceotance rate that is too low.
 
-## Examples With and Without Node Level Covariates
-
-Here we illustate the use of the `Prepare_Network_and_Covariates()` function to transform an unbounded network to a bounded one, and to provide node level covariates in the appropriate format. More documentation forthcoming.
-
-    ########################### 1. No Covariates #############################
-    # Preparing an unbounded network without covariates for gergm estimation #
-    net <- matrix(rnorm(100,0,20),10,10)
-    colnames(net) <- rownames(net) <- letters[1:10]
-    network <- Prepare_Network_and_Covariates(raw_network = net,
-                                              normalization_type = "division")
-                                              
-    formula <- "network ~ recip + edgeweight"  
-      
-    test <- gergm(formula,
-                  network_is_directed = TRUE,
-                  use_MPLE_only = FALSE,
-                  data_transformation = NULL,
-                  estimation_method = "Gibbs",
-                  maximum_number_of_lambda_updates = 1,
-                  maximum_number_of_theta_updates = 5,
-                  number_of_networks_to_simulate = 40000,
-                  thin = 1/10,
-                  proposal_variance = 0.5,
-                  exponential_weights = NULL,
-                  downweight_statistics_together = TRUE,
-                  MCMC_burnin = 10000,
-                  seed = 456,
-                  convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0,
-                  force_x_theta_update = 4,
-                  output_directory = getwd(),
-                  output_name= "Testing")
-      
-    ########################### 2. Covariates #############################
-    # Preparing an unbounded network with covariates for gergm estimation #
-    net <- matrix(rnorm(100,0,20),10,10)
-    # necessary to identify nodes
-    colnames(net) <- rownames(net) <- letters[1:10]
-    node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
-                                        Height = c(70,70,67,58,65,67,64,74,76,80))
-    # necessary to identify nodes									
-    rownames(node_level_covariates) <- letters[1:10]
-    network_covariate <- net + matrix(rnorm(100,0,.5),10,10) %*% matrix(1:100,10,10)
-    output <- Prepare_Network_and_Covariates(raw_network = net,
-                                             covariate_data = node_level_covariates,
-                                             type_of_effect = c("sender","both"),
-                                             network_covariates = network_covariate,
-                                             network_covariate_names = "My_Net")
-      
-    transformed_covariates <- output$transformed_covariates
-    network <- output$network
-      
-    formula <- "network ~ recip + edgeweight"
-      
-    #' Note that this toy model is currently degenerate -- illustrating automatic stopping.
-    #' We will be updating this section with a convergent model soon.
-    test <- gergm(formula,
-                  network_is_directed = TRUE,
-                  use_MPLE_only = FALSE,
-                  data_transformation = transformed_covariates,
-                  estimation_method = "Metropolis",
-                  maximum_number_of_lambda_updates = 1,
-                  maximum_number_of_theta_updates = 5,
-                  number_of_networks_to_simulate = 100000,
-                  thin = 1/10,
-                  proposal_variance = 0.5,
-                  exponential_weights = NULL,
-                  downweight_statistics_together = TRUE,
-                  MCMC_burnin = 10000,
-                  seed = 456,
-                  convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0,
-                  force_x_theta_update = 1,
-                  output_directory = getwd(),
-                  output_name= "Testing")
 
 ## Testing
             
