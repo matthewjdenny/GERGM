@@ -1,9 +1,10 @@
 #' A Function to estimate a GERGM.
 #'
 #' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
+#' @param covariate_data A data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in colnames(raw_network), should have descriptive column names.  If left NULL, then no sender or reciever effects will be added.
+#' @param normalization_type If only a raw_network is provided then, the function will automatically check to determine if all edges fall in the [0,1] interval. If edges are determined to fall outside of this interval, then a trasformation onto the interval may be specified. If "division" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary) and then all edge values will be divided by the maximum to ensure that the maximum value is in [0,1]. If "log" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary), then 1 will be added to all edge values before they are logged and then divided by the largest value, again ensuring that the resulting network is on [0,1]. Defaults to "log" and need not be set to NULL if providing covariates as it will be ignored.
 #' @param network_is_directed Logical specifying whether or not the observed network is directed. Default is TRUE.
 #' @param use_MPLE_only Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.
-#' @param data_transformation An n x n x m array where each of m layers contains a covariate that models the transform of the unbounded weighted network to a network whose edges are all on the unit interval. Default is NULL.
 #' @param transformation_type Specifies how covariates are transformed onto the raw network. When working with heavly tailed data that are not strictly positive, select "Cauchy" to transform the data using a Cauchy distribution. If data are strictly positive and heavy tailed (such as financial data) it is suggested the user select "LogCauchy" to perform a Log-Cauchy transformation of the data. For a tranformation of the data using a Gaussian distribution, select "Gaussian" and for strictly positive raw networks, select "LogNormal". The Default value is "Cauchy".
 #' @param estimation_method Simulation method for MCMC estimation. Default is "Gibbs" which will generally be faster with well behaved networks but will not allow for exponential downweighting.
 #' @param maximum_number_of_lambda_updates Maximum number of iterations of outer MCMC loop which alternately estimates transform parameters and ERGM parameters. In the case that data_transformation = NULL, this argument does not matter. Default is 10.
@@ -11,7 +12,6 @@
 #' @param number_of_networks_to_simulate Number of simulations generated for estimation via MCMC. Default is 500.
 #' @param thin The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.
 #' @param proposal_variance The variance specified for the Metropolis Hastings simulation method. This parameter is inversely proportional to the average acceptance rate of the M-H sampler and should be adjusted so that the average acceptance rate is approximately 0.25. 		Default is 0.1.
-#' @param exponential_weights A vector of weights specifying the down weighting (via exponentiation) of each possible statistic. This vector must be the same length as the number of statistics used in object. Values are between 0 and 1. Default is NULL specifying a 1 for each statistic.
 #' @param downweight_statistics_together Logical specifying whether or not the weights should be applied inside or outside the sum. Default is TRUE and user should not select FALSE under normal circumstances.
 #' @param MCMC_burnin Number of samples from the MCMC simulation procedure that will be discarded before drawing the samples used for estimation. Default is 100.
 #' @param seed Seed used for reproducibility. Default is 123.
@@ -24,9 +24,10 @@
 #' @return A gergm object containing parameter estimates.
 #' @export
 gergm <- function(formula,
+                  covariate_data = NULL,
+                  normalization_type = c("log","division"),
                   network_is_directed = c(TRUE, FALSE),
                   use_MPLE_only = c(FALSE, TRUE),
-                  data_transformation = NULL,
                   transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
                   estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_lambda_updates = 10,
@@ -34,7 +35,6 @@ gergm <- function(formula,
                   number_of_networks_to_simulate = 500,
                   thin = 1,
                   proposal_variance = 0.1,
-                  exponential_weights = NULL,
                   downweight_statistics_together = TRUE,
                   MCMC_burnin = 100,
                   seed = 123,
@@ -43,14 +43,15 @@ gergm <- function(formula,
                   acceptable_fit_p_value_threshold = 0.05,
                   force_x_theta_updates = 1,
                   output_directory = NULL,
-                  output_name = NULL){
+                  output_name = NULL
+                  ){
 
   #' This is the main function to estimate a GERGM model
 
   #' hard coded possible stats
-  possible_stats <- c("out2star", "in2star", "ctriads", "recip", "ttriads",
-                      "edgeweight")
-
+  possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges")
+  possible_covariate_terms <- c("absdiff","nodecov","nodefactor","sender","receiver")
+  possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy","logcauchy","gaussian","lognormal")
 
   #' set logical values for whether we are using MPLE only, whether the network
@@ -61,6 +62,7 @@ gergm <- function(formula,
   estimation_method <- estimation_method[1] #default is Gibbs
   transformation_type <- transformation_type[1] #default is "Cauchy"
   transformation_type <- tolower(transformation_type)
+  normalization_type <- normalization_type[1]
 
   if(length(which(possible_transformations %in% transformation_type  == T)) != 1){
     stop("You have specified a transformation that is not recognized. Please specify one of: Cauchy, LogCauchy, Gaussian, or LogNormal")
@@ -74,16 +76,35 @@ gergm <- function(formula,
 
   formula <- as.formula(formula)
 
+  #0. Prepare the data
+
+  Transformed_Data <- Prepare_Network_and_Covariates(
+     formula,
+     possible_structural_terms,
+     possible_covariate_terms,
+     possible_network_terms,
+     covariate_data = covariate_data,
+     normalization_type = normalization_type)
+
+  data_transformation <- NULL
+  if(!is.null(Transformed_Data$transformed_covariates)){
+    data_transformation <- Transformed_Data$transformed_covariates
+  }
+
+
   #1. Create GERGM object from network
 
   GERGM_Object <- Create_GERGM_Object_From_Formula(formula,
                                                    theta.coef = NULL,
-                                                   possible_stats,
+                                                   possible_structural_terms,
+                                                   possible_covariate_terms,
+                                                   possible_network_terms,
+                                                   raw_network = Transformed_Data$network,
                                                    together = 1,
-                                                   weights = exponential_weights,
                                                    transform.data = data_transformation,
                                                    lambda.coef = NULL,
-                                                   transformation_type = transformation_type)
+                                                   transformation_type = transformation_type
+                                                   )
 
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
@@ -105,13 +126,13 @@ gergm <- function(formula,
                                  nsim = number_of_networks_to_simulate,
                                  thin = thin,
                                  shape.parameter = proposal_variance,
-                                 exponential_weights = exponential_weights,
+                                 exponential_weights = GERGM_Object@weights,
                                  together = downweight_statistics_together,
                                  MCMC.burnin = MCMC_burnin,
                                  seed = seed,
                                  tolerance = convergence_tolerance,
                                  gain.factor = MPLE_gain_factor,
-                                 possible.stats = possible_stats,
+                                 possible.stats = possible_structural_terms,
                                  GERGM_Object = GERGM_Object,
                                  force_x_theta_updates = force_x_theta_updates,
                                  transformation_type = transformation_type)
@@ -135,7 +156,7 @@ gergm <- function(formula,
                                  shape.parameter = proposal_variance,
                                  together = downweight_statistics_together,
                                  seed1 = seed,
-                                 possible.stats = possible_stats)
+                                 possible.stats = possible_structural_terms)
 
   #which(GERGM_Object@stats_to_use == 1)
 
@@ -145,22 +166,22 @@ gergm <- function(formula,
   # initialize the network with the observed network
   init.statistics <- h2(GERGM_Object@bounded.network,
                         triples = triples,
-                        statistics = rep(1, length(possible_stats)),
+                        statistics = rep(1, length(possible_structural_terms)),
                         alphas = GERGM_Object@weights,
                         together = downweight_statistics_together)
 
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
-  statistic_test_p_values <- rep(NA,length(possible_stats))
-  for(i in 1:length(possible_stats)){
+  statistic_test_p_values <- rep(NA,length(possible_structural_terms))
+  for(i in 1:length(possible_structural_terms)){
     statistic_test_p_values[i] <- t.test(hsn.tot[, i],
                                       mu = init.statistics[i])$p.value
   }
 
   stats.data <- data.frame(Observed = init.statistics,
                            Simulated = colMeans(hsn.tot))
-  rownames(stats.data) <- possible_stats
+  rownames(stats.data) <- possible_structural_terms
   cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
   GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
 
@@ -168,7 +189,7 @@ gergm <- function(formula,
   GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
 
   statistic_test_p_values <- data.frame(statistic_test_p_values)
-  rownames(statistic_test_p_values) <- possible_stats
+  rownames(statistic_test_p_values) <- possible_structural_terms
   cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
