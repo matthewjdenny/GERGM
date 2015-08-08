@@ -27,6 +27,7 @@ Relevant papers detailing the model can be found at the links below. Please cite
 * James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". http://arxiv.org/abs/1505.04015
 }
 \examples{
+\dontrun{
 ########################### 1. No Covariates #############################
 # Preparing an unbounded network without covariates for gergm estimation #
 net <- matrix(rnorm(100,0,20),10,10)
@@ -76,4 +77,5 @@ test <- gergm(formula,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
               force_x_theta_update = 2)
+}
 }
