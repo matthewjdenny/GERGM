@@ -48,9 +48,7 @@ test <- gergm(formula,
               seed = 456,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
-              force_x_theta_update = 4,
-              output_directory = "/Users/matthewjdenny/Desktop",
-              output_name= "No_Covariates")
+              force_x_theta_update = 4)
 
 ########################### 2. Covariates #############################
 # Preparing an unbounded network with covariates for gergm estimation #
@@ -77,7 +75,5 @@ test <- gergm(formula,
               seed = 456,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
-              force_x_theta_update = 2,
-              output_directory = "/Users/matthewjdenny/Desktop",
-              output_name= "Covariates")
+              force_x_theta_update = 2)
 }
