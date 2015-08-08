@@ -67,9 +67,7 @@ Here are two simple working examples using the `gergm( )` function:
                   seed = 456,
                   convergence_tolerance = 0.01,
                   MPLE_gain_factor = 0,
-                  force_x_theta_update = 4,
-                  output_directory = "/Users/matthewjdenny/Desktop",
-                  output_name= "No_Covariates")  
+                  force_x_theta_update = 4)  
                   
     ########################### 2. Covariates #############################
     # Preparing an unbounded network with covariates for gergm estimation #
@@ -96,9 +94,7 @@ Here are two simple working examples using the `gergm( )` function:
                   seed = 456,
                   convergence_tolerance = 0.01,
                   MPLE_gain_factor = 0,
-                  force_x_theta_update = 2,
-                  output_directory = "/Users/matthewjdenny/Desktop",
-                  output_name= "Covariates")
+                  force_x_theta_update = 2)
 
 Finally you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
 
