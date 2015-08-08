@@ -78,6 +78,12 @@ gergm <- function(formula,
     downweight_statistics_together <- 0
   }
 
+  #make sure proposal variance is greater than zero
+  if(proposal_variance <= 0){
+    proposal_variance <- 0.0000001
+    cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.0000001, considder respecifying...\n")
+  }
+
   formula <- as.formula(formula)
 
   #0. Prepare the data
