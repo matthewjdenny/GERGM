@@ -24,7 +24,8 @@ setClass(Class = "gergm",
            acceptable_fit = "logical",
            lambda_estimation_converged  = "logical",
            observed_simulated_t_test = "data.frame",
-           console_output = "character"
+           console_output = "character",
+           print_output = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
