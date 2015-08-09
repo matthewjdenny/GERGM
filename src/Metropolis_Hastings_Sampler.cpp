@@ -26,6 +26,8 @@ using namespace Rcpp;
 namespace mjd {
 
     namespace random {
+	// Distributed under the Boost Software License, Version 1.0.
+	//    (See http://www.boost.org/LICENSE_1_0.txt)
     // Coppied from the Boost libraries because they use an assert statement
     // which will not pass r cmd check.
     // http://www.boost.org/doc/libs/1_53_0/boost/random/normal_distribution.hpp
