@@ -12,6 +12,18 @@ NULL
 #' @import methods
 NULL
 
+#' @importFrom grDevices dev.off gray pdf rgb
+NULL
+
+#' @importFrom graphics boxplot
+NULL
+
+#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test
+NULL
+
+#' @importFrom utils combn write.table
+NULL
+
 #' @useDynLib GERGM
 #' @importFrom Rcpp sourceCpp
 NULL
