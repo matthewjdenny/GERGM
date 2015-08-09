@@ -17,9 +17,13 @@ Estimate_Plot <- function(GERGM_Object){
 
   #now add in lambda estimates
   if(length(GERGM_Object@lambda.coef) > 1){
+    temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
+    temp1 <- temp1[1:(length(temp1)-1)]
+    temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
+    temp2 <- temp2[1:(length(temp2)-1)]
     modelFrame2 <- data.frame(Variable = dimnames(GERGM_Object@data_transformation)[[3]] ,
-                              Coefficient = GERGM_Object@lambda.coef[,1],
-                              SE = GERGM_Object@lambda.coef[,2],
+                              Coefficient = temp1,
+                              SE = temp2,
                               Model = "Lambda Estimates"
     )
     data2 <- data.frame(modelFrame2)
