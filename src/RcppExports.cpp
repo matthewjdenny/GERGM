@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // Metropolis_Hastings_Sampler
-List Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, int seed);
-RcppExport SEXP GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP) {
+List Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store);
+RcppExport SEXP GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -24,7 +24,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type alphas(alphasSEXP);
     Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    __result = Rcpp::wrap(Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed));
+    Rcpp::traits::input_parameter< int >::type number_of_samples_to_store(number_of_samples_to_storeSEXP);
+    __result = Rcpp::wrap(Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store));
     return __result;
 END_RCPP
 }

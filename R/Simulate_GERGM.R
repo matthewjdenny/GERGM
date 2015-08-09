@@ -46,7 +46,7 @@ Simulate_GERGM <- function(GERGM_Object,
       full_thetas[stat.indx[i]] <- thetas[i]
     }
     #cat("Current Theta Estimates:",thetas,"\n")
-
+    store <- ceiling((nsim + MCMC.burnin)/sample_every)
     samples <- Metropolis_Hastings_Sampler(
       number_of_iterations = nsim + MCMC.burnin,
       shape_parameter = shape.parameter,
@@ -59,7 +59,8 @@ Simulate_GERGM <- function(GERGM_Object,
       pairs = pairs - 1,
       alphas = GERGM_Object@weights,
       together = together,
-      seed = seed1)
+      seed = seed1,
+      number_of_samples_to_store = store)
     # keep only the networks after the burnin
     start <- floor(MCMC.burnin/sample_every) + 1
     end <- length(samples[[3]][,1])
