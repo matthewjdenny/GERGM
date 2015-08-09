@@ -240,7 +240,7 @@ gergm <- function(formula,
     setwd(output_directory)
 
     pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
-    Gof_Plot(GERGM_Object)
+    GOF(GERGM_Object)
     dev.off()
 
     pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
@@ -259,7 +259,7 @@ gergm <- function(formula,
   }else{
     # if we are not saving everything to a directory then just print stuff to
     # the graphics device
-    Gof_Plot(GERGM_Object)
+    GOF(GERGM_Object)
     Sys.sleep(2)
     Estimate_Plot(GERGM_Object)
     Sys.sleep(2)
