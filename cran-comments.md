@@ -13,6 +13,5 @@ There are no downstream dependencies as this is a new package
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Converted the DESCRIPTION title to title case.
-* Added the necessary importFrom() statements to NAMESPACE to address the NOTEs produced in the previous version.
-* Revised the package description to remove redundant text and add clarity.
+* removed header calls to math.h and cmath .
+* removed the call to the ceil() function in the C++ code and replaced with a call in R code.
