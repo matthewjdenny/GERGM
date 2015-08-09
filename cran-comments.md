@@ -14,5 +14,5 @@ There are no downstream dependencies as this is a new package
 This is a resubmission. In this version I have:
 
 * Converted the DESCRIPTION title to title case.
-* Added the necessary importFrom() statements to address the NOTEs produced in the previous version.
-* Revised the package description to remove redundant text. 
+* Added the necessary importFrom() statements to NAMESPACE to address the NOTEs produced in the previous version.
+* Revised the package description to remove redundant text and add clarity.
