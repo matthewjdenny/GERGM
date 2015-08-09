@@ -39,11 +39,11 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 ## Basic Useage
 
-We are currently in the process of completing adding functionality for using node level covariates in the model and should have this functionality included in the package by the beginning of July. The model is fully functioning  and tested for specification that do not include node leve covariates. **Note that if you are not using covariates, the network you supply to the `gergm()` function must have all edge values on the [0,1] interval.** The easiest way to do this is to use the included `Prepare_Network_and_Covariates()` function to transform the network onto the [0,1] interval. If you wish to include node level covariates in your specification, then you may specify additional parameters in the `Prepare_Network_and_Covariates()` function. A working example is provided in the following section.
+To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2star(alpha = 1)`, `in2star(alpha = 1)`, `ctriads(alpha = 1)`, `recip(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network_covariate)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`.
 
 ## Examples
 
-Here are two simple working examples using the `gergm( )` function: 
+Here are two simple working examples using the `gergm()` function: 
 
     library(GERGM)
     ########################### 1. No Covariates #############################
@@ -53,50 +53,59 @@ Here are two simple working examples using the `gergm( )` function:
     formula <- net ~ recip + edges  
       
     test <- gergm(formula,
-                  normalization_type = "division",
-                  network_is_directed = TRUE,
-                  use_MPLE_only = FALSE,
-                  estimation_method = "Metropolis",
-                  maximum_number_of_lambda_updates = 1,
-                  maximum_number_of_theta_updates = 5,
-                  number_of_networks_to_simulate = 40000,
-                  thin = 1/10,
-                  proposal_variance = 0.5,
-                  downweight_statistics_together = TRUE,
-                  MCMC_burnin = 10000,
-                  seed = 456,
-                  convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0,
-                  force_x_theta_update = 4)  
-                  
+    	          normalization_type = "division",
+    	          network_is_directed = TRUE,
+    	          use_MPLE_only = FALSE,
+    	          estimation_method = "Metropolis",
+    	          maximum_number_of_lambda_updates = 1,
+    	          maximum_number_of_theta_updates = 5,
+    	          number_of_networks_to_simulate = 40000,
+    	          thin = 1/10,
+    	          proposal_variance = 0.5,
+    	          downweight_statistics_together = TRUE,
+    	          MCMC_burnin = 10000,
+    	          seed = 456,
+    	          convergence_tolerance = 0.01,
+    	          MPLE_gain_factor = 0,
+    	          force_x_theta_update = 4)
+      
     ########################### 2. Covariates #############################
     # Preparing an unbounded network with covariates for gergm estimation #
     net <- matrix(runif(100,0,1),10,10)
     colnames(net) <- rownames(net) <- letters[1:10]
     node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
-                                        Height = c(70,70,67,58,65,67,64,74,76,80))
+    	                                Height = c(70,70,67,58,65,67,64,74,76,80),
+    	                                Type = c("A","B","B","A","A","A","B","B","C","C"))
     rownames(node_level_covariates) <- letters[1:10]
     network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
-    formula <- net ~ recip + edges + sender("Age") + nodecov("Height") + netcov("network_covariate")
-         
+    formula <- net ~ recip + edges + sender("Age") + 
+    netcov("network_covariate") + nodefactor("Type",base = "A")  
+       
     test <- gergm(formula,
-                  covariate_data = node_level_covariates,
-                  network_is_directed = TRUE,
-                  use_MPLE_only = FALSE,
-                  estimation_method = "Metropolis",
-                  maximum_number_of_lambda_updates = 5,
-                  maximum_number_of_theta_updates = 5,
-                  number_of_networks_to_simulate = 500000,
-                  thin = 1/10,
-                  proposal_variance = 0.5,
-                  downweight_statistics_together = TRUE,
-                  MCMC_burnin = 200000,
-                  seed = 456,
-                  convergence_tolerance = 0.01,
-                  MPLE_gain_factor = 0,
-                  force_x_theta_update = 2)
+    	          covariate_data = node_level_covariates,
+    	          network_is_directed = TRUE,
+    	          use_MPLE_only = FALSE,
+    	          estimation_method = "Metropolis",
+    	          maximum_number_of_lambda_updates = 5,
+    	          maximum_number_of_theta_updates = 5,
+    	          number_of_networks_to_simulate = 100000,
+    	          thin = 1/10,
+    	          proposal_variance = 0.5,
+    	          downweight_statistics_together = TRUE,
+    	          MCMC_burnin = 50000,
+    	          seed = 456,
+    	          convergence_tolerance = 0.01,
+    	          MPLE_gain_factor = 0,
+    	          force_x_theta_update = 2)
+      
+    # Generate Estimate Plot
+    Estimate_Plot(test)
+    # Generate GOF Plot
+    GOF(test)
+    # Generate Trace Plot
+    Trace_Plot(test)
 
-Finally you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
+Finally, if you specified an `output_directory` and `output_name`, you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
 
 ### Output
 
@@ -111,4 +120,4 @@ If `output_name` is specified in the `gergm()` function, then five files will be
 
 ## Testing
             
-So far, this package has been tested successfully on OSX 10.9.5. Please email me at <mzd5530@psu.edu> if you have success on another OS or run into any problems.
+So far, this package has been tested successfully on OSX 10.9.5 and Windows 7. Please email me at <mzd5530@psu.edu> if you have success on another OS or run into any problems.
