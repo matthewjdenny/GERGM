@@ -1,11 +1,12 @@
 Package: GERGM
 Type: Package
-Title: A package for estimating Generalized Exponential Random Graph Models
-Version: 0.3
-Date: 2015-06-19
+Title: Estimation and Fit Diagnostics for Generalized Exponential Random Graph Models
+Version: 0.3.1
+Date: 2015-08-08
 Author: Matthew J. Denny <mzd5530@psu.edu>, James D. Wilson <jdwilson1212@gmail.com>, Skyler Cranmer <cranmer.12@osu.edu >, Bruce A. Desmarais <bbd5087@psu.edu>, Shankar Bhamidi <bhamidi@email.unc.edu>
 Maintainer: Matthew J. Denny <mzd5530@psu.edu>
-Description: This package provides functions to estimate  and diagnose the convergence of Generalized Exponential Random Graph Models (GERGM) via Gibbs sampling or Metropolis Hastings with exponential down weighting.
+Description: Estimation and diagnosis of the convergence of Generalized Exponential Random Graph Models (GERGM) via Gibbs sampling or Metropolis Hastings with exponential down weighting.
+URL: https://github.com/matthewjdenny/GERGM
 License: GPL-3
 Imports: 
 	Rcpp,
