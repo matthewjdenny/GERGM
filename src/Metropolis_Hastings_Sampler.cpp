@@ -214,6 +214,7 @@ namespace mjd {
     using random::normal_distribution;
     using std::pow;
     using std::exp;
+    using std::sqrt;
 
     // Returns the erf() of a value (not super precice, but ok)
     double erf(double x)
@@ -467,6 +468,7 @@ namespace mjd {
 
 } //end of mjd namespace
 
+using std::log;
 
 // [[Rcpp::export]]
 List Metropolis_Hastings_Sampler (int number_of_iterations,

@@ -15,3 +15,4 @@ This is a resubmission. In this version I have:
 
 * removed header calls to math.h and cmath .
 * removed the call to the ceil() function in the C++ code and replaced with a call in R code.
+* included using std::xyz statements where applicable in C++ code.
