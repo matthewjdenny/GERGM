@@ -15,3 +15,5 @@ There are no downstream dependencies as this is a new package
 This is a resubmission. In this version I have:
 
 * changed from using "boost::uniform_real_distribution" to using "boost::uniform_01" which removes assert-fail WARNING when compiling under linux (ubuntu) using gcc. This shoudl address the issue noted by Dr. Hornik. 
+* updated documentation to run on older version of R to fix Windows WARNING.
+* This submission shoudl fix all problems orriginally identified with 

@@ -3,21 +3,17 @@
 \alias{GERGM}
 \docType{package}
 \title{
-\packageTitle{GERGM}
+Estimation and Fit Diagnostics for Generalized Exponential Random Graph Models
 }
 \description{
-\packageDescription{GERGM}
+Estimation and diagnosis of the convergence of Generalized Exponential Random Graph Models (GERGM) via Gibbs sampling or Metropolis Hastings with exponential down weighting.
 }
 \details{
-
-The DESCRIPTION file:
-\packageDESCRIPTION{GERGM}
-\packageIndices{GERGM}
 To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: "out2star(alpha = 1)", "in2star(alpha = 1)", "ctriads(alpha = 1)", "recip(alpha = 1)", "ttriads(alpha = 1)", "edges(alpha = 1)", "absdiff(covariate = "MyCov")", "edgecov(covariate = "MyCov")", "sender(covariate = "MyCov")", "reciever(covariate = "MyCov")", "nodefactor(covariate, base = "MyBase")", "netcov(network_covariate)". To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The gergm() function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing ?gergm into the R console. You may also generate diagnostic plots using a GERGM Object returned by the gergm() function by using any of the following functions: Estimate_Plot(), GOF(), Trace_Plot(). See examples below.
 }
 \author{
-\packageAuthor{GERGM}
-Maintainer: \packageMaintainer{GERGM}
+Matthew J. Denny <mzd5530@psu.edu>, James D. Wilson <jdwilson1212@gmail.com>, Skyler Cranmer <cranmer.12@osu.edu >, Bruce A. Desmarais <bbd5087@psu.edu>, Shankar Bhamidi <bhamidi@email.unc.edu>
+Maintainer: Matthew J. Denny <mzd5530@psu.edu>
 }
 \references{
 Relevant papers detailing the model can be found at the links below. Please cite the second paper when using this package.
