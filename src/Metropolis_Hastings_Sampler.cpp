@@ -464,8 +464,6 @@ namespace mjd {
     return to_return;
   };
 
-
-
 } //end of mjd namespace
 
 using std::log;
@@ -504,7 +502,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
   // Set RNG and define uniform distribution
   boost::mt19937 generator(seed);
-  boost::random::uniform_real_distribution<double>  uniform_distribution(0.0,1.0);
+  //boost::random::uniform_real_distribution<double>  uniform_distribution(0.0,1.0);
+  boost::uniform_01<double> uniform_distribution;
 
   // Outer loop over the number of samples
   for (int n = 0; n < number_of_iterations; ++n) {
@@ -575,6 +574,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
     log_prob_accept += (proposed_addition - current_addition);
 
+    //double rand_num = uniform_distribution(generator);
     double rand_num = uniform_distribution(generator);
     double lud = 0;
     lud = log(rand_num);
