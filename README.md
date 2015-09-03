@@ -14,11 +14,15 @@ An R package which implements the Generalized Exponential Random Graph Model (GE
 
 ### Requirements for using C++ code with R
 
-See the **Requirements for using C++ code with R** section in the following tutorial: [Using C++ and R code Together with Rcpp](http://www.mjdenny.com/Rcpp_Intro.html).
+See the **Requirements for using C++ code with R** section in the following tutorial: [Using C++ and R code Together with Rcpp](http://www.mjdenny.com/Rcpp_Intro.html). You will likely need to install either `Xcode` or `Rtools` depending on whether you are using a Mac or Windows machine before you can use the package.
 
 ### Installing The Package
-  
-To install this package from Github, you will need to Hadley Wickham's devtools package installed.
+
+The easiest way to do this is to install the package from CRAN via the standard `install.packages` command:
+
+    install.packages("GERGM")
+
+This will take care of some weird compilation issues that can arise, and is the best option for most people. If you want the most current developmnt version of the package (available here), you will need to start by making sure you have Hadley Wickham's devtools package installed.
 
     install.packages("devtools")
     library("devtools")
