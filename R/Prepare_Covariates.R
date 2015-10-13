@@ -1,6 +1,6 @@
 Prepare_Network_and_Covariates <- function(formula,
                                     possible_structural_terms,
-                                    possible_covariate_terms,
+                                    possible_covariate_terms, 
                                     possible_network_terms,
                                     covariate_data = NULL,
                                     normalization_type = c("log","division")){
@@ -81,7 +81,7 @@ Prepare_Network_and_Covariates <- function(formula,
         stop(paste("You specified a node level covariate term:",node_covariates_list[[i]]$term, "Node level covariate effects must be one of: 'sender', 'receiver', 'absdiff', 'nodecov' or, 'nodefactor' , please respecify."))
       }
     }
-    cat("You have specified",num_covariates - 1,"node level covariate effects.\n")
+    cat("You have specified", num_covariates - 1,"node level covariate effects.\n")
   }
 
   #determine the type and number of user provided network covariates (will not be altered)
@@ -278,7 +278,7 @@ Prepare_Network_and_Covariates <- function(formula,
     #assign the dimnames to the array object
     dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
 
-    return(list(network = raw_network, transformed_covariates = transformed_covariates))
+    return(list(network = raw_network, transformed_covariates = transformed_covariates, gpar.names = slice_names))
   }
 
 } # End of function definition.

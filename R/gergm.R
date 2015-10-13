@@ -52,9 +52,9 @@ gergm <- function(formula,
 
   #' hard coded possible stats
   possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges")
-  possible_covariate_terms <- c("absdiff","nodecov","nodefactor","sender","receiver")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver")
   possible_network_terms <- "netcov"
-  possible_transformations <- c("cauchy","logcauchy","gaussian","lognormal")
+  possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
   #' set logical values for whether we are using MPLE only, whether the network
   #' is directed, and which estimation method we are using as well as the
@@ -102,7 +102,9 @@ gergm <- function(formula,
   if(!is.null(Transformed_Data$transformed_covariates)){
     data_transformation <- Transformed_Data$transformed_covariates
   }
-
+  #print(dim(data_transformation))
+  gpar.names <- c(Transformed_Data$gpar.names, "dispersion")
+  #print(gpar.names)
 
   #1. Create GERGM object from network
 
@@ -164,7 +166,7 @@ gergm <- function(formula,
     GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
 
-  #now simulate from last update of theta parameters and
+  #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                  nsim = number_of_networks_to_simulate,
                                  method = estimation_method,
@@ -176,7 +178,7 @@ gergm <- function(formula,
                                  possible.stats = possible_structural_terms)
 
   #which(GERGM_Object@stats_to_use == 1)
-
+  colnames(GERGM_Object@lambda.coef) = gpar.names
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
@@ -203,21 +205,21 @@ gergm <- function(formula,
   GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
 
   print(stats.data)
-  GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
+  GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
 
   statistic_test_p_values <- data.frame(statistic_test_p_values)
   rownames(statistic_test_p_values) <- possible_structural_terms
   cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
-  GERGM_Object <- store_console_output(GERGM_Object,toString(statistic_test_p_values))
+  GERGM_Object <- store_console_output(GERGM_Object, toString(statistic_test_p_values))
 
 
   colnames(statistic_test_p_values) <- "p_values"
   GERGM_Object@observed_simulated_t_test <- statistic_test_p_values
 
   #test to see if we have an acceptable fit
-  acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1),1]
+  acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1), 1]
 
   if(min(acceptable_fit) > acceptable_fit_p_value_threshold){
     GERGM_Object@acceptable_fit <- TRUE
@@ -225,14 +227,14 @@ gergm <- function(formula,
     GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network. ")
   }else{
     GERGM_Object@acceptable_fit <- FALSE
-    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
+    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Consider respecifying.")
+    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
   }
 
   # make GOF plot
   # Gof_Plot(GERGM_Object)
 
-  #4. output everything to the appropriate files and eturn GERGM object.
+  #4. output everything to the appropriate files and return GERGM object.
   if(generate_plots){
     # only generate output if output_name is not NULL
     if(!is.null(output_name)){
@@ -259,7 +261,7 @@ gergm <- function(formula,
       write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
 
       setwd(current_directory)
-    }else{
+    } else{
       # if we are not saving everything to a directory then just print stuff to
       # the graphics device
       GOF(GERGM_Object)
