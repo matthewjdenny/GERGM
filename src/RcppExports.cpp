@@ -29,3 +29,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// partials_to_correlations
+arma::mat partials_to_correlations(arma::mat partial_correlations);
+RcppExport SEXP GERGM_partials_to_correlations(SEXP partial_correlationsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type partial_correlations(partial_correlationsSEXP);
+    __result = Rcpp::wrap(partials_to_correlations(partial_correlations));
+    return __result;
+END_RCPP
+}

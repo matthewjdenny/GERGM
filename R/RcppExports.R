@@ -5,3 +5,7 @@ Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, n
     .Call('GERGM_Metropolis_Hastings_Sampler', PACKAGE = 'GERGM', number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store)
 }
 
+partials_to_correlations <- function(partial_correlations) {
+    .Call('GERGM_partials_to_correlations', PACKAGE = 'GERGM', partial_correlations)
+}
+
