@@ -1,2 +1,3 @@
 PKG_CXXFLAGS = -L../lib/lapack -llapack_LINUX  -L../lib/BLAS -lblas_LINUX -lgfortran
 PKG_CPPFLAGS = -llapack -lblas -lgfortran
+PKG_LIBS = -llapack -lblas -lgfortran
