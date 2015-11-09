@@ -1,1 +1,1 @@
-PKG_CXXFLAGS = "-llapack -lblas"
+PKG_CXXFLAGS = -llapack -lblas
