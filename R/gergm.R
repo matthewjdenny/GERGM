@@ -90,6 +90,9 @@ gergm <- function(formula,
 
   #0. Prepare the data
 
+  # set to false automatically in this function
+  using_correlation_network = FALSE
+
   Transformed_Data <- Prepare_Network_and_Covariates(
      formula,
      possible_structural_terms,
@@ -137,7 +140,6 @@ gergm <- function(formula,
 
   # if we are using a Correlation network then set field to TRUE. Since James is
   # planing to create a separate function, we set it to FALSE automatically.
-  using_correlation_network = FALSE
   if(using_correlation_network){
     GERGM_Object@is_correlation_network <- TRUE
   }else{

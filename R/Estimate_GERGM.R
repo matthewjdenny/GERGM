@@ -114,7 +114,7 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", statistics, "\n"))
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
         GERGM_Object@theta.par <- theta.new$par
-        
+
         if(i > 1){
           # Stop if lambda and theta estimates converge
           p.value1 <- rep(0, length(theta$par))
@@ -324,7 +324,7 @@ Estimate_GERGM <- function(formula_object,
 
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
-      lambda <- as.data.frame(0) 
+      lambda <- as.data.frame(0)
     }
   }
   theta <- t(as.matrix(theta$par))

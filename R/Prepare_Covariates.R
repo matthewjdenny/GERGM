@@ -150,10 +150,11 @@ Prepare_Network_and_Covariates <- function(formula,
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
           if(j != k){
-            row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
-            unique_vals <- unique(covariates[row1,covariate_column])
-            idx <- which(unique_vals == covariates[row1,covariate_column])
-            if(level == idx){
+            col1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+            row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+            colval <- covariates[col1,covariate_column]
+            rowval <- covariates[row1,covariate_column]
+            if(level == colval & level == rowval){
               return_matrix[j,k] <- 1
             }
           }
@@ -210,8 +211,9 @@ Prepare_Network_and_Covariates <- function(formula,
                                                     node_names = node_names,
                                                     covariates = covariate_data,
                                                     covariate_column = col_index,
-                                                    effect_type = "sender",
+                                                    effect_type = "nodefactor",
                                                     level = node_covariates_list[[i]]$levels[j])
+            print(add)
             transformed_covariates[,,slice_counter] <- add
             slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,node_covariates_list[[i]]$levels[j],sep="_")
             slice_counter <- slice_counter + 1
@@ -283,7 +285,6 @@ Prepare_Network_and_Covariates <- function(formula,
 
     #assign the dimnames to the array object
     dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
-
     return(list(network = raw_network, transformed_covariates = transformed_covariates, gpar.names = slice_names))
   }
 
