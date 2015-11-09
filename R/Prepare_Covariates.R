@@ -1,9 +1,11 @@
 Prepare_Network_and_Covariates <- function(formula,
                                     possible_structural_terms,
-                                    possible_covariate_terms, 
+                                    possible_covariate_terms,
                                     possible_network_terms,
                                     covariate_data = NULL,
-                                    normalization_type = c("log","division")){
+                                    normalization_type = c("log","division"),
+                                    is_correlation_network = FALSE
+                                    ){
 
   node_covariates_list <- Parse_Formula_Object(formula = formula,
      possible_structural_terms =possible_structural_terms,
@@ -249,25 +251,29 @@ Prepare_Network_and_Covariates <- function(formula,
     #' [0,1] interval and standardize it by one of the provided methods if it
     #' does not. Then return the network and no covariates.
 
-    if(min(raw_network) < 0){
-      raw_network <- raw_network - min(raw_network)
-    }
-    if(max(raw_network) > 1){
-      if(normalization_type[1] == "log"){
-        raw_network <- raw_network + 1
-        network <- log(raw_network)
-        network <- network/max(network)
-      }
-
-      if(normalization_type[1] == "division"){
-        network <- raw_network/max(raw_network)
-      }
-
-      diag(network) <- 0
+    # deal with the case where we have a correlation matrix provided
+    if(is_correlation_network){
+      network <- 2*raw_network -1
     }else{
-      network <- raw_network
-    }
+      if(min(raw_network) < 0){
+        raw_network <- raw_network - min(raw_network)
+      }
+      if(max(raw_network) > 1){
+        if(normalization_type[1] == "log"){
+          raw_network <- raw_network + 1
+          network <- log(raw_network)
+          network <- network/max(network)
+        }
 
+        if(normalization_type[1] == "division"){
+          network <- raw_network/max(raw_network)
+        }
+
+        diag(network) <- 0
+      }else{
+        network <- raw_network
+      }
+    }
     return(list(network = network))
   }else{
     #4. standardize covariates

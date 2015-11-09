@@ -14,7 +14,8 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
-  output_directory = NULL, output_name = NULL, generate_plots = TRUE)
+  output_directory = NULL, output_name = NULL, generate_plots = TRUE,
+  using_correlation_network = FALSE)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads", "edgeweight").}
@@ -60,6 +61,8 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
 \item{output_name}{The common name stem you would like to assign to all object output by the gergm function. Default value of NULL will not save any output directly to .pdf files, it will be printed to the console instead. Must be a character string or NULL. For example, if "Test" is supplied as the output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estimates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and "Test_Trace_Plot.pdf"}
 
 \item{generate_plots}{Defaults to TRUE, if FALSE, then no diagnostic or parameter plots are generated.}
+
+\item{using_correlation_network}{Experimental feature to estimate GERGM's for correlation networks. Defaults to FALSE. It is highly inadvisable to use this feature until it is better understood.}
 }
 \value{
 A gergm object containing parameter estimates.

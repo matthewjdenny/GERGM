@@ -25,7 +25,8 @@ setClass(Class = "gergm",
            lambda_estimation_converged  = "logical",
            observed_simulated_t_test = "data.frame",
            console_output = "character",
-           print_output = "logical"
+           print_output = "logical",
+           is_correlation_network = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
@@ -109,6 +110,10 @@ setClass(Class = "gergm",
                & is.null(object@observed_simulated_t_test)
                == FALSE) {
              stop("'observed_simulated_t_test' must be a 'data.frame' object or 'NULL'.")
+           }
+           if (!is.character(object@console_output) & is.null(object@console_output)
+               == FALSE) {
+             stop("'console_output' must be a 'character' object or 'NULL'.")
            }
            if (!is.character(object@console_output) & is.null(object@console_output)
                == FALSE) {

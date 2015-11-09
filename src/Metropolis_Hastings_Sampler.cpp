@@ -5,7 +5,6 @@
 #include <boost/random.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
-
 #include <boost/config/no_tr1/cmath.hpp>
 #include <istream>
 #include <iosfwd>
@@ -21,448 +20,514 @@ using namespace Rcpp;
 
 namespace mjd {
 
-    namespace random {
-	// Distributed under the Boost Software License, Version 1.0.
-	//    (See http://www.boost.org/LICENSE_1_0.txt)
-    // Coppied from the Boost libraries because they use an assert statement
-    // which will not pass r cmd check.
-    // http://www.boost.org/doc/libs/1_53_0/boost/random/normal_distribution.hpp
-    // deterministic Box-Muller method, uses trigonometric functions
+namespace random {
+// Distributed under the Boost Software License, Version 1.0.
+//    (See http://www.boost.org/LICENSE_1_0.txt)
+// Coppied from the Boost libraries because they use an assert statement
+// which will not pass r cmd check.
+// http://www.boost.org/doc/libs/1_53_0/boost/random/normal_distribution.hpp
+// deterministic Box-Muller method, uses trigonometric functions
+
+/**
+* Instantiations of class template normal_distribution model a
+* \random_distribution. Such a distribution produces random numbers
+* @c x distributed with probability density function
+* \f$\displaystyle p(x) =
+*   \frac{1}{\sqrt{2\pi\sigma}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+* \f$,
+* where mean and sigma are the parameters of the distribution.
+*/
+template<class RealType = double>
+class normal_distribution
+{
+public:
+  typedef RealType input_type;
+  typedef RealType result_type;
+
+  class param_type {
+  public:
+    typedef normal_distribution distribution_type;
 
     /**
-    * Instantiations of class template normal_distribution model a
-    * \random_distribution. Such a distribution produces random numbers
-    * @c x distributed with probability density function
-    * \f$\displaystyle p(x) =
-    *   \frac{1}{\sqrt{2\pi\sigma}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
-    * \f$,
-    * where mean and sigma are the parameters of the distribution.
+    * Constructs a @c param_type with a given mean and
+    * standard deviation.
+    *
+    * Requires: sigma >= 0
     */
-    template<class RealType = double>
-    class normal_distribution
-    {
-    public:
-      typedef RealType input_type;
-      typedef RealType result_type;
+    explicit param_type(RealType mean_arg = RealType(0.0),
+                        RealType sigma_arg = RealType(1.0))
+      : _mean(mean_arg),
+        _sigma(sigma_arg)
+    {}
 
-      class param_type {
-      public:
-        typedef normal_distribution distribution_type;
+    /** Returns the mean of the distribution. */
+    RealType mean() const { return _mean; }
 
-        /**
-        * Constructs a @c param_type with a given mean and
-        * standard deviation.
-        *
-        * Requires: sigma >= 0
-        */
-        explicit param_type(RealType mean_arg = RealType(0.0),
-                            RealType sigma_arg = RealType(1.0))
-          : _mean(mean_arg),
-            _sigma(sigma_arg)
-            {}
+    /** Returns the standand deviation of the distribution. */
+    RealType sigma() const { return _sigma; }
 
-        /** Returns the mean of the distribution. */
-        RealType mean() const { return _mean; }
+    /** Writes a @c param_type to a @c std::ostream. */
+    BOOST_RANDOM_DETAIL_OSTREAM_OPERATOR(os, param_type, parm)
+    { os << parm._mean << " " << parm._sigma ; return os; }
 
-        /** Returns the standand deviation of the distribution. */
-        RealType sigma() const { return _sigma; }
+    /** Reads a @c param_type from a @c std::istream. */
+    BOOST_RANDOM_DETAIL_ISTREAM_OPERATOR(is, param_type, parm)
+    { is >> parm._mean >> std::ws >> parm._sigma; return is; }
 
-        /** Writes a @c param_type to a @c std::ostream. */
-        BOOST_RANDOM_DETAIL_OSTREAM_OPERATOR(os, param_type, parm)
-        { os << parm._mean << " " << parm._sigma ; return os; }
+    /** Returns true if the two sets of parameters are the same. */
+    BOOST_RANDOM_DETAIL_EQUALITY_OPERATOR(param_type, lhs, rhs)
+    { return lhs._mean == rhs._mean && lhs._sigma == rhs._sigma; }
 
-        /** Reads a @c param_type from a @c std::istream. */
-        BOOST_RANDOM_DETAIL_ISTREAM_OPERATOR(is, param_type, parm)
-        { is >> parm._mean >> std::ws >> parm._sigma; return is; }
+    /** Returns true if the two sets of parameters are the different. */
+    BOOST_RANDOM_DETAIL_INEQUALITY_OPERATOR(param_type)
 
-        /** Returns true if the two sets of parameters are the same. */
-        BOOST_RANDOM_DETAIL_EQUALITY_OPERATOR(param_type, lhs, rhs)
-        { return lhs._mean == rhs._mean && lhs._sigma == rhs._sigma; }
+  private:
+    RealType _mean;
+    RealType _sigma;
+  };
 
-        /** Returns true if the two sets of parameters are the different. */
-        BOOST_RANDOM_DETAIL_INEQUALITY_OPERATOR(param_type)
+  /**
+  * Constructs a @c normal_distribution object. @c mean and @c sigma are
+  * the parameters for the distribution.
+  *
+  * Requires: sigma >= 0
+  */
+  explicit normal_distribution(const RealType& mean_arg = RealType(0.0),
+                               const RealType& sigma_arg = RealType(1.0))
+    : _mean(mean_arg), _sigma(sigma_arg),
+      _r1(0), _r2(0), _cached_rho(0), _valid(false)
+  {}
 
-      private:
-        RealType _mean;
-        RealType _sigma;
-      };
+  /**
+  * Constructs a @c normal_distribution object from its parameters.
+  */
+  explicit normal_distribution(const param_type& parm)
+    : _mean(parm.mean()), _sigma(parm.sigma()),
+      _r1(0), _r2(0), _cached_rho(0), _valid(false)
+  {}
 
-      /**
-      * Constructs a @c normal_distribution object. @c mean and @c sigma are
-      * the parameters for the distribution.
-      *
-      * Requires: sigma >= 0
-      */
-      explicit normal_distribution(const RealType& mean_arg = RealType(0.0),
-                                   const RealType& sigma_arg = RealType(1.0))
-        : _mean(mean_arg), _sigma(sigma_arg),
-          _r1(0), _r2(0), _cached_rho(0), _valid(false)
-          {}
+  /**  Returns the mean of the distribution. */
+  RealType mean() const { return _mean; }
+  /** Returns the standard deviation of the distribution. */
+  RealType sigma() const { return _sigma; }
 
-      /**
-      * Constructs a @c normal_distribution object from its parameters.
-      */
-      explicit normal_distribution(const param_type& parm)
-        : _mean(parm.mean()), _sigma(parm.sigma()),
-          _r1(0), _r2(0), _cached_rho(0), _valid(false)
-          {}
+  /** Returns the smallest value that the distribution can produce. */
+  RealType min BOOST_PREVENT_MACRO_SUBSTITUTION () const
+  { return -std::numeric_limits<RealType>::infinity(); }
+  /** Returns the largest value that the distribution can produce. */
+  RealType max BOOST_PREVENT_MACRO_SUBSTITUTION () const
+  { return std::numeric_limits<RealType>::infinity(); }
 
-      /**  Returns the mean of the distribution. */
-      RealType mean() const { return _mean; }
-      /** Returns the standard deviation of the distribution. */
-      RealType sigma() const { return _sigma; }
+  /** Returns the parameters of the distribution. */
+  param_type param() const { return param_type(_mean, _sigma); }
+  /** Sets the parameters of the distribution. */
+  void param(const param_type& parm)
+  {
+    _mean = parm.mean();
+    _sigma = parm.sigma();
+    _valid = false;
+  }
 
-      /** Returns the smallest value that the distribution can produce. */
-      RealType min BOOST_PREVENT_MACRO_SUBSTITUTION () const
-      { return -std::numeric_limits<RealType>::infinity(); }
-      /** Returns the largest value that the distribution can produce. */
-      RealType max BOOST_PREVENT_MACRO_SUBSTITUTION () const
-      { return std::numeric_limits<RealType>::infinity(); }
+  /**
+  * Effects: Subsequent uses of the distribution do not depend
+  * on values produced by any engine prior to invoking reset.
+  */
+  void reset() { _valid = false; }
 
-      /** Returns the parameters of the distribution. */
-      param_type param() const { return param_type(_mean, _sigma); }
-      /** Sets the parameters of the distribution. */
-      void param(const param_type& parm)
-      {
-        _mean = parm.mean();
-        _sigma = parm.sigma();
-        _valid = false;
-      }
-
-      /**
-      * Effects: Subsequent uses of the distribution do not depend
-      * on values produced by any engine prior to invoking reset.
-      */
-      void reset() { _valid = false; }
-
-      /**  Returns a normal variate. */
-      template<class Engine>
-      result_type operator()(Engine& eng)
-      {
-        using std::sqrt;
-        using std::log;
-        using std::sin;
-        using std::cos;
-
-        if(!_valid) {
-          _r1 = boost::uniform_01<RealType>()(eng);
-          _r2 = boost::uniform_01<RealType>()(eng);
-          _cached_rho = sqrt(-result_type(2) * log(result_type(1)-_r2));
-          _valid = true;
-        } else {
-          _valid = false;
-        }
-        // Can we have a boost::mathconst please?
-        const result_type pi = result_type(3.14159265358979323846);
-
-        return _cached_rho * (_valid ?
-                              cos(result_type(2)*pi*_r1) :
-                                sin(result_type(2)*pi*_r1))
-          * _sigma + _mean;
-      }
-
-      /** Returns a normal variate with parameters specified by @c param. */
-      template<class URNG>
-      result_type operator()(URNG& urng, const param_type& parm)
-      {
-        return normal_distribution(parm)(urng);
-      }
-
-      /** Writes a @c normal_distribution to a @c std::ostream. */
-      BOOST_RANDOM_DETAIL_OSTREAM_OPERATOR(os, normal_distribution, nd)
-      {
-        os << nd._mean << " " << nd._sigma << " "
-           << nd._valid << " " << nd._cached_rho << " " << nd._r1;
-        return os;
-      }
-
-      /** Reads a @c normal_distribution from a @c std::istream. */
-      BOOST_RANDOM_DETAIL_ISTREAM_OPERATOR(is, normal_distribution, nd)
-      {
-        is >> std::ws >> nd._mean >> std::ws >> nd._sigma
-           >> std::ws >> nd._valid >> std::ws >> nd._cached_rho
-           >> std::ws >> nd._r1;
-           return is;
-      }
-
-      /**
-      * Returns true if the two instances of @c normal_distribution will
-      * return identical sequences of values given equal generators.
-      */
-      BOOST_RANDOM_DETAIL_EQUALITY_OPERATOR(normal_distribution, lhs, rhs)
-      {
-        return lhs._mean == rhs._mean && lhs._sigma == rhs._sigma
-        && lhs._valid == rhs._valid
-        && (!lhs._valid || (lhs._r1 == rhs._r1 && lhs._r2 == rhs._r2));
-      }
-
-      /**
-      * Returns true if the two instances of @c normal_distribution will
-      * return different sequences of values given equal generators.
-      */
-      BOOST_RANDOM_DETAIL_INEQUALITY_OPERATOR(normal_distribution)
-
-    private:
-      RealType _mean, _sigma;
-      RealType _r1, _r2, _cached_rho;
-      bool _valid;
-
-    };
-
-    } // namespace random
-
-    using random::normal_distribution;
-    using std::pow;
-    using std::exp;
+  /**  Returns a normal variate. */
+  template<class Engine>
+  result_type operator()(Engine& eng)
+  {
     using std::sqrt;
+    using std::log;
+    using std::sin;
+    using std::cos;
 
-    // Returns the erf() of a value (not super precice, but ok)
-    double erf(double x)
-    {
-     double y = 1.0 / ( 1.0 + 0.3275911 * x);
-     return 1 - (((((
-            + 1.061405429  * y
-            - 1.453152027) * y
-            + 1.421413741) * y
-            - 0.284496736) * y
-            + 0.254829592) * y)
-            * exp (-x * x);
-    }
-
-    // Returns the probability of x, given the distribution described by mu and sigma.
-    double pdf(double x, double mu, double sigma)
-    {
-      //Constants
-      static const double pi = 3.14159265;
-      return exp( -1 * (x - mu) * (x - mu) / (2 * sigma * sigma)) / (sigma * sqrt(2.0 * pi));
-    }
-
-    // Returns the probability of [-inf,x] of a gaussian distribution
-    double cdf(double x, double mu, double sigma)
-    {
-        return 0.5 * (1 + mjd::erf((x - mu) / (sigma * sqrt(2.0))));
-    }
-
-
-  // Function to calculate the number of out 2-stars
-  double Out2Star(arma::mat net,
-                  arma::mat triples,
-                  double alpha,
-                  int together) {
-
-    int number_of_triples = triples.n_rows;
-    double st1 = 0;
-    double st2 = 0;
-    double st3 = 0;
-
-    for (int i = 0; i < number_of_triples; ++i) {
-      st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 0),
-          triples(i, 2));
-      st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-          triples(i, 2));
-      st3 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 2),
-          triples(i, 1));
-    }
-
-    double to_return = 0;
-    if (together == 1) {
-      to_return = pow((st1 + st2 + st3), alpha);
+    if(!_valid) {
+      _r1 = boost::uniform_01<RealType>()(eng);
+      _r2 = boost::uniform_01<RealType>()(eng);
+      _cached_rho = sqrt(-result_type(2) * log(result_type(1)-_r2));
+      _valid = true;
     } else {
-      to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+      _valid = false;
     }
-    return to_return;
-  };
+    // Can we have a boost::mathconst please?
+    const result_type pi = result_type(3.14159265358979323846);
 
-  // Function to calculate the number of in 2-stars
-  double In2Star(arma::mat net,
-                 arma::mat triples,
-                 double alpha,
-                 int together) {
+    return _cached_rho * (_valid ?
+                          cos(result_type(2)*pi*_r1) :
+                            sin(result_type(2)*pi*_r1))
+      * _sigma + _mean;
+  }
 
-    int number_of_triples = triples.n_rows;
-    double st1 = 0;
-    double st2 = 0;
-    double st3 = 0;
+  /** Returns a normal variate with parameters specified by @c param. */
+  template<class URNG>
+  result_type operator()(URNG& urng, const param_type& parm)
+  {
+    return normal_distribution(parm)(urng);
+  }
 
-    for (int i = 0; i < number_of_triples; ++i) {
-      st1 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 1),
-          triples(i, 0));
-      st2 += net(triples(i, 2), triples(i, 1)) * net(triples(i, 0),
-          triples(i, 1));
-      st3 += net(triples(i, 0), triples(i, 2)) * net(triples(i, 1),
-          triples(i, 2));
+  /** Writes a @c normal_distribution to a @c std::ostream. */
+  BOOST_RANDOM_DETAIL_OSTREAM_OPERATOR(os, normal_distribution, nd)
+  {
+    os << nd._mean << " " << nd._sigma << " "
+       << nd._valid << " " << nd._cached_rho << " " << nd._r1;
+    return os;
+  }
+
+  /** Reads a @c normal_distribution from a @c std::istream. */
+  BOOST_RANDOM_DETAIL_ISTREAM_OPERATOR(is, normal_distribution, nd)
+  {
+    is >> std::ws >> nd._mean >> std::ws >> nd._sigma
+       >> std::ws >> nd._valid >> std::ws >> nd._cached_rho
+       >> std::ws >> nd._r1;
+       return is;
+  }
+
+  /**
+  * Returns true if the two instances of @c normal_distribution will
+  * return identical sequences of values given equal generators.
+  */
+  BOOST_RANDOM_DETAIL_EQUALITY_OPERATOR(normal_distribution, lhs, rhs)
+  {
+    return lhs._mean == rhs._mean && lhs._sigma == rhs._sigma
+    && lhs._valid == rhs._valid
+    && (!lhs._valid || (lhs._r1 == rhs._r1 && lhs._r2 == rhs._r2));
+  }
+
+  /**
+  * Returns true if the two instances of @c normal_distribution will
+  * return different sequences of values given equal generators.
+  */
+  BOOST_RANDOM_DETAIL_INEQUALITY_OPERATOR(normal_distribution)
+
+private:
+  RealType _mean, _sigma;
+  RealType _r1, _r2, _cached_rho;
+  bool _valid;
+
+};
+
+} // namespace random
+
+using random::normal_distribution;
+using std::pow;
+using std::exp;
+using std::sqrt;
+
+// add in the functions I wrote for correlation networks
+arma::mat partials_to_correlations(arma::mat partial_correlations){
+  int nrow = partial_correlations.n_rows;
+  arma::mat correlations = arma::ones(nrow,nrow);
+  correlations.diag(1) = partial_correlations.diag(1);
+  correlations.diag(-1) = partial_correlations.diag(-1);
+
+  for (int k = 2; k < (nrow); ++k) {
+    for (int i = 1; i < (nrow - k + 1); ++i) {
+      arma::mat R2 = correlations.submat(i,i,(i + k -2),(i + k -2));
+      arma::mat R2_ones = arma::ones(R2.n_cols,R2.n_cols);
+      arma::rowvec r1 = correlations(i-1,arma::span(i,(i + k -2)));
+      arma::rowvec r3 =  correlations((i + k -1),arma::span(i,(i + k- 2)));
+      arma::mat R2_solved = R2.i();
+
+      arma::mat temp1 = 1 - r1 * R2_solved * r1.t();
+      arma::mat temp2 =  1 - r3 * R2_solved * r3.t();
+      arma::mat D =  sqrt(temp1 * temp2);
+      arma::mat temp3 = r1 * R2_solved * r3.t() + partial_correlations(i -1, i + k-1)*D;
+      correlations((i-1), (i + k-1)) = temp3(0,0);
+      correlations((i + k-1), (i-1)) = correlations(i-1, i + k-1);
     }
+  }
+  return correlations;
+}
 
-    double to_return = 0;
-    if (together == 1) {
-      to_return = pow((st1 + st2 + st3), alpha);
-    } else {
-      to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+
+arma::mat bounded_to_correlations(arma::mat bounded_network){
+  //transform back to the partial space
+  arma::mat partials = 2 * bounded_network -1;
+  int temp = partials.n_rows;
+  partials.diag() = arma::ones(temp);
+  //transform to correlation space
+  arma::mat correlations =  mjd::partials_to_correlations(partials);
+  return correlations;
+}
+
+
+double jacobian(arma::mat partial_correlations){
+  int nrow = partial_correlations.n_rows;
+  arma::vec corrs_1 = partial_correlations.diag(1);
+  arma::vec temp = pow(corrs_1,2);
+  arma::vec temp2 = pow((1 - temp),(nrow -2));
+  double prod_1 =  arma::prod(temp2);
+  double prod_2 = 1;
+
+  for (int k = 2; k < (nrow -1); ++k) {
+    for (int i = 0; i < (nrow - k); ++i) {
+      double temp3 = pow(partial_correlations(i,(i + k)),2);
+      prod_2 = prod_2 * pow((1 - temp3),(nrow - 1 - k));
     }
-    return to_return;
-  };
+  }
 
-  // Function to calculate the number of transitive triads
-  double TTriads(arma::mat net,
-                 arma::mat triples,
-                 double alpha,
-                 int together) {
+  double temp4 = pow(prod_1,(nrow - 2));
+  double result = pow(temp4*prod_2,0.5);
+  return result;
+}
 
-    int number_of_triples = triples.n_rows;
-    double st1 = 0;
-    double st2 = 0;
-    double st3 = 0;
-    double st4 = 0;
-    double st5 = 0;
-    double st6 = 0;
 
-    for (int i = 0; i < number_of_triples; ++i) {
-      st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
-          triples(i, 2)) * net(triples(i, 0), triples(i, 2));
-      st2 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
-          triples(i, 1)) * net(triples(i, 2), triples(i, 0));
-      st3 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
-          triples(i, 1)) * net(triples(i, 0), triples(i, 2));
-      st4 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-          triples(i, 2)) * net(triples(i, 2), triples(i, 0));
-      st5 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-          triples(i, 2)) * net(triples(i, 0), triples(i, 2));
-      st6 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
-          triples(i, 1)) * net(triples(i, 2), triples(i, 0));
-    }
 
-    double to_return = 0;
-    if (together == 1) {
-      to_return = pow((st1 + st2 + st3 + st4 + st5 + st6), alpha);
-    } else {
-      to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha)
-          + pow(st4, alpha) + pow(st5, alpha) + pow(st6, alpha);
-    }
-    return to_return;
-  };
 
-  // Function to calculate the number of closed triads
-  double CTriads(arma::mat net,
-                 arma::mat triples,
-                 double alpha,
-                 int together){
 
-    int number_of_triples = triples.n_rows;
-    double st1 = 0;
-    double st2 = 0;
 
-    for (int i = 0; i < number_of_triples; ++i) {
-      st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
-          triples(i, 2)) * net(triples(i, 2), triples(i, 0));
-      st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
-          triples(i,1)) * net(triples(i, 0), triples(i, 2));
-    }
 
-    double to_return = 0;
-    if (together == 1) {
-      to_return = pow((st1 + st2), alpha);
-    } else {
-      to_return = pow(st1, alpha) + pow(st2, alpha);
-    }
-    return to_return;
-  };
 
-  // Function to calculate the number of reciprocated edges
-  double Recip(arma::mat net,
-               arma::mat pairs,
+
+// Returns the erf() of a value (not super precice, but ok)
+double erf(double x)
+{
+  double y = 1.0 / ( 1.0 + 0.3275911 * x);
+  return 1 - (((((
+      + 1.061405429  * y
+                   - 1.453152027) * y
+                   + 1.421413741) * y
+                   - 0.284496736) * y
+                   + 0.254829592) * y)
+                   * exp (-x * x);
+}
+
+// Returns the probability of x, given the distribution described by mu and sigma.
+double pdf(double x, double mu, double sigma)
+{
+  //Constants
+  static const double pi = 3.14159265;
+  return exp( -1 * (x - mu) * (x - mu) / (2 * sigma * sigma)) / (sigma * sqrt(2.0 * pi));
+}
+
+// Returns the probability of [-inf,x] of a gaussian distribution
+double cdf(double x, double mu, double sigma)
+{
+  return 0.5 * (1 + mjd::erf((x - mu) / (sigma * sqrt(2.0))));
+}
+
+
+// Function to calculate the number of out 2-stars
+double Out2Star(arma::mat net,
+                arma::mat triples,
+                double alpha,
+                int together) {
+
+  int number_of_triples = triples.n_rows;
+  double st1 = 0;
+  double st2 = 0;
+  double st3 = 0;
+
+  for (int i = 0; i < number_of_triples; ++i) {
+    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 0),
+               triples(i, 2));
+    st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+               triples(i, 2));
+    st3 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 2),
+               triples(i, 1));
+  }
+
+  double to_return = 0;
+  if (together == 1) {
+    to_return = pow((st1 + st2 + st3), alpha);
+  } else {
+    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+  }
+  return to_return;
+};
+
+// Function to calculate the number of in 2-stars
+double In2Star(arma::mat net,
+               arma::mat triples,
                double alpha,
                int together) {
 
-    int number_of_pairs = pairs.n_rows;
-    double st1 = 0;
-    for (int i = 0; i < number_of_pairs; ++i) {
-        st1 += net(pairs(i, 0), pairs(i, 1)) * net(pairs(i, 1), pairs(i, 0));
-    }
+  int number_of_triples = triples.n_rows;
+  double st1 = 0;
+  double st2 = 0;
+  double st3 = 0;
 
-    double to_return = pow(st1, alpha);
-    return to_return;
-  };
+  for (int i = 0; i < number_of_triples; ++i) {
+    st1 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 1),
+               triples(i, 0));
+    st2 += net(triples(i, 2), triples(i, 1)) * net(triples(i, 0),
+               triples(i, 1));
+    st3 += net(triples(i, 0), triples(i, 2)) * net(triples(i, 1),
+               triples(i, 2));
+  }
 
-  // Function to calculate the density of the network
-  double EdgeDensity(arma::mat net,
-                     arma::mat pairs,
-                     double alpha,
-                     int together) {
+  double to_return = 0;
+  if (together == 1) {
+    to_return = pow((st1 + st2 + st3), alpha);
+  } else {
+    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+  }
+  return to_return;
+};
 
-    int number_of_pairs = pairs.n_rows;
-    double st1 = 0;
-    double st2 = 0;
-    double to_return = 0;
+// Function to calculate the number of transitive triads
+double TTriads(arma::mat net,
+               arma::mat triples,
+               double alpha,
+               int together) {
 
-    for (int i = 0; i < number_of_pairs; ++i) {
-      st1 += net(pairs(i, 0), pairs(i, 1));
-      st1 += net(pairs(i, 1), pairs(i, 0));
-      st2 += pow(net(pairs(i, 0), pairs(i, 1)), alpha);
-      st2 += pow(net(pairs(i, 1), pairs(i, 0)), alpha);
-    }
+  int number_of_triples = triples.n_rows;
+  double st1 = 0;
+  double st2 = 0;
+  double st3 = 0;
+  double st4 = 0;
+  double st5 = 0;
+  double st6 = 0;
 
-    if (together == 1) {
-      to_return = pow(st1, alpha);
-    } else {
-      to_return = st2;
-    }
-    return to_return;
-  };
+  for (int i = 0; i < number_of_triples; ++i) {
+    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
+               triples(i, 2)) * net(triples(i, 0), triples(i, 2));
+    st2 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
+               triples(i, 1)) * net(triples(i, 2), triples(i, 0));
+    st3 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
+               triples(i, 1)) * net(triples(i, 0), triples(i, 2));
+    st4 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+               triples(i, 2)) * net(triples(i, 2), triples(i, 0));
+    st5 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+               triples(i, 2)) * net(triples(i, 0), triples(i, 2));
+    st6 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
+               triples(i, 1)) * net(triples(i, 2), triples(i, 0));
+  }
 
-  // Function that will calculate h statistics
-  double CalculateNetworkStatistics(arma::mat current_network,
-                                    arma::vec statistics_to_use,
-                                    arma::vec thetas,
-                                    arma::mat triples,
-                                    arma::mat pairs,
-                                    arma::vec alphas,
-                                    int together) {
+  double to_return = 0;
+  if (together == 1) {
+    to_return = pow((st1 + st2 + st3 + st4 + st5 + st6), alpha);
+  } else {
+    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha)
+    + pow(st4, alpha) + pow(st5, alpha) + pow(st6, alpha);
+  }
+  return to_return;
+};
 
-    double to_return = 0;
+// Function to calculate the number of closed triads
+double CTriads(arma::mat net,
+               arma::mat triples,
+               double alpha,
+               int together){
 
-    if (statistics_to_use[0] == 1) {
-        to_return += thetas[0] * Out2Star(current_network, triples, alphas[0],
-            together);
-    }
-    if (statistics_to_use[1] == 1) {
-        to_return += thetas[1] * In2Star(current_network, triples, alphas[1],
-            together);
-    }
-    if (statistics_to_use[2] == 1) {
-        to_return += thetas[2] * CTriads(current_network, triples, alphas[2],
-            together);
-    }
-    if (statistics_to_use[3] == 1) {
-        to_return += thetas[3] * Recip(current_network, pairs, alphas[3],
-            together);
-    }
-    if (statistics_to_use[4] == 1) {
-        to_return += thetas[4] * TTriads(current_network, triples, alphas[4],
-            together);
-    }
-    if (statistics_to_use[5] == 1) {
-        to_return += thetas[5] * EdgeDensity(current_network, pairs,
-            alphas[5], together);
-    }
-    return to_return;
-  };
+  int number_of_triples = triples.n_rows;
+  double st1 = 0;
+  double st2 = 0;
 
-  // Function that will calculate and save all of the h statistics for a network
-  arma::vec save_network_statistics(arma::mat current_network,
-                                    arma::mat triples,
-                                    arma::mat pairs,
-                                    arma::vec alphas,
-                                    int together) {
+  for (int i = 0; i < number_of_triples; ++i) {
+    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
+               triples(i, 2)) * net(triples(i, 2), triples(i, 0));
+    st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
+               triples(i,1)) * net(triples(i, 0), triples(i, 2));
+  }
 
-    arma::vec to_return = arma::zeros(6);
-    to_return[0] = Out2Star(current_network, triples, alphas[0], together);
-    to_return[1] = In2Star(current_network, triples, alphas[1], together);
-    to_return[2] = CTriads(current_network, triples, alphas[2], together);
-    to_return[3] = Recip(current_network, pairs, alphas[3], together);
-    to_return[4] = TTriads(current_network, triples, alphas[4], together);
-    to_return[5] = EdgeDensity(current_network, pairs, alphas[5], together);
-    return to_return;
-  };
+  double to_return = 0;
+  if (together == 1) {
+    to_return = pow((st1 + st2), alpha);
+  } else {
+    to_return = pow(st1, alpha) + pow(st2, alpha);
+  }
+  return to_return;
+};
+
+// Function to calculate the number of reciprocated edges
+double Recip(arma::mat net,
+             arma::mat pairs,
+             double alpha,
+             int together) {
+
+  int number_of_pairs = pairs.n_rows;
+  double st1 = 0;
+  for (int i = 0; i < number_of_pairs; ++i) {
+    st1 += net(pairs(i, 0), pairs(i, 1)) * net(pairs(i, 1), pairs(i, 0));
+  }
+
+  double to_return = pow(st1, alpha);
+  return to_return;
+};
+
+// Function to calculate the density of the network
+double EdgeDensity(arma::mat net,
+                   arma::mat pairs,
+                   double alpha,
+                   int together) {
+
+  int number_of_pairs = pairs.n_rows;
+  double st1 = 0;
+  double st2 = 0;
+  double to_return = 0;
+
+  for (int i = 0; i < number_of_pairs; ++i) {
+    st1 += net(pairs(i, 0), pairs(i, 1));
+    st1 += net(pairs(i, 1), pairs(i, 0));
+    st2 += pow(net(pairs(i, 0), pairs(i, 1)), alpha);
+    st2 += pow(net(pairs(i, 1), pairs(i, 0)), alpha);
+  }
+
+  if (together == 1) {
+    to_return = pow(st1, alpha);
+  } else {
+    to_return = st2;
+  }
+  return to_return;
+};
+
+// Function that will calculate h statistics
+double CalculateNetworkStatistics(arma::mat current_network,
+                                  arma::vec statistics_to_use,
+                                  arma::vec thetas,
+                                  arma::mat triples,
+                                  arma::mat pairs,
+                                  arma::vec alphas,
+                                  int together) {
+
+  double to_return = 0;
+
+  if (statistics_to_use[0] == 1) {
+    to_return += thetas[0] * Out2Star(current_network, triples, alphas[0],
+                                      together);
+  }
+  if (statistics_to_use[1] == 1) {
+    to_return += thetas[1] * In2Star(current_network, triples, alphas[1],
+                                     together);
+  }
+  if (statistics_to_use[2] == 1) {
+    to_return += thetas[2] * CTriads(current_network, triples, alphas[2],
+                                     together);
+  }
+  if (statistics_to_use[3] == 1) {
+    to_return += thetas[3] * Recip(current_network, pairs, alphas[3],
+                                   together);
+  }
+  if (statistics_to_use[4] == 1) {
+    to_return += thetas[4] * TTriads(current_network, triples, alphas[4],
+                                     together);
+  }
+  if (statistics_to_use[5] == 1) {
+    to_return += thetas[5] * EdgeDensity(current_network, pairs,
+                                         alphas[5], together);
+  }
+  return to_return;
+};
+
+// Function that will calculate and save all of the h statistics for a network
+arma::vec save_network_statistics(arma::mat current_network,
+                                  arma::mat triples,
+                                  arma::mat pairs,
+                                  arma::vec alphas,
+                                  int together) {
+
+  arma::vec to_return = arma::zeros(6);
+  to_return[0] = Out2Star(current_network, triples, alphas[0], together);
+  to_return[1] = In2Star(current_network, triples, alphas[1], together);
+  to_return[2] = CTriads(current_network, triples, alphas[2], together);
+  to_return[3] = Recip(current_network, pairs, alphas[3], together);
+  to_return[4] = TTriads(current_network, triples, alphas[4], together);
+  to_return[5] = EdgeDensity(current_network, pairs, alphas[5], together);
+  return to_return;
+};
 
 } //end of mjd namespace
 
@@ -481,7 +546,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
           arma::vec alphas,
           int together,
           int seed,
-          int number_of_samples_to_store) {
+          int number_of_samples_to_store,
+          int using_correlation_network) {
 
   // Allocate variables and data structures
   double variance = shape_parameter;
@@ -565,14 +631,36 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
     }
 
 
-    double proposed_addition = mjd::CalculateNetworkStatistics(
-              proposed_edge_weights, statistics_to_use, thetas, triples, pairs,
-              alphas, together);
-    double current_addition = mjd::CalculateNetworkStatistics(
-              current_edge_weights, statistics_to_use, thetas, triples, pairs,
-              alphas, together);
+    double proposed_addition = -1;
+    double current_addition = -1;
+
+    if(using_correlation_network == 1){
+      arma::mat corr_proposed_edge_weights = mjd::bounded_to_correlations(proposed_edge_weights);
+      arma::mat corr_current_edge_weights = mjd::bounded_to_correlations(current_edge_weights);
+      proposed_addition = mjd::CalculateNetworkStatistics(
+        corr_proposed_edge_weights, statistics_to_use, thetas, triples, pairs,
+        alphas, together);
+      current_addition = mjd::CalculateNetworkStatistics(
+        corr_current_edge_weights, statistics_to_use, thetas, triples, pairs,
+        alphas, together);
+    }else{
+      proposed_addition = mjd::CalculateNetworkStatistics(
+        proposed_edge_weights, statistics_to_use, thetas, triples, pairs,
+        alphas, together);
+      current_addition = mjd::CalculateNetworkStatistics(
+        current_edge_weights, statistics_to_use, thetas, triples, pairs,
+        alphas, together);
+    }
 
     log_prob_accept += (proposed_addition - current_addition);
+
+    if(using_correlation_network == 1){
+      // now add in the bit about Jacobians
+      double numerator = log(mjd::jacobian(2*proposed_edge_weights-1));
+      double denominator = log(mjd::jacobian(2*current_edge_weights-1));
+
+      log_prob_accept += numerator - denominator;
+    }
 
     //double rand_num = uniform_distribution(generator);
     double rand_num = uniform_distribution(generator);
