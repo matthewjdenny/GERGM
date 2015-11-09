@@ -228,7 +228,7 @@ arma::mat partials_to_correlations(arma::mat partial_correlations){
       arma::mat R2_ones = arma::ones(R2.n_cols,R2.n_cols);
       arma::rowvec r1 = correlations(i-1,arma::span(i,(i + k -2)));
       arma::rowvec r3 =  correlations((i + k -1),arma::span(i,(i + k- 2)));
-      arma::mat R2_solved = R2.i();
+      arma::mat R2_solved = arma::inv(R2);
 
       arma::mat temp1 = 1 - r1 * R2_solved * r1.t();
       arma::mat temp2 =  1 - r3 * R2_solved * r3.t();
