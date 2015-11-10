@@ -100,7 +100,8 @@ gergm <- function(formula,
      possible_network_terms,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
-     is_correlation_network = using_correlation_network)
+     is_correlation_network = using_correlation_network,
+     is_directed = network_is_directed)
 
   data_transformation <- NULL
   if(!is.null(Transformed_Data$transformed_covariates)){

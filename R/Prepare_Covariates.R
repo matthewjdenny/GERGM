@@ -4,7 +4,8 @@ Prepare_Network_and_Covariates <- function(formula,
                                     possible_network_terms,
                                     covariate_data = NULL,
                                     normalization_type = c("log","division"),
-                                    is_correlation_network = FALSE
+                                    is_correlation_network = FALSE,
+                                    is_directed = FALSE
                                     ){
 
   node_covariates_list <- Parse_Formula_Object(formula = formula,
@@ -247,6 +248,33 @@ Prepare_Network_and_Covariates <- function(formula,
 
 
   #3. return list object
+  #
+  #
+  if(!is_directed){
+    if(isSymmetric(raw_network) == FALSE){
+      warning("You provided an asymmetric network when you specified that the
+              network was undirect. Setting the upper triangle equal to the lower
+              triangle. If the lower is larger, then it will be coppied,
+              otherwise the upper will be coppied. To avoid problems, please
+              provide a symmetric matrix.")
+
+      lower_to_upper <- function(m) {
+        m[upper.tri(m)] <- t(m)[upper.tri(m)]
+        m
+      }
+
+      upper_to_lower <- function(m) {
+        m[lower.tri(m)] <- t(m)[lower.tri(m)]
+        m
+      }
+
+      if(upper.tri(raw_network) > lower.tri(raw_network)){
+        raw_network <- upper_to_lower(raw_network)
+      }else{
+        raw_network <- lower_to_upper(raw_network)
+      }
+    }
+  }
 
   if(!node_covariates_provided & !network_covariates_provided){
     #' If no covariates were provided, then make sure the network lives on the
