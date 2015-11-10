@@ -21,10 +21,10 @@ Estimate_GERGM <- function(formula_object,
                            force_x_theta_updates,
                            transformation_type) {
 
-  #' set the seed
+  # set the seed
   set.seed(seed)
 
-  #' set our exponential down weights
+  # set our exponential down weights
   alpha <- exponential_weights
 
   statistics <- GERGM_Object@stats_to_use

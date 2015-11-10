@@ -166,14 +166,14 @@ Prepare_Network_and_Covariates <- function(formula,
   }
 
   #########################################################
-  #' Construct transformed_covariates: An array of covariates which parameterize
-  #' the latent space.
+  # Construct transformed_covariates: An array of covariates which parameterize
+  # the latent space.
 
   # Generate array which covaries will be transformed into
   transformed_covariates <- array(0,dim=c(num_nodes,num_nodes,num_covariates))
   transformed_covariates[,,1] <- 1
-  #' Set a slice counter to keep track of where we should add the covariates
-  #' in the resulting covariate array.
+  # Set a slice counter to keep track of where we should add the covariates
+  # in the resulting covariate array.
   slice_counter <- 2
 
   # generate vector to store covariate names
@@ -189,11 +189,11 @@ Prepare_Network_and_Covariates <- function(formula,
   #1. generate sender and reciever effects
   if(node_covariates_provided){
 
-    #' Determine if type_of_effect and covariates_to_use have the same length or
-    #' if no covariates_to_use is provided, that the number of columns in
-    #' covariate_data is the same length.
+    # Determine if type_of_effect and covariates_to_use have the same length or
+    # if no covariates_to_use is provided, that the number of columns in
+    # covariate_data is the same length.
     node_covariates_list[[i]]$num_levels
-    #' Loop through covariates
+    # Loop through covariates
     for(i in 1:length(node_covariates_list)){
        col_index <- which(tolower(colnames(covariate_data)) ==
                              tolower(node_covariates_list[[i]]$covariate))
@@ -273,13 +273,14 @@ Prepare_Network_and_Covariates <- function(formula,
       }else{
         raw_network <- lower_to_upper(raw_network)
       }
+      print(round(raw_network,1))
     }
   }
 
   if(!node_covariates_provided & !network_covariates_provided){
-    #' If no covariates were provided, then make sure the network lives on the
-    #' [0,1] interval and standardize it by one of the provided methods if it
-    #' does not. Then return the network and no covariates.
+    # If no covariates were provided, then make sure the network lives on the
+    # [0,1] interval and standardize it by one of the provided methods if it
+    # does not. Then return the network and no covariates.
 
     # deal with the case where we have a correlation matrix provided
     if(is_correlation_network){

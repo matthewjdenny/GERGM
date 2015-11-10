@@ -1,4 +1,5 @@
-#' A Function to estimate a GERGM.
+#' @title A Function to estimate a GERGM.
+#' @description THe main function provided by the package.
 #'
 #' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
 #' @param covariate_data A data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in colnames(raw_network), should have descriptive column names.  If left NULL, then no sender or reciever effects will be added.
@@ -48,17 +49,17 @@ gergm <- function(formula,
                   generate_plots = TRUE
                   ){
 
-  #' This is the main function to estimate a GERGM model
+  # This is the main function to estimate a GERGM model
 
-  #' hard coded possible stats
+  # hard coded possible stats
   possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges")
   possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver")
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
-  #' set logical values for whether we are using MPLE only, whether the network
-  #' is directed, and which estimation method we are using as well as the
-  #' transformation type
+  # set logical values for whether we are using MPLE only, whether the network
+  # is directed, and which estimation method we are using as well as the
+  # transformation type
   use_MPLE_only <- use_MPLE_only[1] #default is FALSE
   network_is_directed <- network_is_directed[1] #default is TRUE
   estimation_method <- estimation_method[1] #default is Gibbs
@@ -73,7 +74,7 @@ gergm <- function(formula,
   if(length(which(possible_transformations %in% transformation_type  == T)) != 1){
     stop("You have specified a transformation that is not recognized. Please specify one of: Cauchy, LogCauchy, Gaussian, or LogNormal")
   }
-  #' convert logical to numeric indicator
+  # convert logical to numeric indicator
   if(downweight_statistics_together){
     downweight_statistics_together <- 1
   }else{
