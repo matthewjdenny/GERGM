@@ -18,10 +18,17 @@ Simulate_GERGM <- function(GERGM_Object,
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
 
+  # if we are dealing with an undirected network
+  undirect_network <- 0
+  if(GERGM_Object@undirected_network){
+    undirect_network <- 1
+  }
+
   # if we are dealing with a correlation network
   is_correlation_network <- 0
   if(GERGM_Object@is_correlation_network){
     is_correlation_network <- 1
+    undirect_network <- 1
   }
 
   # Gibbs Simulation
@@ -67,7 +74,8 @@ Simulate_GERGM <- function(GERGM_Object,
       together = together,
       seed = seed1,
       number_of_samples_to_store = store,
-      using_correlation_network = is_correlation_network)
+      using_correlation_network = is_correlation_network,
+      undirect_network = undirect_network)
     # keep only the networks after the burnin
     start <- floor(MCMC.burnin/sample_every) + 1
     end <- length(samples[[3]][,1])
