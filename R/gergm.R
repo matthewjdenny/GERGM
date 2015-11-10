@@ -128,6 +128,13 @@ gergm <- function(formula,
   GERGM_Object@lambda_estimation_converged <- FALSE
   GERGM_Object@observed_network  <- GERGM_Object@network
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
+
+  if(network_is_directed){
+    GERGM_Object@undirected_network <- FALSE
+  }else{
+    GERGM_Object@undirected_network <- TRUE
+  }
+
   if(!is.null(data_transformation)){
     GERGM_Object@data_transformation <- data_transformation
   }

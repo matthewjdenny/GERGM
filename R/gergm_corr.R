@@ -35,7 +35,7 @@ gergm.corr <- function(formula,
                   output_name = NULL,
                   generate_plots = TRUE
 ){
-  estimation_method <- "Metropolis" 
+  estimation_method <- "Metropolis"
   MPLE.only <- use_MPLE_only
   tolerance <- convergence_tolerance
   shape.parameter <- proposal_variance
@@ -56,29 +56,29 @@ gergm.corr <- function(formula,
   use_MPLE_only <- use_MPLE_only[1] #default is FALSE
   directed <- FALSE #always undirected in the correlation case
   #estimation_method <- estimation_method[1] #default is Gibbs
-  
+
 
   #for correlation matrices, we must use M-H
   if(is.null(output_directory) & !is.null(output_name)){
     stop("You have specified an output file name but no output directory. Please specify both or neither.")
   }
-  
+
   #' convert logical to numeric indicator
   if(downweight_statistics_together){
     downweight_statistics_together <- 1
   } else{
     downweight_statistics_together <- 0
   }
-  
+
   #make sure proposal variance is greater than zero
   if(proposal_variance <= 0){
     proposal_variance <- 0.0000001
     cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.0000001, considder respecifying...\n")
   }
-  
+
   formula <- as.formula(formula)
-  
-  
+
+
   #--------------------------------------------------
   #1. Create GERGM object from network
   res1 <- Parse_Formula_Object(formula,
@@ -88,23 +88,23 @@ gergm.corr <- function(formula,
                                raw_network = NULL,
                                theta = NULL,
                                terms_to_parse = "structural")
-  
+
   thetas <- res1$thetas
   network <- res1$net
   alphas <- res1$alphas
   statistics <- res1$statistics
-  
+
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)
   colnames(thetas) <- possible_structural_terms
   rownames(thetas) <- c("est", "se")
   thetas <- as.data.frame(thetas)
   lambda.coef <- as.data.frame(0)
-  
+
   ## Get the bounded network according to the transformation
-  
+
   bounded.network <- transform.correlations(network)
-  
+
   GERGM_Object <- Create_GERGM_Object(network = network,
                                       bounded.network = bounded.network,
                                       formula = formula,
@@ -113,19 +113,21 @@ gergm.corr <- function(formula,
                                       alpha = alphas,
                                       together = together,
                                       possible.stats = possible_structural_terms)
-  
+
   #Set this to be true since it is assumed that the input matrix is a correlation matrix
   GERGM_Object@is_correlation_network = TRUE
-  
+
   GERGM_Object@stats_to_use <- statistics
-  
-  
+
+
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
   GERGM_Object@observed_network  <- GERGM_Object@network
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
-  
-  
+  GERGM_Object@undirected_network <- TRUE
+  GERGM_Object@is_correlation_network <- TRUE
+
+
   if(is.null(output_name)){
     GERGM_Object@print_output <- FALSE
   } else{
@@ -133,16 +135,16 @@ gergm.corr <- function(formula,
   }
   #--------------------------------------------------
   #2. Estimate GERGM with correlation network
-  
+
   #set the seed
   set.seed(seed)
   possible.stats <- possible_structural_terms
   alphas <- GERGM_Object@weights
   net <- GERGM_Object@network
-  
+
   rhs.formula <- possible.stats[statistics > 0]
   rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
-  
+
 
   #Begin Estimation
   GERGM_Object@lambda_estimation_converged <- TRUE
@@ -150,7 +152,7 @@ gergm.corr <- function(formula,
   theta <- list()
   theta$par <- rep(0, num.theta)
   num.nodes <- GERGM_Object@num_nodes
-  
+
   ##I: MPLE estimation
   if(MPLE.only == TRUE){
     ###
@@ -168,7 +170,7 @@ gergm.corr <- function(formula,
       theta.std.errors <- 1 / sqrt(abs(diag(theta.init$hessian)))
       GERGM_Object@theta.par <- theta.init$par
     }
-    
+
   ##II: MCMCMLE estimation
     if(MPLE.only != TRUE){
       ret_list <- MCMCMLE.corr(num.draws = nsim,
@@ -185,15 +187,15 @@ gergm.corr <- function(formula,
                           possible.stats = possible.stats,
                           GERGM_Object = GERGM_Object,
                           force_x_theta_updates = force_x_theta_updates)
-      
+
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]
-      
+
       theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
-      lambda <- as.data.frame(0) 
+      lambda <- as.data.frame(0)
     }
-  
+
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
   colnames(theta) <- rhs.formula
@@ -212,8 +214,8 @@ gergm.corr <- function(formula,
     warning("Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
     GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
-  
-  #Simulate many networks from the original correlation network 
+
+  #Simulate many networks from the original correlation network
   #Here, we will only use the Metropolis sampler
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                  nsim = number_of_networks_to_simulate,
@@ -224,7 +226,7 @@ gergm.corr <- function(formula,
                                  together = downweight_statistics_together,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)
-  
+
   #which(GERGM_Object@stats_to_use == 1)
   #colnames(GERGM_Object@lambda.coef) = gpar.names
   num.nodes <- GERGM_Object@num_nodes
@@ -236,7 +238,7 @@ gergm.corr <- function(formula,
                         statistics = rep(1, length(possible_structural_terms)),
                         alphas = GERGM_Object@weights,
                         together = downweight_statistics_together)
-  
+
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
@@ -245,30 +247,30 @@ gergm.corr <- function(formula,
     statistic_test_p_values[i] <- t.test(hsn.tot[, i],
                                          mu = init.statistics[i])$p.value
   }
-  
+
   stats.data <- data.frame(Observed = init.statistics,
                            Simulated = colMeans(hsn.tot))
   rownames(stats.data) <- possible_structural_terms
   cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
   GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
-  
+
   print(stats.data)
   GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
-  
+
   statistic_test_p_values <- data.frame(statistic_test_p_values)
   rownames(statistic_test_p_values) <- possible_structural_terms
   cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
   GERGM_Object <- store_console_output(GERGM_Object, toString(statistic_test_p_values))
-  
-  
+
+
   colnames(statistic_test_p_values) <- "p_values"
   GERGM_Object@observed_simulated_t_test <- statistic_test_p_values
-  
+
   #test to see if we have an acceptable fit
   acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1), 1]
-  
+
   if(min(acceptable_fit) > acceptable_fit_p_value_threshold){
     GERGM_Object@acceptable_fit <- TRUE
     message("Parameter estimates simulate networks that are statistically indistinguishable from observed network. ")
@@ -278,10 +280,10 @@ gergm.corr <- function(formula,
     message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Consider respecifying.")
     GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
   }
-  
+
   # make GOF plot
   # Gof_Plot(GERGM_Object)
-  
+
   #4. output everything to the appropriate files and return GERGM object.
   if(generate_plots){
     # only generate output if output_name is not NULL
@@ -291,23 +293,23 @@ gergm.corr <- function(formula,
       }
       current_directory <- getwd()
       setwd(output_directory)
-      
+
       pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
       GOF(GERGM_Object)
       dev.off()
-      
+
       pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
       Estimate_Plot(GERGM_Object)
       dev.off()
-      
+
       pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""), height = 4, width = 6)
       Trace_Plot(GERGM_Object)
       dev.off()
-      
+
       save(GERGM_Object, file = paste(output_name,"_GERGM_Object.Rdata",sep = ""))
-      
+
       write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
-      
+
       setwd(current_directory)
     } else{
       # if we are not saving everything to a directory then just print stuff to
@@ -321,5 +323,4 @@ gergm.corr <- function(formula,
   }
   return(GERGM_Object)
 }
-  
-  
+

@@ -328,4 +328,3 @@ parse_formula_term <- function(term,
   # return everything
   return(return_list)
 }
-
