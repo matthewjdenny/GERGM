@@ -61,9 +61,30 @@ MCMCMLE.corr <- function(num.draws,
                                    possible.stats = possible.stats)
     
     
-    #just use what gets returned
-    hsn <- GERGM_Object@MCMC_output$Statistics[, which(statistics == 1)]
-    hsn.tot <- GERGM_Object@MCMC_output$Statistics
+    #calculate the statistics on the correlation space
+    temp <- GERGM_Object@MCMC_output$Networks
+    num.nodes <- dim(temp)[1]
+    for(i in 1:dim(temp)[3]){
+      temp.net <- bounded.to.correlations((temp[, , i] + t(temp[, , i]))/2)
+      if(i == 1){
+        hsn <- h2(temp.net, triples = triples,
+                             statistics = rep(1, 6),
+                             alphas = alphas,
+                             together = together)
+      }
+      if(i > 1){
+        hsn <- rbind(hsn, h2(temp.net, triples = triples,
+                             statistics = rep(1, 6),
+                             alphas = alphas,
+                             together = together))
+      }
+     
+    }
+    #hsn2 <- GERGM_Object@MCMC_output$Statistics[, which(statistics == 1)]
+    #print(head(hsn))
+    hsn.tot <- hsn
+    hsn <- hsn[, which(statistics == 1)]
+    #hsn.tot <- GERGM_Object@MCMC_output$Statistics
     stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
     rownames(stats.data) <- possible.stats
