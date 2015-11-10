@@ -547,7 +547,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
           int together,
           int seed,
           int number_of_samples_to_store,
-          int using_correlation_network) {
+          int using_correlation_network,
+          int undirect_network) {
 
   // Allocate variables and data structures
   double variance = shape_parameter;
@@ -569,6 +570,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   // deal with the case where we have a correlation network.
   if(using_correlation_network == 1){
     current_edge_weights.diag() = arma::ones(number_of_nodes);
+    undirect_network = 1;
   }
 
 
@@ -582,8 +584,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
     double log_prob_accept = 0;
     arma::mat proposed_edge_weights = current_edge_weights;
 
-    // deal with the case where we have a correlation network.
-    if(using_correlation_network == 1){
+    // deal with the case where we have an undirected network.
+    if(undirect_network == 1){
       // Run loop to sample new edge weights
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < i; ++j) {
