@@ -18,7 +18,8 @@ log.l <- function(thetas,
     z <- hsnet %*% (theta - ltheta)
   }
 
-  temp <- h(possible.stats,
+  #this will calculate the h statistics on the original network as desired
+  temp <- h.corr(possible.stats,
             alpha,
             theta = theta,
             together = together,
@@ -72,3 +73,38 @@ mple <- function(net, statistics, directed) {
                 hessian = TRUE,control = list(fnscale = -1, trace = 6))
   return(ests)
 }
+
+# ------------------------------------------------------------
+## Functions for correlation matrices
+#1: jacobian of transformation of correlation matrices to the [0,1] space
+jacobian <- function(partials){
+  corrs.1 <- diag(partials[-nrow(partials), -1])
+  d <- nrow(partials)
+  prod.1 <- prod((1 - corrs.1^2)^(d-2))
+  prod.2 <- 1
+  for(k in 2 : (d - 2)){
+    for(i in 1 : (d - k)){
+      prod.2 = prod.2*(1-(partials[i,i+k])^2)^(d-1-k)
+    }
+  }
+  result <- 2*((prod.1^(d-2))*prod.2)^(0.5)  
+  return(result)
+}
+
+#pseudo-likelihood for the correlation matrix
+pl.corr <- function(theta, y, x, Jacobian){
+  return(sum(log(dtexp(y, x %*% theta))) + log(Jacobian))
+}
+
+#MPLE for correlation matrices
+mple.corr <- function(net, bounded.net, statistics, directed = FALSE){
+  xy.full <- net2xy(net, statistics, directed = directed)
+  x <- xy.full$x #x's are the change statistics associated with the unbounded network
+  xy.bounded <- net2xy(bounded.net, statistics, directed = directed)
+  y <- xy.bounded$y #y's are the edge weights from the bounded [0,1] network
+  J <- jacobian(bounded.net)
+  est <- coef(lm(y ~ x - 1))
+  ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
+                hessian = TRUE, control = list(fnscale = -1, trace = 6))
+}
+
