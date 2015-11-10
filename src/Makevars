@@ -1,1 +1,1 @@
-PKG_LIBS = -llapack -lblas -lgfortran
+PKG_LIBS = -llapack -lblas 
