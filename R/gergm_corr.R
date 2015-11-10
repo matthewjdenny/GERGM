@@ -3,7 +3,6 @@
 #'
 #' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
 #' @param use_MPLE_only Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.
-#' @param estimation_method Simulation method for MCMC estimation. Default is "Gibbs" which will generally be faster with well behaved networks but will not allow for exponential downweighting.
 #' @param maximum_number_of_theta_updates Maximum number of iterations within the MCMC inner loop which estimates the ERGM parameters. Default is 100.
 #' @param number_of_networks_to_simulate Number of simulations generated for estimation via MCMC. Default is 500.
 #' @param thin The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.
@@ -22,7 +21,6 @@
 #' @export
 gergm.corr <- function(formula,
                   use_MPLE_only = c(FALSE, TRUE),
-                  estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_theta_updates = 100,
                   number_of_networks_to_simulate = 500,
                   thin = 1,
@@ -37,6 +35,7 @@ gergm.corr <- function(formula,
                   output_name = NULL,
                   generate_plots = TRUE
 ){
+  estimation_method <- "Metropolis" 
   MPLE.only <- use_MPLE_only
   tolerance <- convergence_tolerance
   shape.parameter <- proposal_variance
@@ -56,8 +55,10 @@ gergm.corr <- function(formula,
   #' transformation type
   use_MPLE_only <- use_MPLE_only[1] #default is FALSE
   directed <- FALSE #always undirected in the correlation case
-  estimation_method <- estimation_method[1] #default is Gibbs
+  #estimation_method <- estimation_method[1] #default is Gibbs
   
+
+  #for correlation matrices, we must use M-H
   if(is.null(output_directory) & !is.null(output_name)){
     stop("You have specified an output file name but no output directory. Please specify both or neither.")
   }
@@ -100,7 +101,7 @@ gergm.corr <- function(formula,
   thetas <- as.data.frame(thetas)
   lambda.coef <- as.data.frame(0)
   
-  ## Get the bounded network according to the transformation from Harry Joe Paper
+  ## Get the bounded network according to the transformation
   
   bounded.network <- transform.correlations(network)
   
@@ -192,6 +193,7 @@ gergm.corr <- function(formula,
       theta <- theta.new
       lambda <- as.data.frame(0) 
     }
+  
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
   colnames(theta) <- rhs.formula

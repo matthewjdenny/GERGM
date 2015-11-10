@@ -256,6 +256,30 @@ h <- function(possible.stats,
   return(result)
 }
 
+#h.corr for correlation matrices, we want to use the unbounded networks
+h.corr <- function(possible.stats,
+              alpha = NULL,
+              theta = NULL,
+              together = together,
+              GERGM_Object = GERGM_Object) {
+  net <- GERGM_Object@observed_network
+  alphas <- GERGM_Object@weights
+  num.nodes <- GERGM_Object@num_nodes
+  statistics <- GERGM_Object@stats_to_use
+  triples = t(combn(1:num.nodes, 3))
+  temp <- c(out2star(net, triples, alphas[1], together),
+            in2star(net, triples, alphas[2], together),
+            ctriads(net, triples, alphas[3], together),
+            recip(net, alphas[4], together),
+            ttriads(net, triples, alphas[5], together),
+            edgeweight(net, alphas[6], together))
+  value <- temp[statistics > 0]
+  result <- rbind(round(value, 3), round(alphas[statistics > 0], 3))
+  colnames(result) <- possible.stats[statistics > 0]
+  rownames(result) <- c("value", "alpha")
+  return(result)
+}
+
 # A second version of the h function used for calculation in estimation
 # This function calculates the network statistics associated with net
 h2 <- function(net, triples, statistics, alphas = rep(1,6), together = 1) {
