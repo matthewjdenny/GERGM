@@ -26,7 +26,8 @@ setClass(Class = "gergm",
            observed_simulated_t_test = "data.frame",
            console_output = "character",
            print_output = "logical",
-           is_correlation_network = "logical"
+           is_correlation_network = "logical",
+           undirected_network = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
