@@ -1,5 +1,5 @@
 #' @title A function to estimate GERGMs for correlation matrices.
-#' @description Experimental Implementation.
+#' @description Experimental implementation -- use with caution.
 #'
 #' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
 #' @param use_MPLE_only Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.

@@ -47,6 +47,6 @@ gergm.corr(formula, use_MPLE_only = c(FALSE, TRUE),
 A gergm object containing parameter estimates.
 }
 \description{
-Experimental Implementation.
+Experimental implementation -- use with caution.
 }
 

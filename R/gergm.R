@@ -1,5 +1,5 @@
 #' @title A Function to estimate a GERGM.
-#' @description THe main function provided by the package.
+#' @description The main function provided by the package.
 #'
 #' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
 #' @param covariate_data A data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in colnames(raw_network), should have descriptive column names.  If left NULL, then no sender or reciever effects will be added.
@@ -24,6 +24,28 @@
 #' @param output_name The common name stem you would like to assign to all object output by the gergm function. Default value of NULL will not save any output directly to .pdf files, it will be printed to the console instead. Must be a character string or NULL. For example, if "Test" is supplied as the output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estimates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and "Test_Trace_Plot.pdf"
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or parameter plots are generated.
 #' @return A gergm object containing parameter estimates.
+#' @examples
+#' set.seed(12345)
+#' net <- matrix(rnorm(100,0,20),10,10)
+#' colnames(net) <- rownames(net) <- letters[1:10]
+#' formula <- net ~ recip + edges
+#'
+#' test <- gergm(formula,
+#'               normalization_type = "division",
+#'               network_is_directed = TRUE,
+#'               use_MPLE_only = FALSE,
+#'               estimation_method = "Metropolis",
+#'               maximum_number_of_lambda_updates = 1,
+#'               maximum_number_of_theta_updates = 5,
+#'               number_of_networks_to_simulate = 40000,
+#'               thin = 1/10,
+#'               proposal_variance = 0.5,
+#'               downweight_statistics_together = TRUE,
+#'               MCMC_burnin = 10000,
+#'               seed = 456,
+#'               convergence_tolerance = 0.01,
+#'               MPLE_gain_factor = 0,
+#'               force_x_theta_update = 4)
 #' @export
 gergm <- function(formula,
                   covariate_data = NULL,
