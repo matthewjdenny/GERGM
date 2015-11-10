@@ -268,7 +268,7 @@ Prepare_Network_and_Covariates <- function(formula,
         m
       }
 
-      if(upper.tri(raw_network) > lower.tri(raw_network)){
+      if(sum(upper.tri(raw_network)) > sum(lower.tri(raw_network))){
         raw_network <- upper_to_lower(raw_network)
       }else{
         raw_network <- lower_to_upper(raw_network)
