@@ -566,6 +566,12 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       number_of_thetas);
   arma::mat current_edge_weights = initial_network;
 
+  // deal with the case where we have a correlation network.
+  if(using_correlation_network == 1){
+    current_edge_weights.diag() = arma::ones(number_of_nodes);
+  }
+
+
   // Set RNG and define uniform distribution
   boost::mt19937 generator(seed);
   //boost::random::uniform_real_distribution<double>  uniform_distribution(0.0,1.0);
@@ -575,10 +581,13 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   for (int n = 0; n < number_of_iterations; ++n) {
     double log_prob_accept = 0;
     arma::mat proposed_edge_weights = current_edge_weights;
-    // Run loop to sample new edge weights
-    for (int i = 0; i < number_of_nodes; ++i) {
-      for (int j = 0; j < number_of_nodes; ++j) {
-        if (i != j) {
+
+    // deal with the case where we have a correlation network.
+    if(using_correlation_network == 1){
+      // Run loop to sample new edge weights
+      for (int i = 0; i < number_of_nodes; ++i) {
+        for (int j = 0; j < i; ++j) {
+          if (i != j) {
 
             double log_probability_of_current_under_new = 0;
             double log_probability_of_new_under_current = 0;
@@ -590,18 +599,75 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             //NumericVector new_edge_value = 0.5;
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
-				        //NumericVector temp = rnorm(1, current_edge_value, variance);
-			          //new_edge_value = temp[0];
-                new_edge_value = proposal(generator);
-                if(new_edge_value > 0 & new_edge_value < 1){
-                    in_zero_one = 1;
-                }
+              //NumericVector temp = rnorm(1, current_edge_value, variance);
+              //new_edge_value = temp[0];
+              new_edge_value = proposal(generator);
+              if(new_edge_value > 0 & new_edge_value < 1){
+                in_zero_one = 1;
+              }
             }
             if (new_edge_value > 0.999) {
-                new_edge_value = 0.999;
+              new_edge_value = 0.999;
             }
             if (new_edge_value < 0.001) {
-                new_edge_value= 0.001;
+              new_edge_value= 0.001;
+            }
+            //report(new_edge_value);
+
+            // calculate the probability of the new edge under current beta dist
+            double lower_bound = mjd::cdf(0,current_edge_value,variance);
+            double upper_bound = mjd::cdf(1,current_edge_value,variance);
+            double raw_prob = mjd::pdf(new_edge_value,current_edge_value,variance);
+            double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+
+            // calculate the probability of the current edge under new beta dist
+            lower_bound = mjd::cdf(0,new_edge_value,variance);
+            upper_bound = mjd::cdf(1,new_edge_value,variance);
+            raw_prob = mjd::pdf(current_edge_value,new_edge_value,variance);
+            double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+            //save everything
+            proposed_edge_weights(i,j) = new_edge_value;
+            proposed_edge_weights(j,i) = new_edge_value;
+            log_probability_of_new_under_current = log(prob_new_edge_under_old);
+            log_probability_of_current_under_new = log(prob_old_edge_under_new);
+
+            // Calculate acceptance probability
+            log_prob_accept += (log_probability_of_current_under_new
+                                  - log_probability_of_new_under_current);
+
+          }
+        }
+      }
+
+    }else{
+      // Run loop to sample new edge weights
+      for (int i = 0; i < number_of_nodes; ++i) {
+        for (int j = 0; j < number_of_nodes; ++j) {
+          if (i != j) {
+
+            double log_probability_of_current_under_new = 0;
+            double log_probability_of_new_under_current = 0;
+            //draw a new edge value centered at the old edge value
+            double current_edge_value = current_edge_weights(i,j);
+            //draw from a truncated normal
+            mjd::normal_distribution<double> proposal(current_edge_value,variance);
+            int in_zero_one = 0;
+            //NumericVector new_edge_value = 0.5;
+            double new_edge_value = 0.5;
+            while(in_zero_one == 0){
+              //NumericVector temp = rnorm(1, current_edge_value, variance);
+              //new_edge_value = temp[0];
+              new_edge_value = proposal(generator);
+              if(new_edge_value > 0 & new_edge_value < 1){
+                in_zero_one = 1;
+              }
+            }
+            if (new_edge_value > 0.999) {
+              new_edge_value = 0.999;
+            }
+            if (new_edge_value < 0.001) {
+              new_edge_value= 0.001;
             }
             //report(new_edge_value);
 
@@ -624,12 +690,12 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
             // Calculate acceptance probability
             log_prob_accept += (log_probability_of_current_under_new
-              - log_probability_of_new_under_current);
+                                  - log_probability_of_new_under_current);
 
+          }
         }
       }
-    }
-
+    } //end of condition for whether we are using a correlation network
 
     double proposed_addition = -1;
     double current_addition = -1;
