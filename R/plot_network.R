@@ -28,6 +28,8 @@ plot_network <- function(sociomatrix,
     stop("You must provide a square matrix.")
   }
 
+  diag(sociomatrix) <- 0
+
   # create temporary matrices that can be altered
   temp <- temp2 <- matrix(sociomatrix[,],nrow(sociomatrix),ncol(sociomatrix))
 
@@ -59,11 +61,14 @@ plot_network <- function(sociomatrix,
   weights <- weights[ordering]
 
   # generate edge colors
-  linecolors <- colorRampPalette(c('red','black','blue'))
-  linecolors <- linecolors(25)
+  negcolors <- colorRampPalette(c('red','black'))
+  poscolors <- colorRampPalette(c('black','blue'))
+  negcolors <- negcolors(25)
+  poscolors <- poscolors(25)
 
   # generate edge widths
-  breaks <- seq(min(weights), max(weights), length.out = 26)
+  negbreaks <- seq(min(weights), 0, length.out = 26)
+  posbreaks <- seq(0, max(weights), length.out = 26)
   widbreaks <- seq(0,max(abs(weights)),length.out = 50)
   widths <- seq(0,5,length.out = 50)
 
@@ -92,9 +97,16 @@ plot_network <- function(sociomatrix,
       counter <- 1
       bin <- 1
       while(nf){
-        if(breaks[counter] >= curweight){
-          bin <- counter
-          nf <- FALSE
+        if(curweight > 0){
+          if(posbreaks[counter] >= curweight){
+            bin <- counter
+            nf <- FALSE
+          }
+        }else{
+          if(negbreaks[counter] >= curweight){
+            bin <- counter
+            nf <- FALSE
+          }
         }
         counter <- counter +1
       }
@@ -110,8 +122,13 @@ plot_network <- function(sociomatrix,
         }
         counter <- counter +1
       }
-      lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-            col = linecolors[bin], lwd = widths[wid])
+      if(curweight > 0){
+        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+              col = poscolors[bin], lwd = widths[wid])
+      }else{
+        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+              col = negcolors[bin], lwd = widths[wid])
+      }
     }
     text(layout,labels = rownames(sociomatrix), col = "white")
     dev.off()
@@ -137,9 +154,16 @@ plot_network <- function(sociomatrix,
       counter <- 1
       bin <- 1
       while(nf){
-        if(breaks[counter] >= curweight){
-          bin <- counter
-          nf <- FALSE
+        if(curweight > 0){
+          if(posbreaks[counter] >= curweight){
+            bin <- counter
+            nf <- FALSE
+          }
+        }else{
+          if(negbreaks[counter] >= curweight){
+            bin <- counter
+            nf <- FALSE
+          }
         }
         counter <- counter +1
       }
@@ -155,9 +179,13 @@ plot_network <- function(sociomatrix,
         }
         counter <- counter +1
       }
-
-      lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-            col = linecolors[bin], lwd = widths[wid])
+      if(curweight > 0){
+        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+              col = poscolors[bin], lwd = widths[wid])
+      }else{
+        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+              col = negcolors[bin], lwd = widths[wid])
+      }
     }
     text(layout,labels = rownames(sociomatrix), col = "white")
   }
