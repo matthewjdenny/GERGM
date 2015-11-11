@@ -42,7 +42,7 @@ Estimate_GERGM <- function(formula_object,
   }
 
   if(method == "Gibbs" & GERGM_Object@is_correlation_network){
-    warning("Gibbs sampling is currently not implemented for correlation networks, switchign to Metropolis Hastings.")
+    warning("Gibbs sampling is currently not implemented for correlation networks, switching to Metropolis Hastings.")
     method = "Metropolis"
   }
 
