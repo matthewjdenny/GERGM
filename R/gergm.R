@@ -178,13 +178,6 @@ gergm <- function(formula,
   # if we are using a correlation network then set field to TRUE.
   if(using_correlation_network){
     GERGM_Object@is_correlation_network <- TRUE
-
-    ###############################################
-    ####      for development, set parameters
-    ####      manually until we have worked out
-    ####      what is acceptable
-    ###############################################
-    MPLE_gain_factor <- 0
   }else{
     GERGM_Object@is_correlation_network <- FALSE
   }
