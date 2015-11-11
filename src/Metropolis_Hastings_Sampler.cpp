@@ -566,6 +566,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   arma::mat Save_H_Statistics = arma::zeros (number_of_samples_to_store,
       number_of_thetas);
   arma::mat current_edge_weights = initial_network;
+  arma::mat corr_current_edge_weights = arma::zeros (number_of_nodes, number_of_nodes);
 
   // deal with the case where we have a correlation network.
   if(using_correlation_network == 1){
@@ -757,23 +758,42 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
     // Save network statistics
     if (Storage_Counter == take_sample_every) {
 
-      arma::vec save_stats = mjd::save_network_statistics(current_edge_weights,
-          triples, pairs, alphas, together);
+      if(using_correlation_network == 1){
+        arma::mat corr_current_edge_weights = mjd::bounded_to_correlations(current_edge_weights);
+        arma::vec save_stats = mjd::save_network_statistics(corr_current_edge_weights,
+                                                            triples, pairs, alphas, together);
+        for (int m = 0; m < 6; ++m) {
+          Save_H_Statistics(MH_Counter, m) = save_stats[m];
+        }
+      }else{
+        arma::vec save_stats = mjd::save_network_statistics(current_edge_weights,
+                                                            triples, pairs, alphas, together);
 
-      for (int m = 0; m < 6; ++m) {
-        Save_H_Statistics(MH_Counter, m) = save_stats[m];
+        for (int m = 0; m < 6; ++m) {
+          Save_H_Statistics(MH_Counter, m) = save_stats[m];
+        }
       }
 
+
       double mew = 0;
+      if(using_correlation_network == 1){
+        corr_current_edge_weights = mjd::bounded_to_correlations(current_edge_weights);
+      }
 
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
           if (i != j) {
-
-            //we use this trick to break the referencing
-            double temp = current_edge_weights(i, j);
-            Network_Samples(i, j, MH_Counter) = temp;
-            mew += temp;
+            if(using_correlation_network == 1){
+              //we use this trick to break the referencing
+              double temp = corr_current_edge_weights(i, j);
+              Network_Samples(i, j, MH_Counter) = temp;
+              mew += temp;
+            }else{
+              //we use this trick to break the referencing
+              double temp = current_edge_weights(i, j);
+              Network_Samples(i, j, MH_Counter) = temp;
+              mew += temp;
+            }
           }
         }
       }
