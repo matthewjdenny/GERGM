@@ -38,7 +38,7 @@ Parse_Formula_Object <- function(formula,
                                          possible_covariate_terms,
                                          possible_network_terms)
     rhs_term_names[i] <- parsed_rhs[[i]]$term
-    alpha[i] <- parsed_rhs[[i]]$weight
+    alpha[i] <- as.numeric(parsed_rhs[[i]]$weight)
   }
   # if we are parsing the structural terms out of the formula
   if(terms_to_parse == "structural"){

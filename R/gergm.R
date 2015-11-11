@@ -184,7 +184,6 @@ gergm <- function(formula,
     ####      manually until we have worked out
     ####      what is acceptable
     ###############################################
-    GERGM_Object@data_transformation <- NULL
     MPLE_gain_factor <- 0
   }else{
     GERGM_Object@is_correlation_network <- FALSE
