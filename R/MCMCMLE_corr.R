@@ -8,13 +8,12 @@ MCMCMLE.corr <- function(num.draws,
                     directed = FALSE,
                     method,
                     shape.parameter,
-                    take.sample.every,
                     together,
                     seed2,
                     possible.stats,
                     GERGM_Object,
                     force_x_theta_updates) {
-  
+
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
   cat("Estimating Initial Values for Theta via MPLE... \n")
@@ -27,29 +26,29 @@ MCMCMLE.corr <- function(num.draws,
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
-  
+
   # initialize the network with the observed correlation network
   initial_network <- GERGM_Object@network
-  
+
   # calculate the statistics of the original correlation network
   init.statistics <- h2(GERGM_Object@network,
                         triples = triples,
                         statistics = rep(1, length(possible.stats)),
                         alphas = alphas, together = together)
-  
+
   obs.stats <- h2(GERGM_Object@network,
                   triples = triples,
                   statistics = GERGM_Object@stats_to_use,
                   alphas = alphas,
                   together = together)
-  
+
   theta <- list()
   theta$par <- theta.init$par
   ##########################################################################
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
     GERGM_Object@theta.par <- as.numeric(theta$par)
-    
+
     GERGM_Object <- Simulate_GERGM(GERGM_Object = GERGM_Object,
                                    nsim = num.draws,
                                    method = method,
@@ -59,8 +58,8 @@ MCMCMLE.corr <- function(num.draws,
                                    MCMC.burnin = MCMC.burnin,
                                    seed1 = seed2,
                                    possible.stats = possible.stats)
-    
-    
+
+
     #calculate the statistics on the correlation space
     temp <- GERGM_Object@MCMC_output$Networks
     num.nodes <- dim(temp)[1]
@@ -78,7 +77,7 @@ MCMCMLE.corr <- function(num.draws,
                              alphas = alphas,
                              together = together))
       }
-     
+
     }
     #hsn2 <- GERGM_Object@MCMC_output$Statistics[, which(statistics == 1)]
     #print(head(hsn))
@@ -92,7 +91,7 @@ MCMCMLE.corr <- function(num.draws,
     GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
     cat("\nOptimizing Theta Estimates... \n")
     GERGM_Object <- store_console_output(GERGM_Object,"\nOptimizing Theta Estimates... \n")
-    
+
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -104,7 +103,7 @@ MCMCMLE.corr <- function(num.draws,
                        method = "BFGS",
                        hessian = T,
                        control = list(fnscale = -1, trace = 5))
-    
+
     cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
     GERGM_Object <- store_console_output(GERGM_Object,paste("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = ""))
     theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
@@ -123,13 +122,13 @@ MCMCMLE.corr <- function(num.draws,
     GERGM_Object <- store_console_output(GERGM_Object,"\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
     cat(p.value, "\n \n")
     GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
-    
+
     if(max(abs(theta.new$par)) > 10000000){
       message("Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
       GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
       return(list(theta.new,GERGM_Object))
     }
-    
+
     if (sum(count) == 0){
       #conditional to check and see if we are requiring a second update
       if(i >= force_x_theta_updates){

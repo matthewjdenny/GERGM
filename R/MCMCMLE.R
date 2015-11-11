@@ -8,7 +8,6 @@ MCMCMLE <- function(num.draws,
                     directed ,
                     method ,
                     shape.parameter ,
-                    take.sample.every ,
                     together ,
                     seed2 ,
                     gain.factor,
@@ -20,9 +19,17 @@ MCMCMLE <- function(num.draws,
   alphas <- GERGM_Object@weights
   cat("Estimating Initial Values for Theta via MPLE... \n")
   GERGM_Object <- store_console_output(GERGM_Object,"Estimating Initial Values for Theta via MPLE... \n")
-  theta.init <- mple(GERGM_Object@bounded.network,
-                     statistics = GERGM_Object@stats_to_use,
-                     directed = directed)
+
+  if(GERGM_Object@is_correlation_network){
+    theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
+                            statistics = GERGM_Object@stats_to_use,
+                            directed = directed)
+  }else{
+    theta.init <- mple(GERGM_Object@bounded.network,
+                       statistics = GERGM_Object@stats_to_use,
+                       directed = directed)
+  }
+
   cat("\nMPLE Thetas: ", theta.init$par, "\n")
   GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
@@ -92,8 +99,32 @@ MCMCMLE <- function(num.draws,
 
 
     #just use what gets returned
-    hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
-    hsn.tot <- GERGM_Object@MCMC_output$Statistics
+    if(GERGM_Object@is_correlation_network){
+      #calculate the statistics on the correlation space
+      temp <- GERGM_Object@MCMC_output$Networks
+      num.nodes <- dim(temp)[1]
+      for(i in 1:dim(temp)[3]){
+        temp.net <- bounded.to.correlations((temp[, , i] + t(temp[, , i]))/2)
+        if(i == 1){
+          hsn <- h2(temp.net, triples = triples,
+                    statistics = rep(1, 6),
+                    alphas = alphas,
+                    together = together)
+        }
+        if(i > 1){
+          hsn <- rbind(hsn, h2(temp.net, triples = triples,
+                               statistics = rep(1, 6),
+                               alphas = alphas,
+                               together = together))
+        }
+      }
+      hsn.tot <- hsn
+      hsn <- hsn[, which(statistics == 1)]
+    }else{
+      hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
+      hsn.tot <- GERGM_Object@MCMC_output$Statistics
+    }
+
     stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
     rownames(stats.data) <- possible.stats

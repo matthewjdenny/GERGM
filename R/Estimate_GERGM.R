@@ -41,6 +41,11 @@ Estimate_GERGM <- function(formula_object,
     method = "Metropolis"
   }
 
+  if(method == "Gibbs" & GERGM_Object@is_correlation_network){
+    warning("Gibbs sampling is currently not implemented for correlation networks, switchign to Metropolis Hastings.")
+    method = "Metropolis"
+  }
+
   # Flag if Metropolis is specified but Gibbs is OK
   if (method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
     warning(paste0("All statistics have second order derivative = 0.",
@@ -290,9 +295,16 @@ Estimate_GERGM <- function(formula_object,
       alphas <- GERGM_Object@weights
       cat("Estimating Theta via MPLE... \n")
       GERGM_Object <- store_console_output(GERGM_Object, "Estimating Theta via MPLE... \n")
-      theta.init <- mple(GERGM_Object@bounded.network,
-                         statistics = GERGM_Object@stats_to_use,
-                         directed = directed)
+      if(GERGM_Object@is_correlation_network){
+        theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
+                                statistics = GERGM_Object@stats_to_use,
+                                directed = directed)
+      }else{
+        theta.init <- mple(GERGM_Object@bounded.network,
+                           statistics = GERGM_Object@stats_to_use,
+                           directed = directed)
+      }
+
       #print(theta.init)
       GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
       theta <- theta.init
