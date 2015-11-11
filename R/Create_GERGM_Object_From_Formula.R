@@ -8,7 +8,9 @@ Create_GERGM_Object_From_Formula <- function(object,
                                              together = 1,
                                              transform.data = NULL,
                                              lambda.coef = NULL,
-                                             transformation_type
+                                             transformation_type,
+                                             is_correlation_network = FALSE,
+                                             is_directed = TRUE
                                              ){
 
   res1 <- Parse_Formula_Object(object,
@@ -22,6 +24,14 @@ Create_GERGM_Object_From_Formula <- function(object,
   network <- res1$net
   alphas <- res1$alphas
   statistics <- res1$statistics
+
+  # for now we are not going to allow any covariates
+  if(is_correlation_network){
+    if(!is.null(lambda.coef)){
+      stop("Covariate effects are currently not supported for correlation networks. Please respecify without covariates.")
+    }
+  }
+
   # create the network based on the transform family
   # if there are no lambda.coefficients, we assume there is no transformation
   # if there is a transformation specified, transform the observed network
@@ -59,6 +69,12 @@ Create_GERGM_Object_From_Formula <- function(object,
     lambda.coef <- as.data.frame(rbind(lambda.coef,NA))
     rownames(lambda.coef) <- c("est", "se")
   }
+
+  # if we are providing a correlation network, transform it
+  if(is_correlation_network){
+    bounded.network <- transform.correlations(network)
+  }
+
 
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)

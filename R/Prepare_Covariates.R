@@ -284,7 +284,8 @@ Prepare_Network_and_Covariates <- function(formula,
 
     # deal with the case where we have a correlation matrix provided
     if(is_correlation_network){
-      network <- 2*raw_network -1
+      network <- raw_network
+      diag(network) <- 1
     }else{
       if(min(raw_network) < 0){
         raw_network <- raw_network - min(raw_network)
