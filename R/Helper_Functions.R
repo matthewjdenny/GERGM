@@ -190,7 +190,6 @@ parse_formula_term <- function(term,
                                possible_network_terms){
   # split up the formula term
   parsed <- stringr::str_split(term,"[\\(\\)]+")[[1]]
-
   # get rid of trailing spaces
   rm_spaces <- which(parsed == "")
   if(length(rm_spaces) > 0){
@@ -207,7 +206,7 @@ parse_formula_term <- function(term,
                       num_levels = NA,
                       levels = NA,
                       base_index = NA)
-  possible_fields <- c("term","weight","covariate","base","network","levels")
+  possible_fields <- c("term","alpha","covariate","base","network","levels","")
   # if there is an argument to the term -- this will be a lazy implementation
   # where if you do not get the name right, it will simply not be set and a
   # warning will be thrown.
@@ -245,7 +244,7 @@ parse_formula_term <- function(term,
       }else{
         which_arg <- which(possible_fields == args[[1]][1])
         if(length(which_arg) == 0){
-          stop(paste("You supplied an argument:",args[[1]][2],"which is not recognized."))
+          stop(paste("You supplied an argument:",args[[1]][1],"which is not recognized."))
         }else{
           return_list[[which_arg]] <- args[[1]][2]
         }
