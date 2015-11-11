@@ -131,6 +131,9 @@ plot_network <- function(sociomatrix,
       }
     }
     text(layout,labels = rownames(sociomatrix), col = "white")
+    legend("bottom", inset=0, title = "Edge Values",title.col = "white",
+           legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+           fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
     dev.off()
 
 
@@ -188,6 +191,9 @@ plot_network <- function(sociomatrix,
       }
     }
     text(layout,labels = rownames(sociomatrix), col = "white")
+    legend("bottom", inset=0, title = "Edge Values",title.col = "white",
+           legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+           fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
   }
 
   par(bg = "white")
