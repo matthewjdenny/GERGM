@@ -162,6 +162,7 @@ plot_network <- function(sociomatrix,
     text(layout,labels = rownames(sociomatrix), col = "white")
   }
 
+  par(bg = "white")
   # do not return anything.
 }
 

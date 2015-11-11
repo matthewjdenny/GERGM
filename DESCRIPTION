@@ -17,7 +17,8 @@ Imports:
     Rcpp,
     ggplot2,
     methods,
-    stringr
+    stringr,
+    igraph
 Depends:
     R (>= 3.2.1)
 LinkingTo: BH,
