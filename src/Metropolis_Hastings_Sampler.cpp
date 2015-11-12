@@ -579,7 +579,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   boost::mt19937 generator(seed);
   //boost::random::uniform_real_distribution<double>  uniform_distribution(0.0,1.0);
   boost::uniform_01<double> uniform_distribution;
-
   // Outer loop over the number of samples
   for (int n = 0; n < number_of_iterations; ++n) {
     double log_prob_accept = 0;
@@ -616,19 +615,16 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
               new_edge_value= 0.001;
             }
             //report(new_edge_value);
-
             // calculate the probability of the new edge under current beta dist
             double lower_bound = mjd::cdf(0,current_edge_value,variance);
             double upper_bound = mjd::cdf(1,current_edge_value,variance);
             double raw_prob = mjd::pdf(new_edge_value,current_edge_value,variance);
             double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
-
             // calculate the probability of the current edge under new beta dist
             lower_bound = mjd::cdf(0,new_edge_value,variance);
             upper_bound = mjd::cdf(1,new_edge_value,variance);
             raw_prob = mjd::pdf(current_edge_value,new_edge_value,variance);
             double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
-
             //save everything
             proposed_edge_weights(i,j) = new_edge_value;
             proposed_edge_weights(j,i) = new_edge_value;
@@ -648,7 +644,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
           if (i != j) {
-
             double log_probability_of_current_under_new = 0;
             double log_probability_of_new_under_current = 0;
             //draw a new edge value centered at the old edge value
@@ -727,7 +722,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       // now add in the bit about Jacobians
       double numerator = log(mjd::jacobian(2*proposed_edge_weights-1));
       double denominator = log(mjd::jacobian(2*current_edge_weights-1));
-
       log_prob_accept += numerator - denominator;
     }
 
