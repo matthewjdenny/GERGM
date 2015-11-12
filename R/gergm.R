@@ -258,8 +258,8 @@ gergm <- function(formula,
   # the newly simulated data with the original network
   statistic_test_p_values <- rep(NA,length(possible_structural_terms))
   for(i in 1:length(possible_structural_terms)){
-    statistic_test_p_values[i] <- t.test(hsn.tot[, i],
-                                      mu = init.statistics[i])$p.value
+    statistic_test_p_values[i] <- round(t.test(hsn.tot[, i],
+                                      mu = init.statistics[i])$p.value,3)
   }
 
   stats.data <- data.frame(Observed = init.statistics,
@@ -271,7 +271,7 @@ gergm <- function(formula,
   print(stats.data)
   GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
 
-  statistic_test_p_values <- data.frame(statistic_test_p_values)
+  statistic_test_p_values <- data.frame(p_values = statistic_test_p_values)
   rownames(statistic_test_p_values) <- possible_structural_terms
   cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
@@ -287,12 +287,12 @@ gergm <- function(formula,
 
   if(min(acceptable_fit) > acceptable_fit_p_value_threshold){
     GERGM_Object@acceptable_fit <- TRUE
-    message("Parameter estimates simulate networks that are statistically indistinguishable from observed network. ")
-    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network. ")
+    message("Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
+    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
   }else{
     GERGM_Object@acceptable_fit <- FALSE
-    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Consider respecifying.")
-    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Considder respecifying.")
+    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Consider respecifying on the statistics specified by the user.")
+    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network on the statistics specified by the user. Considder respecifying.")
   }
 
   # make GOF plot

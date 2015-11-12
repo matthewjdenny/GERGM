@@ -175,7 +175,7 @@ MCMCMLE <- function(num.draws,
     }
     cat("\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
     GERGM_Object <- store_console_output(GERGM_Object,"\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
-    cat(p.value, "\n \n")
+    cat(round(p.value,3), "\n \n")
     GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
 
     if(max(abs(theta.new$par)) > 10000000){
