@@ -7,7 +7,6 @@ Parse_Formula_Object <- function(formula,
                                  terms_to_parse = "structural") {
 
   num_stats <- length(possible_structural_terms)
-
   # parse the formula
   if (class(formula) != "formula") {
     stop("'formula' must be a formula object.")
@@ -60,10 +59,9 @@ Parse_Formula_Object <- function(formula,
       stop(paste("the specified variable", possible_structural_terms[setdiff(possible, actual)],
                  "is not an available statistic.", sep = " "))
     }
-
     # if theta is NULL, assume all ones
     if (is.null(theta) == TRUE) {
-      theta <- rep(1, length(rhs_term_names))
+      theta <- rep(0, length(rhs_term_names))
     }
 
     # check that theta and the number of statistics are equal
