@@ -149,6 +149,7 @@ simulate_networks <- function(formula,
   GERGM_Object@observed_network  <- GERGM_Object@network
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
   GERGM_Object@simulation_only <- TRUE
+  GERGM_Object@theta.par <- theta_coeficients
 
   if(network_is_directed){
     GERGM_Object@undirected_network <- FALSE
