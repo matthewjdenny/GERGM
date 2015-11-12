@@ -113,7 +113,7 @@ gergm <- function(formula,
   #make sure proposal variance is greater than zero
   if(proposal_variance <= 0.001){
     proposal_variance <- 0.001
-    cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.0000001, considder respecifying...\n")
+    cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.001, considder respecifying...\n")
   }
 
   formula <- as.formula(formula)
@@ -231,6 +231,21 @@ gergm <- function(formula,
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
+
+
+  if(GERGM_Object@is_correlation_network){
+    init.statistics <- h2(GERGM_Object@network,
+                          triples = triples,
+                          statistics = rep(1, length(possible_structural_terms)),
+                          alphas = GERGM_Object@weights,
+                          together = downweight_statistics_together)
+  }else{
+    init.statistics <- h2(GERGM_Object@bounded.network,
+                          triples = triples,
+                          statistics = rep(1, length(possible_structural_terms)),
+                          alphas = GERGM_Object@weights,
+                          together = downweight_statistics_together)
+  }
   # initialize the network with the observed network
   init.statistics <- h2(GERGM_Object@bounded.network,
                         triples = triples,

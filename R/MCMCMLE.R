@@ -35,18 +35,34 @@ MCMCMLE <- function(num.draws,
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
-  # initialize the network with the observed network
-  initial_network <- GERGM_Object@bounded.network
-  # calculate the statistics of the original network
-  init.statistics <- h2(GERGM_Object@bounded.network,
-                        triples = triples,
-                        statistics = rep(1, length(possible.stats)),
-                        alphas = alphas, together = together)
-  obs.stats <- h2(GERGM_Object@bounded.network,
-                  triples = triples,
-                  statistics = GERGM_Object@stats_to_use,
-                  alphas = alphas,
-                  together = together)
+  if(GERGM_Object@is_correlation_network){
+    # initialize the network with the observed network
+    initial_network <- GERGM_Object@network
+    # calculate the statistics of the original network
+    init.statistics <- h2(GERGM_Object@network,
+                          triples = triples,
+                          statistics = rep(1, length(possible.stats)),
+                          alphas = alphas, together = together)
+    obs.stats <- h2(GERGM_Object@network,
+                    triples = triples,
+                    statistics = GERGM_Object@stats_to_use,
+                    alphas = alphas,
+                    together = together)
+  }else{
+    # initialize the network with the observed network
+    initial_network <- GERGM_Object@bounded.network
+    # calculate the statistics of the original network
+    init.statistics <- h2(GERGM_Object@bounded.network,
+                          triples = triples,
+                          statistics = rep(1, length(possible.stats)),
+                          alphas = alphas, together = together)
+    obs.stats <- h2(GERGM_Object@bounded.network,
+                    triples = triples,
+                    statistics = GERGM_Object@stats_to_use,
+                    alphas = alphas,
+                    together = together)
+  }
+
 
   #cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
   ####################################################################
