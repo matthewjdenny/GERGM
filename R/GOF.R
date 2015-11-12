@@ -17,7 +17,13 @@ GOF <- function(GERGM_Object){
             main = "Simulated Network Statistics")
   }else{
     #input is the GERGM_Object, we are going to normalize all statistics
-    temp <- (GERGM_Object@MCMC_output$Statistics - GERGM_Object@stats[2, ])/apply(GERGM_Object@MCMC_output$Statistics,1,sd)
+    temp <- GERGM_Object@MCMC_output$Statistics
+
+    temp2 <- apply(GERGM_Object@MCMC_output$Statistics,2,sd)
+    for(i in 1:ncol(temp)){
+      temp[,i] <- temp[,i] - GERGM_Object@stats[2,i]
+      temp[,i] <- temp[,i]/temp2[i]
+    }
 
     boxplot(temp, medcol = UMASS_RED,
             xlab = "Network Statistic",
