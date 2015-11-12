@@ -27,7 +27,8 @@ setClass(Class = "gergm",
            console_output = "character",
            print_output = "logical",
            is_correlation_network = "logical",
-           undirected_network = "logical"
+           undirected_network = "logical",
+           simulation_only = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
