@@ -72,7 +72,8 @@ will be discarded before drawing the samples used for estimation. Default is
 \item{simulate_correlation_network}{Defaults to FALSE. Experimental.}
 }
 \value{
-A gergm object containing simulated_networks.
+A list object containing simulated networks and parameters used to
+specify the simulation. See the $MCMC_Output field for simulated networks.
 }
 \description{
 Simulates networks from a GERGM for a given set of parameter values.

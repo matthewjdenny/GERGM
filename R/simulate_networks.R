@@ -62,7 +62,8 @@
 #'  downweight_statistics_together = TRUE,
 #'  MCMC_burnin = 1000,
 #'  seed = 456)
-#' @return A gergm object containing simulated_networks.
+#' @return A list object containing simulated networks and parameters used to
+#' specify the simulation. See the $MCMC_Output field for simulated networks.
 #' @export
 simulate_networks <- function(formula,
   edges = 0,
