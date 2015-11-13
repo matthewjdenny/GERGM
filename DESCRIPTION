@@ -2,7 +2,7 @@ Package: GERGM
 Type: Package
 Title: Estimation and Fit Diagnostics for Generalized Exponential Random Graph
     Models
-Version: 0.4
+Version: 0.4.1
 Date: 2015-11-08
 Author: Matthew J. Denny <mdenny@psu.edu>, James D. Wilson
     <jdwilson1212@gmail.com>, Skyler Cranmer <cranmer.12@osu.edu >, Bruce A.
