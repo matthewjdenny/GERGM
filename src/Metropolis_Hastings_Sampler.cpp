@@ -554,8 +554,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   double variance = shape_parameter;
   int list_length = 4;
   List to_return(list_length);
-  //int number_of_samples_to_store = ceil (number_of_iterations /
-  //    take_sample_every);
   int number_of_thetas = statistics_to_use.n_elem;
   int MH_Counter = 0;
   int Storage_Counter = 0;
@@ -577,7 +575,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
   // Set RNG and define uniform distribution
   boost::mt19937 generator(seed);
-  //boost::random::uniform_real_distribution<double>  uniform_distribution(0.0,1.0);
   boost::uniform_01<double> uniform_distribution;
   // Outer loop over the number of samples
   for (int n = 0; n < number_of_iterations; ++n) {
@@ -601,8 +598,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             //NumericVector new_edge_value = 0.5;
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
-              //NumericVector temp = rnorm(1, current_edge_value, variance);
-              //new_edge_value = temp[0];
               new_edge_value = proposal(generator);
               if(new_edge_value > 0 & new_edge_value < 1){
                 in_zero_one = 1;
@@ -614,7 +609,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             if (new_edge_value < 0.001) {
               new_edge_value= 0.001;
             }
-            //report(new_edge_value);
             // calculate the probability of the new edge under current beta dist
             double lower_bound = mjd::cdf(0,current_edge_value,variance);
             double upper_bound = mjd::cdf(1,current_edge_value,variance);
@@ -654,8 +648,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             //NumericVector new_edge_value = 0.5;
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
-              //NumericVector temp = rnorm(1, current_edge_value, variance);
-              //new_edge_value = temp[0];
               new_edge_value = proposal(generator);
               if(new_edge_value > 0 & new_edge_value < 1){
                 in_zero_one = 1;
@@ -667,7 +659,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             if (new_edge_value < 0.001) {
               new_edge_value= 0.001;
             }
-            //report(new_edge_value);
 
             // calculate the probability of the new edge under current beta dist
             double lower_bound = mjd::cdf(0,current_edge_value,variance);
@@ -725,7 +716,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       log_prob_accept += numerator - denominator;
     }
 
-    //double rand_num = uniform_distribution(generator);
     double rand_num = uniform_distribution(generator);
     double lud = 0;
     lud = log(rand_num);

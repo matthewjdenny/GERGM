@@ -1,20 +1,46 @@
 #' @title A Function to simulate networks from a GERGM with given theta parameters.
 #' @description Simulates networks from a GERGM for a given set of parameter values.
 #'
-#' @param formula A formula object that specifies which statistics the user would like to include while simulating the network, and the network the user is providing as the initial network. Currently, the following statistics can be specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads", "edgeweight").
-#' @param edges The theta value provided for the edges parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param recip The theta value provided for the reciprocity parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param ttriads The theta value provided for the transitive triads parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param ctriads The theta value provided for the cyclic triads parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param in2star The theta value provided for the in 2-stars parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param out2star The theta value provided for the out 2-starts parameter, defaults to 0. Only statistics for structural terms included in formula will be used.
-#' @param network_is_directed Logical specifying whether or not the observed network is directed. Default is TRUE.
-#' @param simulation_method Default is "Metropolis" which allows for exponential downweighting, can also be "Gibbs".
-#' @param number_of_networks_to_simulate Number of simulations generated for estimation via MCMC. Default is 500.
-#' @param thin The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.
-#' @param proposal_variance The variance specified for the Metropolis Hastings simulation method. This parameter is inversely proportional to the average acceptance rate of the M-H sampler and should be adjusted so that the average acceptance rate is approximately 0.25. 		Default is 0.1.
-#' @param downweight_statistics_together Logical specifying whether or not the weights should be applied inside or outside the sum. Default is TRUE and user should not select FALSE under normal circumstances.
-#' @param MCMC_burnin Number of samples from the MCMC simulation procedure that will be discarded before drawing the samples used for estimation. Default is 100.
+#' @param formula A formula object that specifies which statistics the user would
+#' like to include while simulating the network, and the network the user is
+#' providing as the initial network. Currently, the following statistics can be
+#' specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads",
+#' "edgeweight").
+#' @param edges The theta value provided for the edges parameter, defaults to 0.
+#'  Only statistics for structural terms included in formula will be used.
+#' @param recip The theta value provided for the reciprocity parameter, defaults
+#' to 0. Only statistics for structural terms included in formula will be used.
+#' @param ttriads The theta value provided for the transitive triads parameter,
+#' defaults to 0. Only statistics for structural terms included in formula will
+#' be used.
+#' @param ctriads The theta value provided for the cyclic triads parameter,
+#' defaults to 0. Only statistics for structural terms included in formula will
+#' be used.
+#' @param in2star The theta value provided for the in 2-stars parameter,
+#' defaults to 0. Only statistics for structural terms included in formula will
+#' be used.
+#' @param out2star The theta value provided for the out 2-starts parameter,
+#' defaults to 0. Only statistics for structural terms included in formula will
+#' be used.
+#' @param network_is_directed Logical specifying whether or not the observed
+#' network is directed. Default is TRUE.
+#' @param simulation_method Default is "Metropolis" which allows for exponential
+#' downweighting, can also be "Gibbs".
+#' @param number_of_networks_to_simulate Number of simulations generated for
+#' estimation via MCMC. Default is 500.
+#' @param thin The proportion of samples that are kept from each simulation. For
+#' example, thin = 1/200 will keep every 200th network in the overall simulated
+#' sample. Default is 1.
+#' @param proposal_variance The variance specified for the Metropolis Hastings
+#' simulation method. This parameter is inversely proportional to the average
+#' acceptance rate of the M-H sampler and should be adjusted so that the average
+#' acceptance rate is approximately 0.25. Default is 0.1.
+#' @param downweight_statistics_together Logical specifying whether or not the
+#' weights should be applied inside or outside the sum. Default is TRUE and user
+#' should not select FALSE under normal circumstances.
+#' @param MCMC_burnin Number of samples from the MCMC simulation procedure that
+#' will be discarded before drawing the samples used for estimation. Default is
+#' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
 #' @param simulate_correlation_network Defaults to FALSE. Experimental.
 #' @examples
@@ -88,7 +114,8 @@ simulate_networks <- function(formula,
   #make sure proposal variance is greater than zero
   if(proposal_variance <= 0.001){
     proposal_variance <- 0.001
-    cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.001, considder respecifying...\n")
+    cat("You supplied a proposal variance that was less than or equal to zero.
+        It has been reset to 0.001, considder respecifying...\n")
   }
 
   formula <- as.formula(formula)
@@ -196,7 +223,8 @@ simulate_networks <- function(formula,
   stats.data <- data.frame(Observed = init.statistics,
                            Simulated = colMeans(hsn.tot))
   rownames(stats.data) <- possible_structural_terms
-  cat("Statistics of initial network and networks simulated from given theta parameter estimates:\n")
+  cat("Statistics of initial network and networks simulated from given theta
+      parameter estimates:\n")
 
   print(stats.data)
 

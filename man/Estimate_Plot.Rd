@@ -7,7 +7,8 @@
 Estimate_Plot(GERGM_Object)
 }
 \arguments{
-\item{GERGM_Object}{The object returned by the estimation procedure using the GERGM function.}
+\item{GERGM_Object}{The object returned by the estimation procedure using the
+GERGM function.}
 }
 \value{
 A parameter estimate plot.

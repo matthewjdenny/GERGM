@@ -1,11 +1,17 @@
 #' @title Plots of value-edged networks.
 #' @description Generates a visualization of a value-edged network.
 #'
-#' @param sociomatrix A square numeric matrix (socimatrix) with real valued edges (no NA's).
-#' @param threshold The threshold for removing edges from the network in order to calculate the positions for the nodes using the futcherman reingold algorithm. The value is multiplied against max(abs(sociomatrix)) to determine the threshold. Defaults to 0.5.
+#' @param sociomatrix A square numeric matrix (socimatrix) with real valued edges
+#'(no NA's).
+#' @param threshold The threshold for removing edges from the network in order to
+#' calculate the positions for the nodes using the futcherman reingold algorithm.
+#' The value is multiplied against max(abs(sociomatrix)) to determine the
+#' threshold. Defaults to 0.5.
 #' @param save_pdf Logical indicating whether the plot should be saved to a PDF.
-#' @param pdf_name The name we would like to give to the output file. Be sure to include a ".pdf" extension.
-#' @param output_directory The directory where the user would like to output the PDF if save_pdf == TRUE.
+#' @param pdf_name The name we would like to give to the output file. Be sure to
+#' include a ".pdf" extension.
+#' @param output_directory The directory where the user would like to output the
+#' PDF if save_pdf == TRUE.
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)

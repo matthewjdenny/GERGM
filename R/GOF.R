@@ -1,6 +1,7 @@
 #' Generate Goodness Of Fit plot from a GERGM object.
 #'
-#' @param GERGM_Object The object returned by the estimation procedure using the GERGM function.
+#' @param GERGM_Object The object returned by the estimation procedure using the
+#' GERGM function.
 #' @return A GOF plot.
 #' @export
 GOF <- function(GERGM_Object){

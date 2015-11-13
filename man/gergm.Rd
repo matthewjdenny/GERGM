@@ -14,55 +14,117 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
-  output_directory = NULL, output_name = NULL, generate_plots = TRUE,
-  using_correlation_network = FALSE)
+  output_directory = NULL, output_name = NULL, generate_plots = TRUE)
 }
 \arguments{
-\item{formula}{A formula object that specifies the relationship between statistics and the observed network. Currently, the following statistics can be specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads", "edgeweight").}
+\item{formula}{A formula object that specifies the relationship between
+statistics and the observed network. Currently, the following statistics can be
+specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads",
+"edgeweigt").}
 
-\item{covariate_data}{A data frame containing node level covariates the user wished to transform into sender or reciever effects. It must have row names that match every entry in colnames(raw_network), should have descriptive column names.  If left NULL, then no sender or reciever effects will be added.}
+\item{covariate_data}{A data frame containing node level covariates the user
+wished to transform into sender or reciever effects. It must have row names
+that match every entry in colnames(raw_network), should have descriptive
+column names.  If left NULL, then no sender or reciever effects will be
+added.}
 
-\item{normalization_type}{If only a raw_network is provided then, the function will automatically check to determine if all edges fall in the [0,1] interval. If edges are determined to fall outside of this interval, then a trasformation onto the interval may be specified. If "division" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary) and then all edge values will be divided by the maximum to ensure that the maximum value is in [0,1]. If "log" is selected, then the data will have a value added to them such that the minimum value is atleast zero (if necessary), then 1 will be added to all edge values before they are logged and then divided by the largest value, again ensuring that the resulting network is on [0,1]. Defaults to "log" and need not be set to NULL if providing covariates as it will be ignored.}
+\item{normalization_type}{If only a raw_network is provided then, the function
+will automatically check to determine if all edges fall in the [0,1] interval.
+If edges are determined to fall outside of this interval, then a trasformation
+onto the interval may be specified. If "division" is selected, then the data
+will have a value added to them such that the minimum value is atleast zero
+(if necessary) and then all edge values will be divided by the maximum to
+ensure that the maximum value is in [0,1]. If "log" is selected, then the data
+will have a value added to them such that the minimum value is atleast zero
+(if necessary), then 1 will be added to all edge values before they are logged
+and then divided by the largest value, again ensuring that the resulting
+network is on [0,1]. Defaults to "log" and need not be set to NULL if
+providing covariates as it will be ignored.}
 
-\item{network_is_directed}{Logical specifying whether or not the observed network is directed. Default is TRUE.}
+\item{network_is_directed}{Logical specifying whether or not the observed
+network is directed. Default is TRUE.}
 
-\item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo likelihood estimates should be obtained. In this case, no simulations will be performed. Default is FALSE.}
+\item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo
+likelihood estimates should be obtained. In this case, no simulations will be
+performed. Default is FALSE.}
 
-\item{transformation_type}{Specifies how covariates are transformed onto the raw network. When working with heavly tailed data that are not strictly positive, select "Cauchy" to transform the data using a Cauchy distribution. If data are strictly positive and heavy tailed (such as financial data) it is suggested the user select "LogCauchy" to perform a Log-Cauchy transformation of the data. For a tranformation of the data using a Gaussian distribution, select "Gaussian" and for strictly positive raw networks, select "LogNormal". The Default value is "Cauchy".}
+\item{transformation_type}{Specifies how covariates are transformed onto the
+raw network. When working with heavly tailed data that are not strictly
+positive, select "Cauchy" to transform the data using a Cauchy distribution.
+If data are strictly positive and heavy tailed (such as financial data) it is
+suggested the user select "LogCauchy" to perform a Log-Cauchy transformation
+of the data. For a tranformation of the data using a Gaussian distribution,
+select "Gaussian" and for strictly positive raw networks, select "LogNormal".
+The Default value is "Cauchy".}
 
-\item{estimation_method}{Simulation method for MCMC estimation. Default is "Gibbs" which will generally be faster with well behaved networks but will not allow for exponential downweighting.}
+\item{estimation_method}{Simulation method for MCMC estimation. Default is
+"Gibbs" which will generally be faster with well behaved networks but will not
+allow for exponential downweighting.}
 
-\item{maximum_number_of_lambda_updates}{Maximum number of iterations of outer MCMC loop which alternately estimates transform parameters and ERGM parameters. In the case that data_transformation = NULL, this argument does not matter. Default is 10.}
+\item{maximum_number_of_lambda_updates}{Maximum number of iterations of outer
+MCMC loop which alternately estimates transform parameters and ERGM
+parameters. In the case that data_transformation = NULL, this argument is
+ignored. Default is 10.}
 
-\item{maximum_number_of_theta_updates}{Maximum number of iterations within the MCMC inner loop which estimates the ERGM parameters. Default is 100.}
+\item{maximum_number_of_theta_updates}{Maximum number of iterations within the
+MCMC inner loop which estimates the ERGM parameters. Default is 100.}
 
-\item{number_of_networks_to_simulate}{Number of simulations generated for estimation via MCMC. Default is 500.}
+\item{number_of_networks_to_simulate}{Number of simulations generated for
+estimation via MCMC. Default is 500.}
 
-\item{thin}{The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.}
+\item{thin}{The proportion of samples that are kept from each simulation. For
+example, thin = 1/200 will keep every 200th network in the overall simulated
+sample. Default is 1.}
 
-\item{proposal_variance}{The variance specified for the Metropolis Hastings simulation method. This parameter is inversely proportional to the average acceptance rate of the M-H sampler and should be adjusted so that the average acceptance rate is approximately 0.25.         Default is 0.1.}
+\item{proposal_variance}{The variance specified for the Metropolis Hastings
+simulation method. This parameter is inversely proportional to the average
+acceptance rate of the M-H sampler and should be adjusted so that the average
+acceptance rate is approximately 0.25. Default is 0.1.}
 
-\item{downweight_statistics_together}{Logical specifying whether or not the weights should be applied inside or outside the sum. Default is TRUE and user should not select FALSE under normal circumstances.}
+\item{downweight_statistics_together}{Logical specifying whether or not the
+weights should be applied inside or outside the sum. Default is TRUE and user
+should not select FALSE under normal circumstances.}
 
 \item{MCMC_burnin}{Number of samples from the MCMC simulation procedure that will be discarded before drawing the samples used for estimation. Default is 100.}
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
 
-\item{convergence_tolerance}{Threshold designated for stopping criterion. If the difference of parameter estimates from one iteration to the next all have a p-value (under a paired t-test) greater than this value, the parameter estimates are declared to have converged. Default is 0.01.}
+\item{convergence_tolerance}{Threshold designated for stopping criterion. If
+the difference of parameter estimates from one iteration to the next all have
+a p -value (under a paired t-test) greater than this value, the parameter
+estimates are declared to have converged. Default is 0.01.}
 
-\item{MPLE_gain_factor}{Multiplicative constant between 0 and 1 that controls how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested to use a value of 0.10. Default is 0.}
+\item{MPLE_gain_factor}{Multiplicative constant between 0 and 1 that controls
+how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested
+to use a value of 0.10. Default is 0.}
 
-\item{acceptable_fit_p_value_threshold}{A p-value threshold for how closely statistics of observed network conform to statistics of networks simulated from GERGM parameterized by converged final parameter estimates. Default value is 0.05.}
+\item{acceptable_fit_p_value_threshold}{A p-value threshold for how closely
+statistics of observed network conform to statistics of networks simulated
+from GERGM parameterized by converged final parameter estimates. Default value
+is 0.05.}
 
-\item{force_x_theta_updates}{Defaults to 1 where theta estimation is not allowed to converge until thetas have updated for x iterations . Useful when model is not degenerate but simulated statistics do not match observed network well when algorithm stops after first x updates.}
+\item{force_x_theta_updates}{Defaults to 1 where theta estimation is not
+allowed to converge until thetas have updated for x iterations . Useful when
+model is not degenerate but simulated statistics do not match observed network
+well when algorithm stops after first x updates.}
 
-\item{output_directory}{The directory where you would like output generated by the GERGM estimation proceedure to be saved (if output_name is specified). This includes, GOF, trace, and parameter estimate plots, as well as a summary of the estimation proceedure and an .Rdata file containing the GERGM object returned by this function. May be left as NULL if the user would prefer all plots be printed to the graphics device.}
+\item{output_directory}{The directory where you would like output generated
+by the GERGM estimation proceedure to be saved (if output_name is specified).
+This includes, GOF, trace, and parameter estimate plots, as well as a summary
+of the estimation proceedure and an .Rdata file containing the GERGM object
+returned by this function. May be left as NULL if the user would prefer all
+plots be printed to the graphics device.}
 
-\item{output_name}{The common name stem you would like to assign to all object output by the gergm function. Default value of NULL will not save any output directly to .pdf files, it will be printed to the console instead. Must be a character string or NULL. For example, if "Test" is supplied as the output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estimates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and "Test_Trace_Plot.pdf"}
+\item{output_name}{The common name stem you would like to assign to all
+objects output by the gergm function. Default value of NULL will not save any
+output directly to .pdf files, it will be printed to the console instead. Must
+be a character string or NULL. For example, if "Test" is supplied as the
+output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estim
+ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
+"Test_Trace_Plot.pdf"}
 
-\item{generate_plots}{Defaults to TRUE, if FALSE, then no diagnostic or parameter plots are generated.}
-
-\item{using_correlation_network}{Defaults to FALSE. Experimental.}
+\item{generate_plots}{Defaults to TRUE, if FALSE, then no diagnostic or
+parameter plots are generated.}
 }
 \value{
 A gergm object containing parameter estimates.

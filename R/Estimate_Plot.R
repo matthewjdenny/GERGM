@@ -1,6 +1,7 @@
 #' Generate parameter estimate plot with 95 percent CI's from a GERGM object.
 #'
-#' @param GERGM_Object The object returned by the estimation procedure using the GERGM function.
+#' @param GERGM_Object The object returned by the estimation procedure using the
+#' GERGM function.
 #' @return A parameter estimate plot.
 #' @export
 Estimate_Plot <- function(GERGM_Object){
@@ -41,17 +42,17 @@ Estimate_Plot <- function(GERGM_Object){
   }
   zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0, colour = gray(1/2), lty = 2)
   zp1 <- zp1 + ggplot2::geom_linerange( ggplot2::aes(x = Variable,
-                                                     ymin = Coefficient - SE*(-qnorm((1-0.9)/2)),
-                                                     ymax = Coefficient + SE*(-qnorm((1-0.9)/2))),
-                                        lwd = 1,
-                                        position = ggplot2::position_dodge(width = 1/2))
+                  ymin = Coefficient - SE*(-qnorm((1-0.9)/2)),
+                  ymax = Coefficient + SE*(-qnorm((1-0.9)/2))),
+                  lwd = 1,
+                  position = ggplot2::position_dodge(width = 1/2))
   zp1 <- zp1 + ggplot2::geom_pointrange(ggplot2::aes(x = Variable,
-                                                     y = Coefficient,
-                                                     ymin = Coefficient - SE*(-qnorm((1-0.95)/2)),
-                                                     ymax = Coefficient + SE*(-qnorm((1-0.95)/2))),
-                                        lwd = 1/2,
-                                        position = ggplot2::position_dodge(width = 1/2),
-                                        shape = 21, fill = "WHITE")
+                  y = Coefficient,
+                  ymin = Coefficient - SE*(-qnorm((1-0.95)/2)),
+                  ymax = Coefficient + SE*(-qnorm((1-0.95)/2))),
+                  lwd = 1/2,
+                  position = ggplot2::position_dodge(width = 1/2),
+                  shape = 21, fill = "WHITE")
   zp1 <- zp1  + ggplot2::theme_bw() +
     ggplot2::coord_flip() +
     ggplot2::theme(legend.position="none")

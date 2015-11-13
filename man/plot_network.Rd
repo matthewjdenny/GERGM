@@ -8,15 +8,21 @@ plot_network(sociomatrix, threshold = 0.5, save_pdf = FALSE,
   pdf_name = "Test.pdf", output_directory = "./")
 }
 \arguments{
-\item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges (no NA's).}
+\item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges
+(no NA's).}
 
-\item{threshold}{The threshold for removing edges from the network in order to calculate the positions for the nodes using the futcherman reingold algorithm. The value is multiplied against max(abs(sociomatrix)) to determine the threshold. Defaults to 0.5.}
+\item{threshold}{The threshold for removing edges from the network in order to
+calculate the positions for the nodes using the futcherman reingold algorithm.
+The value is multiplied against max(abs(sociomatrix)) to determine the
+threshold. Defaults to 0.5.}
 
 \item{save_pdf}{Logical indicating whether the plot should be saved to a PDF.}
 
-\item{pdf_name}{The name we would like to give to the output file. Be sure to include a ".pdf" extension.}
+\item{pdf_name}{The name we would like to give to the output file. Be sure to
+include a ".pdf" extension.}
 
-\item{output_directory}{The directory where the user would like to output the PDF if save_pdf == TRUE.}
+\item{output_directory}{The directory where the user would like to output the
+PDF if save_pdf == TRUE.}
 }
 \description{
 Generates a visualization of a value-edged network.

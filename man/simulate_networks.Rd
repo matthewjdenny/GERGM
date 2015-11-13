@@ -13,33 +13,59 @@ simulate_networks(formula, edges = 0, recip = 0, ttriads = 0,
   simulate_correlation_network = FALSE)
 }
 \arguments{
-\item{formula}{A formula object that specifies which statistics the user would like to include while simulating the network, and the network the user is providing as the initial network. Currently, the following statistics can be specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads", "edgeweight").}
+\item{formula}{A formula object that specifies which statistics the user would
+like to include while simulating the network, and the network the user is
+providing as the initial network. Currently, the following statistics can be
+specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads",
+"edgeweight").}
 
-\item{edges}{The theta value provided for the edges parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{edges}{The theta value provided for the edges parameter, defaults to 0.
+Only statistics for structural terms included in formula will be used.}
 
-\item{recip}{The theta value provided for the reciprocity parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{recip}{The theta value provided for the reciprocity parameter, defaults
+to 0. Only statistics for structural terms included in formula will be used.}
 
-\item{ttriads}{The theta value provided for the transitive triads parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{ttriads}{The theta value provided for the transitive triads parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
 
-\item{ctriads}{The theta value provided for the cyclic triads parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{ctriads}{The theta value provided for the cyclic triads parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
 
-\item{in2star}{The theta value provided for the in 2-stars parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{in2star}{The theta value provided for the in 2-stars parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
 
-\item{out2star}{The theta value provided for the out 2-starts parameter, defaults to 0. Only statistics for structural terms included in formula will be used.}
+\item{out2star}{The theta value provided for the out 2-starts parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
 
-\item{simulation_method}{Default is "Metropolis" which allows for exponential downweighting, can also be "Gibbs".}
+\item{simulation_method}{Default is "Metropolis" which allows for exponential
+downweighting, can also be "Gibbs".}
 
-\item{network_is_directed}{Logical specifying whether or not the observed network is directed. Default is TRUE.}
+\item{network_is_directed}{Logical specifying whether or not the observed
+network is directed. Default is TRUE.}
 
-\item{number_of_networks_to_simulate}{Number of simulations generated for estimation via MCMC. Default is 500.}
+\item{number_of_networks_to_simulate}{Number of simulations generated for
+estimation via MCMC. Default is 500.}
 
-\item{thin}{The proportion of samples that are kept from each simulation. For example, thin = 1/200 will keep every 200th network in the overall simulated sample. Default is 1.}
+\item{thin}{The proportion of samples that are kept from each simulation. For
+example, thin = 1/200 will keep every 200th network in the overall simulated
+sample. Default is 1.}
 
-\item{proposal_variance}{The variance specified for the Metropolis Hastings simulation method. This parameter is inversely proportional to the average acceptance rate of the M-H sampler and should be adjusted so that the average acceptance rate is approximately 0.25.         Default is 0.1.}
+\item{proposal_variance}{The variance specified for the Metropolis Hastings
+simulation method. This parameter is inversely proportional to the average
+acceptance rate of the M-H sampler and should be adjusted so that the average
+acceptance rate is approximately 0.25. Default is 0.1.}
 
-\item{downweight_statistics_together}{Logical specifying whether or not the weights should be applied inside or outside the sum. Default is TRUE and user should not select FALSE under normal circumstances.}
+\item{downweight_statistics_together}{Logical specifying whether or not the
+weights should be applied inside or outside the sum. Default is TRUE and user
+should not select FALSE under normal circumstances.}
 
-\item{MCMC_burnin}{Number of samples from the MCMC simulation procedure that will be discarded before drawing the samples used for estimation. Default is 100.}
+\item{MCMC_burnin}{Number of samples from the MCMC simulation procedure that
+will be discarded before drawing the samples used for estimation. Default is
+100.}
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
 

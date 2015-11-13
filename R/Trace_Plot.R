@@ -1,6 +1,7 @@
 #' Generate trace plot of network density from a GERGM object.
 #'
-#' @param GERGM_Object The object returned by the estimation procedure using the GERGM function.
+#' @param GERGM_Object The object returned by the estimation procedure using the
+#' GERGM function.
 #' @return A trace plot of network density.
 #' @export
 Trace_Plot <- function(GERGM_Object){
