@@ -21,10 +21,10 @@ NULL
 #' @import methods
 NULL
 
-#' @importFrom grDevices dev.off gray pdf rgb
+#' @importFrom grDevices dev.off gray pdf rgb colorRampPalette
 NULL
 
-#' @importFrom graphics boxplot
+#' @importFrom graphics boxplot legend lines par plot text
 NULL
 
 #' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test
