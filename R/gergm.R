@@ -91,6 +91,7 @@
 #' @param using_correlation_network Defaults to FALSE. Experimental.
 #' @return A gergm object containing parameter estimates.
 #' @examples
+#' \dontrun{
 #' set.seed(12345)
 #' net <- matrix(rnorm(100,0,20),10,10)
 #' colnames(net) <- rownames(net) <- letters[1:10]
@@ -112,6 +113,7 @@
 #'               convergence_tolerance = 0.01,
 #'               MPLE_gain_factor = 0,
 #'               force_x_theta_update = 4)
+#' }
 #' @export
 gergm <- function(formula,
                   covariate_data = NULL,

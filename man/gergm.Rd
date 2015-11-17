@@ -136,6 +136,7 @@ A gergm object containing parameter estimates.
 The main function provided by the package.
 }
 \examples{
+\dontrun{
 set.seed(12345)
 net <- matrix(rnorm(100,0,20),10,10)
 colnames(net) <- rownames(net) <- letters[1:10]
@@ -157,5 +158,6 @@ test <- gergm(formula,
               convergence_tolerance = 0.01,
               MPLE_gain_factor = 0,
               force_x_theta_update = 4)
+}
 }
 
