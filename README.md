@@ -40,7 +40,7 @@ Once the `GERGM` package is installed, you may access its functionality as you w
 
 If all went well, check out the `?GERGM` help file to see a full working example with info on how the data should look. 
 
-## Basic Useage
+## Basic Usage
 
 To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2star(alpha = 1)`, `in2star(alpha = 1)`, `ctriads(alpha = 1)`, `recip(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network_covariate)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`.
 
