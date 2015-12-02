@@ -232,6 +232,22 @@ nodefactor = function(attrname, base = 1){
 
 #-------------------------------------------------------
 
+#undirected statistic for triads
+triads = function(net, triples, alpha = 1, together) {
+    if(together == 0){
+      stat <- sum(net[triples[, c(1, 2)]]^(alpha) * net[triples[, c(2, 3)]]^(alpha) *
+                  net[triples[, c(1, 3)]]^(alpha))
+      return(stat)
+    }
+    if(together == 1){
+      t2 <- sum(net[triples[, c(1, 2)]] * net[triples[, c(2, 3)]] *
+                  net[triples[, c(1, 3)]])
+      return(stat^alpha)
+    }
+  }
+
+#-------------------------------------------------------
+
 # Calculate the statistics of a formula object
 h <- function(possible.stats,
               alpha = NULL,

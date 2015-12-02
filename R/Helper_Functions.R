@@ -43,6 +43,14 @@ dttriads <- function(i, j, net) {
   return(t2 + t3 + t4)
 }
 
+# dtriads
+dtriads <- function(i, j, net){
+  nodes <- nrow(net)
+  others <- (1:nodes)[-c(i, j)]
+  triples <- cbind(i, j, others)
+  stat <- sum(net[triples[, c(2, 3)]] * net[triples[, c(1, 3)]])
+  return(stat)
+}
 
 
 # dh function weight w_{i,j} will be conditioned upon
