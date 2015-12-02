@@ -43,7 +43,7 @@ dttriads <- function(i, j, net) {
   return(t2 + t3 + t4)
 }
 
-# dtriads
+# dtriads (undirected)
 dtriads <- function(i, j, net){
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
@@ -57,7 +57,7 @@ dtriads <- function(i, j, net){
 # Calculate the marginal change in the network
 dh <- function(net, statistics, i, j) {
   temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net),
-            drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j))
+            drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j), dtriads(i, j, net))
   value <- temp[statistics > 0]
   return(value)
 }

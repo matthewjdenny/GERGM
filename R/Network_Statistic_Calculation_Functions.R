@@ -264,7 +264,8 @@ h <- function(possible.stats,
             ctriads(net, triples, alphas[3], together),
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
-            edgeweight(net, alphas[6], together))
+            edgeweight(net, alphas[6], together),
+            triads(net, triples, alphas[7], together))
   value <- temp[statistics > 0]
   result <- rbind(round(value, 3), round(alphas[statistics > 0], 3))
   colnames(result) <- possible.stats[statistics > 0]
@@ -304,7 +305,8 @@ h2 <- function(net, triples, statistics, alphas = rep(1,6), together = 1) {
            ctriads(net, triples, alphas[3], together),
            recip(net, alphas[4], together),
            ttriads(net, triples, alphas[5], together),
-           edgeweight(net, alphas[6], together))
+           edgeweight(net, alphas[6], together),
+           triads(net, triples, alphas[7], together))
   return(temp[which(statistics > 0)])
   #return(temp)
 }

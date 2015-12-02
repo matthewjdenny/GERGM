@@ -341,6 +341,7 @@ Estimate_GERGM <- function(formula_object,
   }
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
+  print(theta)
   colnames(theta) <- rhs.formula
   rownames(theta) <- c("est", "se")
   theta <- as.data.frame(theta)
