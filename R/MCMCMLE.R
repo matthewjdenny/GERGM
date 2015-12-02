@@ -85,7 +85,14 @@ MCMCMLE <- function(num.draws,
   hsn <- GERGM_Object@MCMC_output$Statistics[,which(GERGM_Object@stats_to_use == 1)]
 
   #Calculate covariance estimate (to scale initial guess theta.init)
-  z.bar <- colSums(hsn) / 20
+  z.bar <- NULL
+  if(class(hsn) == "numeric"){
+    hsn <- matrix(hsn,ncol =1,nrow = length(hsn))
+    z.bar <- sum(hsn) / 20
+  }else{
+    z.bar <- colSums(hsn) / 20
+  }
+
   #cat("z.bar", "\n", z.bar, "\n")
   Cov.est <- 0
   for(i in 1:dim(hsn)[1]){
