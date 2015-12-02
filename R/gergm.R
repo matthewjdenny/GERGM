@@ -4,7 +4,7 @@
 #' @param formula A formula object that specifies the relationship between
 #' statistics and the observed network. Currently, the following statistics can be
 #' specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads",
-#' "edgeweigt").
+#' "edgeweight", "triads").
 #' @param covariate_data A data frame containing node level covariates the user
 #' wished to transform into sender or reciever effects. It must have row names
 #' that match every entry in colnames(raw_network), should have descriptive
@@ -147,7 +147,7 @@ gergm <- function(formula,
   # This is the main function to estimate a GERGM model
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges")
+  possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges", "triads")
   possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver")
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
