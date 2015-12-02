@@ -240,7 +240,7 @@ triads = function(net, triples, alpha = 1, together) {
       return(stat)
     }
     if(together == 1){
-      t2 <- sum(net[triples[, c(1, 2)]] * net[triples[, c(2, 3)]] *
+      stat <- sum(net[triples[, c(1, 2)]] * net[triples[, c(2, 3)]] *
                   net[triples[, c(1, 3)]])
       return(stat^alpha)
     }
