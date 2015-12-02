@@ -299,7 +299,7 @@ h.corr <- function(possible.stats,
 
 # A second version of the h function used for calculation in estimation
 # This function calculates the network statistics associated with net
-h2 <- function(net, triples, statistics, alphas = rep(1,6), together = 1) {
+h2 <- function(net, triples, statistics, alphas = rep(1, 7), together = 1) {
   temp = c(out2star(net, triples, alphas[1], together),
            in2star(net, triples, alphas[2], together),
            ctriads(net, triples, alphas[3], together),
