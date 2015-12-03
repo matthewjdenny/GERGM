@@ -85,7 +85,7 @@ Parse_Formula_Object <- function(formula,
                 statistics = statistics,
                 alphas = alphas,
                 thetas = thetas,
-                threshold = thresholds))
+                thresholds = thresholds))
   }
   if(terms_to_parse == "covariate"){
     # if we are parsing covariate terms out of the formula
