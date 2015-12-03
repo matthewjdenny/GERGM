@@ -110,7 +110,7 @@
 #'               seed = 456,
 #'               convergence_tolerance = 0.01,
 #'               MPLE_gain_factor = 0,
-#'               force_x_theta_update = 4)
+#'               force_x_theta_updates = 4)
 #' }
 #' @export
 gergm <- function(formula,
