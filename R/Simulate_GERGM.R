@@ -94,7 +94,7 @@ Simulate_GERGM <- function(GERGM_Object,
                             ctriads = h.statistics[, 3],
                             recip = h.statistics[, 4],
                             ttriads = h.statistics[, 5],
-                            edgeweight = h.statistics[, 6]
+                            edgeweight = h.statistics[, 6],
                             triads = h.statistics[, 7])
 
   GERGM_Object@MCMC_output = list(Networks = nets,

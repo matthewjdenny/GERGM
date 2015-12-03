@@ -31,7 +31,7 @@ MCMCMLE <- function(num.draws,
   }
 
   cat("\nMPLE Thetas: ", theta.init$par, "\n")
-  GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
+  GERGM_Object <- store_console_output(GERGM_Object, paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   pairs <- t(combn(1:num.nodes, 2))
@@ -66,8 +66,6 @@ MCMCMLE <- function(num.draws,
 
   #cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
   ####################################################################
-  ##JW: Added 3/29/15. This scales the initial estimates for the MPLE theta specification
-  ## This is according to the initialization the Fisher Scoring method for optimization
   alps <- alphas[which(statistics == 1)]
   GERGM_Object@reduced_weights <- alps
   GERGM_Object@theta.par <- theta.init$par
