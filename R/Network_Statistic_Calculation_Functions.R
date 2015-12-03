@@ -256,6 +256,7 @@ h <- function(possible.stats,
               GERGM_Object = GERGM_Object) {
   net <- GERGM_Object@observed_bounded_network
   alphas <- GERGM_Object@weights
+  threshold <- GERGM_Object@threshold
   num.nodes <- GERGM_Object@num_nodes
   statistics <- GERGM_Object@stats_to_use
   triples = t(combn(1:num.nodes, 3))
@@ -280,6 +281,7 @@ h.corr <- function(possible.stats,
               GERGM_Object = GERGM_Object) {
   net <- GERGM_Object@observed_network
   alphas <- GERGM_Object@weights
+  threshold <- GERGM_Object@threshold
   num.nodes <- GERGM_Object@num_nodes
   statistics <- GERGM_Object@stats_to_use
   triples = t(combn(1:num.nodes, 3))
@@ -303,7 +305,11 @@ h2 <- function(net,
                statistics,
                alphas = NULL,
                together = 1,
-               directed = TRUE) {
+               directed = TRUE,
+               threshold = NULL) {
+  if(is.null(threshold)){
+    threshold <- rep(0, length(statistics))
+  }
   if(is.null(alphas)){
     alphas <- rep(1,length(statistics))
   }
