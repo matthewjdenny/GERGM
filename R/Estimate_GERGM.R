@@ -48,8 +48,7 @@ Estimate_GERGM <- function(formula_object,
 
   # Flag if Metropolis is specified but Gibbs is OK
   if (method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
-    warning(paste0("All statistics have second order derivative = 0.",
-                   " Consider switching to Gibbs for speed."))
+    cat("\nAll statistics have second order derivative = 0. Consider switching to Gibbs for speed.\n\n")
     # method = "Gibbs"
   }
 
