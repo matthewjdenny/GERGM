@@ -9,9 +9,10 @@ Estimate_Plot <- function(GERGM_Object){
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
   Model <- Variable <- Coefficient <- SE <- NULL
+  # make sure that we use rows as estimates and se are in a two row matrix
   modelFrame <- data.frame(Variable = colnames(GERGM_Object@theta.coef) ,
-                           Coefficient = GERGM_Object@theta.coef[,1],
-                           SE = GERGM_Object@theta.coef[,2],
+                           Coefficient = GERGM_Object@theta.coef[1,],
+                           SE = GERGM_Object@theta.coef[2,],
                            Model = "Theta Estimates"
   )
   data <- data.frame(modelFrame)
