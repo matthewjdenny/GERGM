@@ -13,17 +13,19 @@ Description: Estimation and diagnosis of the convergence of Generalized
     Hastings with exponential down weighting.
 URL: https://github.com/matthewjdenny/GERGM
 License: GPL-3
-Imports: 
+Imports:
     Rcpp,
     ggplot2,
     methods,
     RcppArmadillo,
     stringr,
-    igraph
-Depends: 
+    igraph,
+    plyr
+Depends:
     R (>= 3.2.1)
 LinkingTo: BH,
     Rcpp,
     RcppArmadillo
-RoxygenNote: 5.0.0
-Suggests: testthat
+RoxygenNote: 5.0.1
+Suggests:
+    testthat
