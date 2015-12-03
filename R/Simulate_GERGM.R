@@ -44,7 +44,7 @@ Simulate_GERGM <- function(GERGM_Object,
                           possible.stats = possible.stats)
     # Calculate the network statistics over all of the simulated networks
     h.statistics <- t(apply(nets, 3, h2, triples = triples,
-                            statistics = rep(1, 6), alphas = rep(1, 6),
+                            statistics = rep(1, 7), alphas = rep(1, 7),
                             together = together))
     acceptance.rate <- NULL
   }
@@ -94,7 +94,8 @@ Simulate_GERGM <- function(GERGM_Object,
                             ctriads = h.statistics[, 3],
                             recip = h.statistics[, 4],
                             ttriads = h.statistics[, 5],
-                            edgeweight = h.statistics[, 6])
+                            edgeweight = h.statistics[, 6]
+                            triads = h.statistics[, 7])
 
   GERGM_Object@MCMC_output = list(Networks = nets,
                             Statistics = h.statistics,
