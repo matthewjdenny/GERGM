@@ -31,6 +31,7 @@ Parse_Formula_Object <- function(formula,
   parsed_rhs <- vector (length = length(rhs), mode = "list")
   rhs_term_names <- rep("", length(rhs))
   alpha <- rep(1, length(rhs))
+  threshold <- rep(0, length(rhs))
   for (i in 1:length(rhs)){
     parsed_rhs[[i]] <- parse_formula_term(rhs[i],
                                          possible_structural_terms,
@@ -38,6 +39,7 @@ Parse_Formula_Object <- function(formula,
                                          possible_network_terms)
     rhs_term_names[i] <- parsed_rhs[[i]]$term
     alpha[i] <- as.numeric(parsed_rhs[[i]]$weight)
+    threshold[i] <- as.numeric(parsed_rhs[[i]]$threshold)
   }
   # if we are parsing the structural terms out of the formula
   if(terms_to_parse == "structural"){
@@ -73,14 +75,17 @@ Parse_Formula_Object <- function(formula,
     statistics[stat.indx] <- 1
     alphas <- rep(1, num_stats)
     thetas <- rep(0, num_stats)
+    thresholds <- rep(0, num_stats)
     for (i in 1:length(rhs_term_names)) {
       alphas[which(rhs_term_names[i] == possible_structural_terms)] <- alpha[i]
       thetas[which(rhs_term_names[i] == possible_structural_terms)] <- theta[i]
+      thresholds[which(rhs_term_names[i] == possible_structural_terms)] <- threshold[i]
     }
     return(list(net = net,
                 statistics = statistics,
                 alphas = alphas,
-                thetas = thetas))
+                thetas = thetas,
+                threshold = thresholds))
   }
   if(terms_to_parse == "covariate"){
     # if we are parsing covariate terms out of the formula
