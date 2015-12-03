@@ -21,7 +21,7 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
 \item{formula}{A formula object that specifies the relationship between
 statistics and the observed network. Currently, the following statistics can be
 specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads",
-"edgeweigt").}
+"edges","absdiff", "nodecov", "nodefactor", "sender", "receiver", "netcov").}
 
 \item{covariate_data}{A data frame containing node level covariates the user
 wished to transform into sender or reciever effects. It must have row names
