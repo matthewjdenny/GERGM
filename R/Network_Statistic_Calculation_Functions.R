@@ -233,7 +233,7 @@ nodefactor = function(attrname, base = 1){
 #-------------------------------------------------------
 
 #undirected statistic for triads
-triads = function(net, triples, alpha = 1, together) {
+undirected_triads = function(net, triples, alpha = 1, together) {
     if(together == 0){
       stat <- sum(net[triples[, c(1, 2)]]^(alpha) * net[triples[, c(2, 3)]]^(alpha) *
                   net[triples[, c(1, 3)]]^(alpha))
@@ -264,8 +264,7 @@ h <- function(possible.stats,
             ctriads(net, triples, alphas[3], together),
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
-            edgeweight(net, alphas[6], together),
-            triads(net, triples, alphas[7], together))
+            edgeweight(net, alphas[6], together))
   value <- temp[statistics > 0]
   result <- rbind(round(value, 3), round(alphas[statistics > 0], 3))
   colnames(result) <- possible.stats[statistics > 0]
@@ -299,14 +298,21 @@ h.corr <- function(possible.stats,
 
 # A second version of the h function used for calculation in estimation
 # This function calculates the network statistics associated with net
-h2 <- function(net, triples, statistics, alphas = rep(1, 7), together = 1) {
+h2 <- function(net,
+               triples,
+               statistics,
+               alphas = NULL,
+               together = 1,
+               directed = TRUE) {
+  if(is.null(alphas)){
+    alphas <- rep(1,length(statistics))
+  }
   temp = c(out2star(net, triples, alphas[1], together),
            in2star(net, triples, alphas[2], together),
            ctriads(net, triples, alphas[3], together),
            recip(net, alphas[4], together),
            ttriads(net, triples, alphas[5], together),
-           edgeweight(net, alphas[6], together),
-           triads(net, triples, alphas[7], together))
+           edgeweight(net, alphas[6], together))
   return(temp[which(statistics > 0)])
   #return(temp)
 }
