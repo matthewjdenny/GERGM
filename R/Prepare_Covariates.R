@@ -214,7 +214,7 @@ Prepare_Network_and_Covariates <- function(formula,
                                                     covariate_column = col_index,
                                                     effect_type = "nodefactor",
                                                     level = node_covariates_list[[i]]$levels[j])
-            print(add)
+            #print(add)
             transformed_covariates[,,slice_counter] <- add
             slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,node_covariates_list[[i]]$levels[j],sep="_")
             slice_counter <- slice_counter + 1
