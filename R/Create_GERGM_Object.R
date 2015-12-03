@@ -39,5 +39,5 @@ Create_GERGM_Object <- function(network,
       lambda.coef = lambda,
       weights = alpha,
       num_nodes = num.nodes,
-      threshold = thresholds)
+      thresholds = thresholds)
 }

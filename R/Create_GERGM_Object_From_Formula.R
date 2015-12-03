@@ -24,6 +24,7 @@ Create_GERGM_Object_From_Formula <- function(object,
   network <- res1$net
   alphas <- res1$alphas
   statistics <- res1$statistics
+  thresholds <- res1$thresholds
 
   # for now we are not going to allow any covariates
   if(is_correlation_network){
@@ -89,7 +90,8 @@ Create_GERGM_Object_From_Formula <- function(object,
                                 lambda = lambda.coef,
                                 alpha = alphas,
                                 together = together,
-                                possible.stats = possible_structural_terms)
+                                possible.stats = possible_structural_terms,
+                                thresholds = thresholds)
   object@stats_to_use <- statistics
   return(object)
 }
