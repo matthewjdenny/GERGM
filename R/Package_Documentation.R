@@ -28,6 +28,9 @@ NULL
 #' @importFrom graphics boxplot legend lines par plot text
 NULL
 
+#' @import plyr
+NULL
+
 #' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test
 NULL
 

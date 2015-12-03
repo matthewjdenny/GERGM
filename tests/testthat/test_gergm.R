@@ -23,6 +23,25 @@ test_that("Simple model with no covariates runs", {
                 convergence_tolerance = 0.01,
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 4)
+
+formula2 <- net ~ recip + edges + ttriads + in2star + ctriads
+
+test <- gergm(formula2,
+              normalization_type = "division",
+              network_is_directed = TRUE,
+              use_MPLE_only = FALSE,
+              estimation_method = "Metropolis",
+              maximum_number_of_lambda_updates = 1,
+              maximum_number_of_theta_updates = 5,
+              number_of_networks_to_simulate = 40000,
+              thin = 1/10,
+              proposal_variance = 0.5,
+              downweight_statistics_together = TRUE,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.01,
+              MPLE_gain_factor = 0,
+              force_x_theta_updates = 4)
 })
 
 test_that("Model with covariates runs", {
