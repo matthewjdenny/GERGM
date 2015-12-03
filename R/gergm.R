@@ -371,21 +371,14 @@ gergm <- function(formula,
 
   if(min(acceptable_fit) > acceptable_fit_p_value_threshold){
     GERGM_Object@acceptable_fit <- TRUE
-    message("Parameter estimates simulate networks that are statistically
-            indistinguishable from observed network on the statistics specified
-            by the user. ")
-    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates
-            simulate networks that are statistically indistinguishable from
-            observed network on the statistics specified by the user. ")
+    message("Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
+    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
   }else{
     GERGM_Object@acceptable_fit <- FALSE
     message("Parameter estimates simulate networks that are statistically
             distinguishable from observed network. Consider respecifying on the
             statistics specified by the user.")
-    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates
-            simulate networks that are statistically distinguishable from
-            observed network on the statistics specified by the user. Considder
-            respecifying.")
+    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network on the statistics specified by the user. Considder respecifying.")
   }
 
   # make GOF plot
