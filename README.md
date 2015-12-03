@@ -47,13 +47,14 @@ To use this package, first load in the network you wish to use as a (square) mat
 ## Examples
 
 Here are two simple working examples using the `gergm()` function: 
-
+    
     library(GERGM)
     ########################### 1. No Covariates #############################
     # Preparing an unbounded network without covariates for gergm estimation #
+    set.seed(12345)
     net <- matrix(rnorm(100,0,20),10,10)
     colnames(net) <- rownames(net) <- letters[1:10]
-    formula <- net ~ recip + edges  
+    formula <- net ~ recip + edges + ttriads 
       
     test <- gergm(formula,
     	          normalization_type = "division",
@@ -74,6 +75,7 @@ Here are two simple working examples using the `gergm()` function:
       
     ########################### 2. Covariates #############################
     # Preparing an unbounded network with covariates for gergm estimation #
+    set.seed(12345)
     net <- matrix(runif(100,0,1),10,10)
     colnames(net) <- rownames(net) <- letters[1:10]
     node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
