@@ -57,7 +57,7 @@ dtriads <- function(i, j, net){
 # Calculate the marginal change in the network
 dh <- function(net, statistics, i, j) {
   temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net),
-            drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j), dtriads(i, j, net))
+            drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j))
   value <- temp[statistics > 0]
   return(value)
 }
@@ -129,16 +129,20 @@ net2xy <- function(net, statistics, directed) {
         x <- rbind(x, dh(net, statistics, i, j))
       }
     }
-
   }
   if (directed == FALSE) {
-    for (i in 2:nodes) {
-      for (j in (1:(i - 1))) {
+    for (i in 1:nodes) {
+      for (j in (1:nodes)[-i]) {
         y <- c(y, net[i, j])
         x <- rbind(x, dh(net, statistics, i, j))
       }
     }
-
+#     for (i in 2:nodes) {
+#       for (j in (1:(i - 1))) {
+#         y <- c(y, net[i, j])
+#         x <- rbind(x, dh(net, statistics, i, j))
+#       }
+#     }
   }
   return(list(y = y, x = x))
 }
