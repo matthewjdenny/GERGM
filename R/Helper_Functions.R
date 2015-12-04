@@ -312,7 +312,7 @@ parse_formula_term <- function(term,
         }
           return_list$network_matrix_object <- temp_net[[1]]
         if(class(return_list$network_matrix_object)!= "matrix"){
-          stop(paste("You must supply network covariates as matrix objects. The object you supplied was: ",str(temp_net)))
+          stop(paste("You must supply network covariates as matrix objects."))
         }
       }else{
         stop(paste("The network covariate matrix:",return_list$network,"does not apprea to exist, please chec that it is loaded in your current R session."))
