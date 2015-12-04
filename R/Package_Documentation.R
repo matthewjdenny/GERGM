@@ -19,7 +19,6 @@ NULL
 #> NULL
 
 #' @import methods
-#' @import RcppArmadillo
 NULL
 
 #' @importFrom grDevices dev.off gray pdf rgb colorRampPalette
@@ -34,7 +33,7 @@ NULL
 #' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test
 NULL
 
-#' @importFrom utils combn write.table str
+#' @importFrom utils combn write.table
 NULL
 
 #' @useDynLib GERGM
