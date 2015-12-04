@@ -138,7 +138,6 @@ MCMCMLE <- function(num.draws,
     }
 
     rownames(stats.data) <- possible.stats
-    print(stats.data)
     GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
     if(verbose){
       cat("\nOptimizing theta estimates... \n")
