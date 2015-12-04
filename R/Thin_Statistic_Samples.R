@@ -2,18 +2,17 @@ Thin_Statistic_Samples <- function(statistics){
 
   # we are going to test using ttriads statistics
   ttriads <- statistics$ttriads
-  ar1 <- cor(ttriads[2:length(ttriads)],ttriads[1:(length(ttriads)-1)])
-  print(ar1)
+  ar1 <- stats::cor(ttriads[2:length(ttriads)],ttriads[1:(length(ttriads)-1)])
+  #print(ar1)
 
   thin <- 1
-  while(ar1 > .001){
+  while(ar1 > .01){
     thin = thin +1
     thinSeq <- round(seq(1,length(ttriads),by=thin))
     thinDens <- ttriads[thinSeq]
-    ar1 <- cor(thinDens[2:length(thinDens)],thinDens[1:(length(thinDens)-1)])
-    print(ar1)
+    ar1 <- stats::cor(thinDens[2:length(thinDens)],thinDens[1:(length(thinDens)-1)])
+    #print(ar1)
   }
-  #thin = 200
 
   thinSeq <- round(seq(1,nrow(statistics),by=thin))
 
