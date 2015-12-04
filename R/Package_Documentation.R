@@ -30,7 +30,7 @@ NULL
 #' @import plyr
 NULL
 
-#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test
+#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test cor
 NULL
 
 #' @importFrom utils combn write.table
