@@ -42,7 +42,7 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 ## Basic Useage
 
-To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2star(alpha = 1)`, `in2star(alpha = 1)`, `ctriads(alpha = 1)`, `recip(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`.
+To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`, `edges`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`.
 
 ## Examples
 
@@ -54,7 +54,7 @@ Here are two simple working examples using the `gergm()` function:
     set.seed(12345)
     net <- matrix(rnorm(100,0,20),10,10)
     colnames(net) <- rownames(net) <- letters[1:10]
-    formula <- net ~ recip + edges + ttriads 
+    formula <- net ~ edges + mutual + ttriads 
       
     test <- gergm(formula,
     	          normalization_type = "division",
@@ -83,7 +83,7 @@ Here are two simple working examples using the `gergm()` function:
     	                                Type = c("A","B","B","A","A","A","B","B","C","C"))
     rownames(node_level_covariates) <- letters[1:10]
     network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
-    formula <- net ~ recip + edges + sender("Age") + 
+    formula <- net ~  edges + mutual + ttriads + sender("Age") + 
     netcov("network_covariate") + nodefactor("Type",base = "A")  
        
     test <- gergm(formula,
