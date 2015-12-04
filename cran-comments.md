@@ -1,19 +1,3 @@
-## Resubmission
-This is a resubmission. In this version I have:
-
-* Prevented a long-running example from running in R CMD check as requested by Dr. Hornik. 
-
-* Attempted to address the non-portabiliy of the PKG_LIBS call to -llapack by replacing it with
-$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) in /src/Makevars. 
-
-* In response to Dr. Ripley's comment about the example code failing without long doubles, I
-was able to replicate this issue and beleive it is due to the particular specification of 
-the model in the example. While this code is no longer being run in R CMD check, this error
-is not uninformative, as it indicates to the user that the model they are estimating has 
-become degenerate. 
-
-* Bumped minor patch version to 0.4.2 
-
 ## Test environments
 * local OS X install, R 3.2.2
 * win-builder (devel and release)
