@@ -1,7 +1,7 @@
 # GERGM [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=master)](https://travis-ci.org/matthewjdenny/GERGM)
 An R package to estimate Generalized Exponential Random Graph Models
 
-NOTE: **This package is still under development. PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
+NOTE: **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
 
 ## Model Overview 
 
