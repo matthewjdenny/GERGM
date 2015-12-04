@@ -94,9 +94,9 @@ Simulate_GERGM <- function(GERGM_Object,
   h.statistics = data.frame(out2stars = h.statistics[, 1],
                             in2stars = h.statistics[, 2],
                             ctriads = h.statistics[, 3],
-                            recip = h.statistics[, 4],
+                            mutual = h.statistics[, 4],
                             ttriads = h.statistics[, 5],
-                            edgeweight = h.statistics[, 6])
+                            edges = h.statistics[, 6])
 
   GERGM_Object@MCMC_output = list(Networks = nets,
                             Statistics = h.statistics,
