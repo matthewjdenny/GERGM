@@ -68,7 +68,7 @@ Prepare_Network_and_Covariates <- function(formula,
     node_covariates_list <- node_covariates_list[-length(node_covariates_list)]
     for(i in 1:length(node_covariates_list)){
       type <- node_covariates_list[[i]]$term
-      if(type == "sender" | type == "reciever"| type == "absdiff"| type == "nodecov" ){
+      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" ){
         num_covariates <- num_covariates + 1
       }else if(type == "nodefactor"){
         # need to get the number of levels
