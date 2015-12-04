@@ -252,11 +252,7 @@ Prepare_Network_and_Covariates <- function(formula,
   #
   if(!is_directed){
     if(isSymmetric(raw_network) == FALSE){
-      warning("You provided an asymmetric network when you specified that the
-              network was undirect. Setting the upper triangle equal to the lower
-              triangle. If the lower is larger, then it will be coppied,
-              otherwise the upper will be coppied. To avoid problems, please
-              provide a symmetric matrix.")
+      warning("You provided an asymmetric network when you specified that the network was undirect. Setting the upper triangle equal to the lower triangle. If the lower is larger, then it will be coppied, otherwise the upper will be coppied. To avoid problems, please provide a symmetric matrix.")
 
       lower_to_upper <- function(m) {
         m[upper.tri(m)] <- t(m)[upper.tri(m)]
@@ -273,6 +269,7 @@ Prepare_Network_and_Covariates <- function(formula,
       }else{
         raw_network <- lower_to_upper(raw_network)
       }
+      cat("Symmetrized Raw Network...\n")
       print(round(raw_network,1))
     }
   }
@@ -306,6 +303,8 @@ Prepare_Network_and_Covariates <- function(formula,
         network <- raw_network
       }
     }
+    cat("Transformed Network...\n")
+    print(round(network,3))
     return(list(network = network))
   }else{
     #4. standardize covariates
