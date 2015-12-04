@@ -6,7 +6,7 @@
 #' @export
 GOF <- function(GERGM_Object){
   #define colors
-  UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
+  UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
 
   if(GERGM_Object@simulation_only){
