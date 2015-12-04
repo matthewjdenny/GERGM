@@ -332,7 +332,7 @@ gergm <- function(formula,
     }
   }
 
-
+  init.statistics <- NULL
   if(GERGM_Object@is_correlation_network){
     init.statistics <- h2(GERGM_Object@network,
                           triples = triples,
@@ -347,12 +347,14 @@ gergm <- function(formula,
                           together = downweight_statistics_together)
   }
   # initialize the network with the observed network
-  init.statistics <- h2(GERGM_Object@bounded.network,
-                        triples = triples,
-                        statistics = rep(1, length(possible_structural_terms)),
-                        alphas = GERGM_Object@weights,
-                        together = downweight_statistics_together)
+#   init.statistics <- h2(GERGM_Object@bounded.network,
+#                         triples = triples,
+#                         statistics = rep(1, length(possible_structural_terms)),
+#                         alphas = GERGM_Object@weights,
+#                         together = downweight_statistics_together)
 
+  # fix issue with the wrong stats being saved
+  GERGM_Object@stats[2,] <- init.statistics
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
