@@ -58,6 +58,9 @@ dtriads <- function(i, j, net){
 dh <- function(net, statistics, i, j) {
   temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net),
             drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j))
+  if(length(temp) != length(statistics)){
+    stop("Development ERROR! Please email mdenny@psu.edu! The dh() internal function in Helper_Functions.R has been supplied an incorrect number of statistics.")
+  }
   value <- temp[statistics > 0]
   return(value)
 }

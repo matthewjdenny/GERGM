@@ -370,7 +370,6 @@ gergm <- function(formula,
   cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
   GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
 
-  print(stats.data)
   GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
 
   statistic_test_p_values <- data.frame(p_values = statistic_test_p_values)
