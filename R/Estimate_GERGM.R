@@ -33,7 +33,7 @@ Estimate_GERGM <- function(formula_object,
   net <- GERGM_Object@network
 
   rhs.formula <- possible.stats[statistics > 0]
-  rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
+  #rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
   # Flag if statistics do not meet requirement for Gibbs
   if (method == "Gibbs" & sum(GERGM_Object@weights != 1) > 0) {
@@ -70,9 +70,7 @@ Estimate_GERGM <- function(formula_object,
       ## If this is true, we don't need to simulate any networks, we simply give
       ## the MPLEs for the theta parameters at each iteration.
       if(MPLE.only == TRUE){
-        if(verbose){
-          cat("Updating Estimates -- Iteration:", i," \n")
-        }
+        cat("Updating Estimates -- Iteration:", i," \n")
         GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
         if(verbose){
           cat("Lambda Estimates", gpar$par,"\n")
@@ -100,7 +98,7 @@ Estimate_GERGM <- function(formula_object,
                             together = together,
                             GERGM_Object = GERGM_Object,
                             hessian = T,
-                            control = list(fnscale = -1, trace = 1))
+                            control = list(fnscale = -1, trace = 0))
         }
         if(verbose){
           cat("Lambda estimates", "\n")
@@ -132,7 +130,8 @@ Estimate_GERGM <- function(formula_object,
 
         theta.new <- mple(GERGM_Object@bounded.network,
                           statistics = GERGM_Object@stats_to_use,
-                          directed = directed)
+                          directed = directed,
+                          verbose = verbose)
         if(verbose){
           cat("theta.new", theta.new$par, "\n")
         }
@@ -199,9 +198,9 @@ Estimate_GERGM <- function(formula_object,
 
       if(MPLE.only != TRUE){
         # Estimate lambda
-        if(verbose){
-          cat("Updating Estimates -- Iteration:", i," \n")
-        }
+
+        cat("Updating Estimates -- Iteration:", i," \n")
+
         GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
         if(verbose){
           cat("Lambda Estimates", gpar$par,"\n")
@@ -227,7 +226,7 @@ Estimate_GERGM <- function(formula_object,
                             method = "BFGS",
                             together = together,
                             GERGM_Object = GERGM_Object,
-                            hessian = T, control = list(fnscale = -1, trace = 1))
+                            hessian = T, control = list(fnscale = -1, trace = 0))
         }
         if(verbose){
           cat("Lambda estimates", "\n")
@@ -366,11 +365,13 @@ Estimate_GERGM <- function(formula_object,
       if(GERGM_Object@is_correlation_network){
         theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
                                 statistics = GERGM_Object@stats_to_use,
-                                directed = directed)
+                                directed = directed,
+                                verbose = verbose)
       }else{
         theta.init <- mple(GERGM_Object@bounded.network,
                            statistics = GERGM_Object@stats_to_use,
-                           directed = directed)
+                           directed = directed,
+                           verbose = verbose)
       }
 
       #print(theta.init)

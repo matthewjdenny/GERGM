@@ -82,7 +82,8 @@ MCMCMLE <- function(num.draws,
                          thin = thin,
                          MCMC.burnin = MCMC.burnin,
                          seed1 = seed2,
-                         possible.stats = possible.stats)
+                         possible.stats = possible.stats,
+                         verbose = verbose)
 
   hsn <- GERGM_Object@MCMC_output$Statistics[,which(GERGM_Object@stats_to_use == 1)]
 
@@ -122,7 +123,8 @@ MCMCMLE <- function(num.draws,
                            thin = thin,
                            MCMC.burnin = MCMC.burnin,
                            seed1 = seed2,
-                           possible.stats = possible.stats)
+                           possible.stats = possible.stats,
+                           verbose = verbose)
 
     hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
     hsn.tot <- GERGM_Object@MCMC_output$Statistics
@@ -143,6 +145,7 @@ MCMCMLE <- function(num.draws,
       cat("\nOptimizing theta estimates... \n")
     }
     GERGM_Object <- store_console_output(GERGM_Object,"\nOptimizing Theta Estimates... \n")
+    if(verbose){
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -153,7 +156,20 @@ MCMCMLE <- function(num.draws,
                        GERGM_Object = GERGM_Object,
                        method = "BFGS",
                        hessian = T,
-                       control = list(fnscale = -1, trace = 5))
+                       control = list(fnscale = -1, trace = 6))
+    }else{
+      theta.new <- optim(par = theta$par,
+                         log.l,
+                         alpha = GERGM_Object@reduced_weights,
+                         hsnet = hsn,
+                         ltheta = as.numeric(theta$par),
+                         together = together,
+                         possible.stats= possible.stats,
+                         GERGM_Object = GERGM_Object,
+                         method = "BFGS",
+                         hessian = T,
+                         control = list(fnscale = -1, trace = 0))
+    }
     if(verbose){
       cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
     }

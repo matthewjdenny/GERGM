@@ -9,7 +9,8 @@ Simulate_GERGM <- function(GERGM_Object,
                            shape.parameter ,
                            together ,
                            seed1,
-						               possible.stats ) {
+						               possible.stats,
+						               verbose = TRUE) {
   # object: an object of class "gergm"
 
   sample_every <- floor(1/thin)
@@ -87,7 +88,9 @@ Simulate_GERGM <- function(GERGM_Object,
 
     h.statistics <- samples[[3]][start:end,]
     acceptance.rate <- mean(samples[[1]])
-    cat("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n")
+    if(verbose){
+      cat("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n")
+    }
     GERGM_Object <- store_console_output(GERGM_Object,paste("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n"))
 
   }

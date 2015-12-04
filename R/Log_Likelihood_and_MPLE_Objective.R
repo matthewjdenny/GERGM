@@ -64,13 +64,19 @@ llg <- function(par,
 }
 
 # maximum pseudo-likelihood estimates
-mple <- function(net, statistics, directed) {
+mple <- function(net, statistics, directed, verbose = TRUE) {
   xy <- net2xy(net, statistics, directed = directed)
   x <- xy$x
   y <- xy$y
   est <- coef(lm(y ~ x - 1))
-  ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
-                hessian = TRUE,control = list(fnscale = -1, trace = 6))
+  ests <- NULL
+  if(verbose){
+    ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
+                  hessian = TRUE,control = list(fnscale = -1, trace = 6))
+  }else{
+    ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
+                  hessian = TRUE,control = list(fnscale = -1, trace = 0))
+  }
   return(ests)
 }
 
@@ -87,7 +93,7 @@ jacobian <- function(partials){
       prod.2 = prod.2*(1-(partials[i,i+k])^2)^(d-1-k)
     }
   }
-  result <- 2*((prod.1^(d-2))*prod.2)^(0.5)  
+  result <- 2*((prod.1^(d-2))*prod.2)^(0.5)
   return(result)
 }
 
@@ -97,14 +103,25 @@ pl.corr <- function(theta, y, x, Jacobian){
 }
 
 #MPLE for correlation matrices
-mple.corr <- function(net, bounded.net, statistics, directed = FALSE){
+mple.corr <- function(net,
+                      bounded.net,
+                      statistics,
+                      directed = FALSE,
+                      verbose = TRUE){
   xy.full <- net2xy(net, statistics, directed = directed)
   x <- xy.full$x #x's are the change statistics associated with the unbounded network
   xy.bounded <- net2xy(bounded.net, statistics, directed = directed)
   y <- xy.bounded$y #y's are the edge weights from the bounded [0,1] network
   J <- jacobian(bounded.net)
   est <- coef(lm(y ~ x - 1))
-  ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
-                hessian = TRUE, control = list(fnscale = -1, trace = 6))
+  ests <- NULL
+  if(verbose){
+    ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
+                  hessian = TRUE, control = list(fnscale = -1, trace = 6))
+  }else{
+    ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
+                  hessian = TRUE, control = list(fnscale = -1, trace = 0))
+  }
+  return(ests)
 }
 
