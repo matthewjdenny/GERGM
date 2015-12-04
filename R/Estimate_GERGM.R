@@ -109,7 +109,6 @@ Estimate_GERGM <- function(formula_object,
         if(verbose){
           print(gpar.new$par)
         }
-        print(gpar.new$par)
         GERGM_Object <- store_console_output(GERGM_Object, toString(gpar.new$par))
         gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
         # Transform the unbounded weights to bounded weights via a t-distribution
@@ -411,7 +410,6 @@ Estimate_GERGM <- function(formula_object,
   }
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
-  print(theta)
   colnames(theta) <- rhs.formula
   rownames(theta) <- c("est", "se")
   theta <- as.data.frame(theta)
