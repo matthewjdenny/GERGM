@@ -15,7 +15,7 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   output_directory = NULL, output_name = NULL, generate_plots = TRUE,
-  using_correlation_network = FALSE)
+  verbose = TRUE, using_correlation_network = FALSE)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -124,6 +124,8 @@ ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
 
 \item{generate_plots}{Defaults to TRUE, if FALSE, then no diagnostic or
 parameter plots are generated.}
+
+\item{verbose}{Defaults to TRUE (providing lots of output while model is running). Can be set to FALSE if the user wishes to see less output.}
 
 \item{using_correlation_network}{Defaults to FALSE. Experimental.}
 }

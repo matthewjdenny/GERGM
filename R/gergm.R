@@ -86,6 +86,7 @@
 #' "Test_Trace_Plot.pdf"
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or
 #' parameter plots are generated.
+#' @param verbose Defaults to TRUE (providing lots of output while model is running). Can be set to FALSE if the user wishes to see less output.
 #' @param using_correlation_network Defaults to FALSE. Experimental.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -135,6 +136,7 @@ gergm <- function(formula,
                   output_directory = NULL,
                   output_name = NULL,
                   generate_plots = TRUE,
+                  verbose = TRUE,
                   using_correlation_network = FALSE
                   ){
 
@@ -283,28 +285,17 @@ gergm <- function(formula,
                                  possible.stats = possible_structural_terms,
                                  GERGM_Object = GERGM_Object,
                                  force_x_theta_updates = force_x_theta_updates,
-                                 transformation_type = transformation_type)
+                                 transformation_type = transformation_type,
+                                 verbose = verbose)
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if(!GERGM_Object@theta_estimation_converged){
-    warning("Estimation proceedure did not detect convergence in Theta estimates.
-            Estimation halted when maximum number of updates was reached. Be
-            careful to assure good model fit or select a more relaxed convergence
-            criterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did
-            not detect convergence in Theta estimates. Estimation halted when
-            maximum number of updates was reached. Be careful to assure good
-            model fit or select a more relaxed convergence criterion.")
+    warning("Estimation proceedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergencecriterion.")
+    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
   if(!GERGM_Object@lambda_estimation_converged){
-    warning("Estimation proceedure did not detect convergence in Lambda estimates.
-            Estimation halted when maximum number of updates was reached. Be
-            careful to assure good model fit or select a more relaxed convergence
-            criterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did
-            not detect convergence in Lambda estimates. Estimation halted when
-            maximum number of updates was reached. Be careful to assure good
-            model fit or select a more relaxed convergence criterion.")
+    warning("Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
 
   #now simulate from last update of theta parameters
@@ -356,6 +347,10 @@ gergm <- function(formula,
   # fix issue with the wrong stats being saved
   GERGM_Object@stats[2,] <- init.statistics
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
+
+  #thin statsitics
+  hsn.tot <- Thin_Statistic_Samples(hsn.tot)
+
   #calculate t.test p-values for calculating the difference in the means of
   # the newly simulated data with the original network
   statistic_test_p_values <- rep(NA,length(possible_structural_terms))
@@ -374,8 +369,8 @@ gergm <- function(formula,
 
   statistic_test_p_values <- data.frame(p_values = statistic_test_p_values)
   rownames(statistic_test_p_values) <- possible_structural_terms
-  cat("\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
-  GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+  cat("\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+  GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
   print(statistic_test_p_values)
   GERGM_Object <- store_console_output(GERGM_Object, toString(statistic_test_p_values))
 
@@ -392,10 +387,8 @@ gergm <- function(formula,
     GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
   }else{
     GERGM_Object@acceptable_fit <- FALSE
-    message("Parameter estimates simulate networks that are statistically
-            distinguishable from observed network. Consider respecifying on the
-            statistics specified by the user.")
-    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network on the statistics specified by the user. Considder respecifying.")
+    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
+    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
   }
 
   # make GOF plot
