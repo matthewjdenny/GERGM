@@ -1,4 +1,4 @@
-# GERGM [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=master)](https://travis-ci.org/matthewjdenny/GERGM) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/GERGM)](http://cran.r-project.org/package=GERGM)
+# GERGM -- Master: [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=master)](https://travis-ci.org/matthewjdenny/GERGM) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/GERGM)](http://cran.r-project.org/package=GERGM) Development: [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=Development)](https://travis-ci.org/matthewjdenny/GERGM)
 An R package to estimate Generalized Exponential Random Graph Models
 
 NOTE: **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
