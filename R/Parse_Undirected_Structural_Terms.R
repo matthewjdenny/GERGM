@@ -28,8 +28,6 @@ parse_undirected_structural_terms <- function(
   # hand rolled replacements
   parsed <- stringr::str_replace_all(parsed, "twostar","in2star")
   cat("Internally altered formula:", parsed, "\n")
-  print(parsed)
   formula <- as.formula(parsed)
-  print(str(formula))
   return(formula)
 }
