@@ -6,11 +6,13 @@
 #' @export
 Trace_Plot <- function(GERGM_Object){
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
-  UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
+  edges <- NULL
   stats <- GERGM_Object@MCMC_output$Statistics
   indexes <- 1:length(stats[,1])
-  stats <- cbind(stats,indexes)
-  p <- ggplot2::ggplot(stats, ggplot2::aes(x=indexes, y=edgeweight ))
+  nr <- nrow(GERGM_Object@network)
+  normalizer <- nr*(nr-1)
+  stats <- cbind(stats/normalizer,indexes)
+  p <- ggplot2::ggplot(stats, ggplot2::aes(x = indexes, y = edges))
   p  <- p + ggplot2::geom_line(color = UMASS_BLUE) +
     ggplot2::xlab("Iteration") +
     ggplot2::ylab("Network Density") +
