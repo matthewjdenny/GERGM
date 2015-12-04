@@ -266,6 +266,10 @@ h <- function(possible.stats,
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
             edgeweight(net, alphas[6], together))
+  # check to make sure we did not mess things up
+  if(length(temp) != length(statistics)){
+    stop("Development ERROR! Please email mdenny@psu.edu! The h() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
+  }
   value <- temp[statistics > 0]
   result <- rbind(round(value, 3), round(alphas[statistics > 0], 3))
   colnames(result) <- possible.stats[statistics > 0]
@@ -291,6 +295,10 @@ h.corr <- function(possible.stats,
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
             edgeweight(net, alphas[6], together))
+  # check to make sure we did not mess things up
+  if(length(temp) != length(statistics)){
+    stop("Development ERROR! Please email mdenny@psu.edu! The h.corr() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
+  }
   value <- temp[statistics > 0]
   result <- rbind(round(value, 3), round(alphas[statistics > 0], 3))
   colnames(result) <- possible.stats[statistics > 0]
@@ -319,6 +327,10 @@ h2 <- function(net,
            recip(net, alphas[4], together),
            ttriads(net, triples, alphas[5], together),
            edgeweight(net, alphas[6], together))
+  # check to make sure we did not mess things up
+  if(length(temp) != length(statistics)){
+    stop("Development ERROR! Please email mdenny@psu.edu! The h2() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
+  }
   return(temp[which(statistics > 0)])
   #return(temp)
 }
