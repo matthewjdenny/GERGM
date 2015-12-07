@@ -68,7 +68,7 @@ Prepare_Network_and_Covariates <- function(formula,
     node_covariates_list <- node_covariates_list[-length(node_covariates_list)]
     for(i in 1:length(node_covariates_list)){
       type <- node_covariates_list[[i]]$term
-      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" ){
+      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" | type == "intercept" ){
         num_covariates <- num_covariates + 1
       }else if(type == "nodefactor"){
         # need to get the number of levels
@@ -105,6 +105,10 @@ Prepare_Network_and_Covariates <- function(formula,
                                                effect_type,
                                                level = NA){
     return_matrix <- matrix(0,num_nodes,num_nodes)
+    if(effect_type == "intercept"){
+      return_matrix <- matrix(1,num_nodes,num_nodes)
+      diag(return_matrix) <- 0
+    }
     if(effect_type == "sender"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
@@ -181,7 +185,7 @@ Prepare_Network_and_Covariates <- function(formula,
     # do nothing
   }else{
     slice_names <- rep("",length = num_covariates)
-    slice_names[1] <- "intercept"
+    slice_names[1] <- "network"
   }
 
 
