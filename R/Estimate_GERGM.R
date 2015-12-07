@@ -20,7 +20,8 @@ Estimate_GERGM <- function(formula_object,
                            GERGM_Object,
                            force_x_theta_updates,
                            transformation_type,
-                           verbose) {
+                           verbose,
+                           force_x_lambda_updates) {
 
   # set the seed
   set.seed(seed)
@@ -184,12 +185,16 @@ Estimate_GERGM <- function(formula_object,
           GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
           if (sum(count1) + sum(count2) == 0){
             message("Theta parameter estimates have converged...")
-            GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
-            GERGM_Object@theta_estimation_converged <- TRUE
-            GERGM_Object@lambda_estimation_converged <- TRUE
-            theta <- theta.new
-            gpar <- gpar.new
-            break
+            if(force_x_lambda_updates > i){
+              cat("Forcing",force_x_lambda_updates,"lambda updates...\n")
+            }else{
+              GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+              GERGM_Object@theta_estimation_converged <- TRUE
+              GERGM_Object@lambda_estimation_converged <- TRUE
+              theta <- theta.new
+              gpar <- gpar.new
+              break
+            }
           }
         }
         theta <- theta.new
@@ -322,12 +327,16 @@ Estimate_GERGM <- function(formula_object,
 
         if (sum(count1) + sum(count2) == 0){
           message("Theta parameter estimates have converged...")
-          GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
-          GERGM_Object@theta_estimation_converged <- TRUE
-          GERGM_Object@lambda_estimation_converged <- TRUE
-          theta <- theta.new
-          gpar <- gpar.new
-          break
+          if(force_x_lambda_updates > i){
+            cat("Forcing",force_x_lambda_updates,"lambda updates...\n")
+          }else{
+            GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+            GERGM_Object@theta_estimation_converged <- TRUE
+            GERGM_Object@lambda_estimation_converged <- TRUE
+            theta <- theta.new
+            gpar <- gpar.new
+            break
+          }
         }
         theta <- theta.new
         gpar <- gpar.new
