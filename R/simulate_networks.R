@@ -87,11 +87,21 @@ simulate_networks <- function(formula,
   # This is the main function to estimate a GERGM model
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads")
+  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
   possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+
+  #check for an edges statistic
+  form<- as.formula(formula)
+  parsed <- deparse(form)
+  if(length(parsed) > 1){
+    parsed <- paste0(parsed, collapse = " ")
+  }
+  if(grepl("edges",parsed)){
+    stop("You may not specify an edges statistic.")
+  }
 
   # set logical values for whether we are using MPLE only, whether the network
   # is directed, and which estimation method we are using as well as the
