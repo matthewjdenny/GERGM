@@ -90,6 +90,26 @@ test <- gergm(formula,
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
+#check that code works with MPLE only
+
+formula <- net ~ ttriads + in2stars
+
+test <- gergm(formula,
+              normalization_type = "division",
+              network_is_directed = TRUE,
+              use_MPLE_only = TRUE,
+              estimation_method = "Metropolis",
+              number_of_networks_to_simulate = 40000,
+              thin = 1/10,
+              proposal_variance = 0.5,
+              downweight_statistics_together = TRUE,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.01,
+              MPLE_gain_factor = 0,
+              force_x_theta_updates = 2,
+              force_x_lambda_updates = 3)
+
 })
 
 test_that("Model with covariates runs", {

@@ -14,8 +14,8 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
-  output_directory = NULL, output_name = NULL, generate_plots = TRUE,
-  verbose = TRUE, omit_intercept_term = FALSE,
+  force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
+  generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE,
   using_correlation_network = FALSE)
 }
 \arguments{
@@ -106,7 +106,12 @@ is 0.05.}
 \item{force_x_theta_updates}{Defaults to 1 where theta estimation is not
 allowed to converge until thetas have updated for x iterations . Useful when
 model is not degenerate but simulated statistics do not match observed network
-well when algorithm stops after first x updates.}
+well when algorithm stops after first y updates.}
+
+\item{force_x_lambda_updates}{Defaults to 1 where lambda estimation is not
+allowed to converge until lambdas have updated for x iterations . Useful when
+model is not degenerate but simulated statistics do not match observed network
+well when algorithm stops after first y updates.}
 
 \item{output_directory}{The directory where you would like output generated
 by the GERGM estimation proceedure to be saved (if output_name is specified).
@@ -150,8 +155,6 @@ test <- gergm(formula,
               network_is_directed = TRUE,
               use_MPLE_only = FALSE,
               estimation_method = "Metropolis",
-              maximum_number_of_lambda_updates = 1,
-              maximum_number_of_theta_updates = 5,
               number_of_networks_to_simulate = 40000,
               thin = 1/10,
               proposal_variance = 0.5,

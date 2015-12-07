@@ -70,7 +70,11 @@
 #' @param force_x_theta_updates Defaults to 1 where theta estimation is not
 #' allowed to converge until thetas have updated for x iterations . Useful when
 #' model is not degenerate but simulated statistics do not match observed network
-#' well when algorithm stops after first x updates.
+#' well when algorithm stops after first y updates.
+#' @param force_x_lambda_updates Defaults to 1 where lambda estimation is not
+#' allowed to converge until lambdas have updated for x iterations . Useful when
+#' model is not degenerate but simulated statistics do not match observed network
+#' well when algorithm stops after first y updates.
 #' @param output_directory The directory where you would like output generated
 #' by the GERGM estimation proceedure to be saved (if output_name is specified).
 #' This includes, GOF, trace, and parameter estimate plots, as well as a summary
@@ -102,8 +106,6 @@
 #'               network_is_directed = TRUE,
 #'               use_MPLE_only = FALSE,
 #'               estimation_method = "Metropolis",
-#'               maximum_number_of_lambda_updates = 1,
-#'               maximum_number_of_theta_updates = 5,
 #'               number_of_networks_to_simulate = 40000,
 #'               thin = 1/10,
 #'               proposal_variance = 0.5,
@@ -134,6 +136,7 @@ gergm <- function(formula,
                   MPLE_gain_factor = 0,
                   acceptable_fit_p_value_threshold = 0.05,
                   force_x_theta_updates = 1,
+                  force_x_lambda_updates = 1,
                   output_directory = NULL,
                   output_name = NULL,
                   generate_plots = TRUE,
@@ -303,7 +306,8 @@ gergm <- function(formula,
                                  GERGM_Object = GERGM_Object,
                                  force_x_theta_updates = force_x_theta_updates,
                                  transformation_type = transformation_type,
-                                 verbose = verbose)
+                                 verbose = verbose,
+                                 force_x_lambda_updates = force_x_lambda_updates)
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if(!GERGM_Object@theta_estimation_converged){
