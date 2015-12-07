@@ -18,13 +18,30 @@ log.l <- function(thetas,
     z <- hsnet %*% (theta - ltheta)
   }
 
-  #this will calculate the h statistics on the original network as desired
-  temp <- h.corr(possible.stats,
-            alpha,
-            theta = theta,
-            together = together,
-            GERGM_Object)[1, ]
-  return(rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z)))))
+  if(GERGM_Object@is_correlation_network){
+    #this will calculate the h statistics on the original network as desired
+    temp <- h.corr(possible.stats,
+                   alpha,
+                   theta = theta,
+                   together = together,
+                   GERGM_Object)[1, ]
+  }else{
+    dir <- TRUE
+    if(GERGM_Object@undirected_network){
+      dir <- FALSE
+    }
+    num.nodes <- nrow(GERGM_Object@bounded.network)
+    triples <- t(combn(1:num.nodes, 3))
+    temp <- h2(net = GERGM_Object@bounded.network,
+       triples = triples,
+       statistics = GERGM_Object@stats_to_use,
+       alphas = GERGM_Object@weights,
+       together = together,
+       directed = dir)
+  }
+  ret <- rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z))))
+  #print(ret)
+  return(ret)
 }
 
 llg <- function(par,
