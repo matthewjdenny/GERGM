@@ -16,8 +16,6 @@ test_that("Simple model with no covariates runs", {
                 network_is_directed = TRUE,
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
-                maximum_number_of_lambda_updates = 1,
-                maximum_number_of_theta_updates = 5,
                 number_of_networks_to_simulate = 40000,
                 thin = 1/10,
                 proposal_variance = 0.5,
@@ -28,19 +26,17 @@ test_that("Simple model with no covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 4)
 
-  check_against <- c(0.067)
+  check_against <- c(-0.076)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # three parameter model
-  formula <- net ~  edges + mutual +  ttriads
+  formula <- net ~  mutual +  ttriads
 
   test <- gergm(formula,
                 normalization_type = "division",
                 network_is_directed = TRUE,
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
-                maximum_number_of_lambda_updates = 1,
-                maximum_number_of_theta_updates = 5,
                 number_of_networks_to_simulate = 40000,
                 thin = 1/10,
                 proposal_variance = 0.5,
@@ -51,19 +47,17 @@ test_that("Simple model with no covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 4)
 
-  check_against <- c(1.872, -0.005, -0.484)
+  check_against <- c(2.034, -0.236)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # five parameter model
-  formula2 <- net ~  edges + mutual + ttriads + in2stars + ctriads
+  formula2 <- net ~  mutual + ttriads + in2stars
 
   test <- gergm(formula2,
               normalization_type = "division",
               network_is_directed = TRUE,
               use_MPLE_only = FALSE,
               estimation_method = "Metropolis",
-              maximum_number_of_lambda_updates = 1,
-              maximum_number_of_theta_updates = 5,
               number_of_networks_to_simulate = 40000,
               thin = 1/10,
               proposal_variance = 0.5,
@@ -74,20 +68,18 @@ test_that("Simple model with no covariates runs", {
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
-check_against <- c(-0.039,  1.147,  2.084, -0.302, -1.043)
+check_against <- c(-0.611,  2.692,  0.122)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 #check that code works for undirected network
 
-formula <- net ~ edges + ttriads + twostars
+formula <- net ~ ttriads + twostars
 
 test <- gergm(formula,
               normalization_type = "division",
               network_is_directed = FALSE,
               use_MPLE_only = FALSE,
               estimation_method = "Metropolis",
-              maximum_number_of_lambda_updates = 1,
-              maximum_number_of_theta_updates = 5,
               number_of_networks_to_simulate = 40000,
               thin = 1/10,
               proposal_variance = 0.5,
@@ -114,7 +106,7 @@ test_that("Model with covariates runs", {
                                       Type = c("A","B","B","A","A","A","B","B","C","C"))
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
-  formula <- net ~ edges + mutual + ttriads + sender("Age") +
+  formula <- net ~ mutual + ttriads + sender("Age") +
   netcov("network_covariate") + nodefactor("Type",base = "A")
 
   test <- gergm(formula,
@@ -122,8 +114,6 @@ test_that("Model with covariates runs", {
                 network_is_directed = TRUE,
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
-                maximum_number_of_lambda_updates = 5,
-                maximum_number_of_theta_updates = 5,
                 number_of_networks_to_simulate = 100000,
                 thin = 1/10,
                 proposal_variance = 0.5,
