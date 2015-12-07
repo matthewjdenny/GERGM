@@ -5,7 +5,7 @@
 \title{A Function to simulate networks from a GERGM with given theta parameters.}
 \usage{
 simulate_networks(formula, mutual = 0, ttriads = 0, ctriads = 0,
-  in2star2 = 0, out2star2 = 0, twostars = 0,
+  in2stars = 0, out2stars = 0, twostars = 0,
   simulation_method = c("Metropolis", "Gibbs"),
   network_is_directed = c(TRUE, FALSE),
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
@@ -26,6 +26,14 @@ defaults to 0. Only statistics for structural terms included in formula will
 be used.}
 
 \item{ctriads}{The theta value provided for the cyclic triads parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
+
+\item{in2stars}{The theta value provided for the in 2-stars parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
+
+\item{out2stars}{The theta value provided for the out 2-starts parameter,
 defaults to 0. Only statistics for structural terms included in formula will
 be used.}
 
@@ -64,14 +72,6 @@ will be discarded before drawing the samples used for estimation. Default is
 \item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.}
 
 \item{simulate_correlation_network}{Defaults to FALSE. Experimental.}
-
-\item{in2stars}{The theta value provided for the in 2-stars parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{out2stars}{The theta value provided for the out 2-starts parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
 }
 \value{
 A list object containing simulated networks and parameters used to
