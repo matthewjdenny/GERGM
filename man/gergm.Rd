@@ -9,17 +9,18 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   use_MPLE_only = c(FALSE, TRUE), transformation_type = c("Cauchy",
   "LogCauchy", "Gaussian", "LogNormal"), estimation_method = c("Gibbs",
   "Metropolis"), maximum_number_of_lambda_updates = 10,
-  maximum_number_of_theta_updates = 100,
+  maximum_number_of_theta_updates = 10,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   output_directory = NULL, output_name = NULL, generate_plots = TRUE,
-  verbose = TRUE, using_correlation_network = FALSE)
+  verbose = TRUE, omit_intercept_term = FALSE,
+  using_correlation_network = FALSE)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
-statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`, `edges`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covari}
+statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodefactor(covariate, base = "M}
 
 \item{covariate_data}{A data frame containing node level covariates the user
 wished to transform into sender or reciever effects. It must have row names
@@ -127,6 +128,8 @@ parameter plots are generated.}
 
 \item{verbose}{Defaults to TRUE (providing lots of output while model is running). Can be set to FALSE if the user wishes to see less output.}
 
+\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.}
+
 \item{using_correlation_network}{Defaults to FALSE. Experimental.}
 }
 \value{
@@ -140,7 +143,7 @@ The main function provided by the package.
 set.seed(12345)
 net <- matrix(rnorm(100,0,20),10,10)
 colnames(net) <- rownames(net) <- letters[1:10]
-formula <- net ~ edges + mutual
+formula <- net ~  mutual + ttriads
 
 test <- gergm(formula,
               normalization_type = "division",

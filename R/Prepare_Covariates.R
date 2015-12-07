@@ -59,8 +59,8 @@ Prepare_Network_and_Covariates <- function(formula,
     network_covariates_provided <- TRUE
   }
 
-  # transformed covariates will have one additional slice of all ones
-  num_covariates <- 1
+  # transformed covariates will have one additional slice of all ones (we are omitting this for now)
+  num_covariates <- 0
 
   if(!node_covariates_provided){
     cat("No node level covariates provided.\n")
@@ -68,7 +68,7 @@ Prepare_Network_and_Covariates <- function(formula,
     node_covariates_list <- node_covariates_list[-length(node_covariates_list)]
     for(i in 1:length(node_covariates_list)){
       type <- node_covariates_list[[i]]$term
-      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" ){
+      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" | type == "intercept" ){
         num_covariates <- num_covariates + 1
       }else if(type == "nodefactor"){
         # need to get the number of levels
@@ -105,6 +105,10 @@ Prepare_Network_and_Covariates <- function(formula,
                                                effect_type,
                                                level = NA){
     return_matrix <- matrix(0,num_nodes,num_nodes)
+    if(effect_type == "intercept"){
+      return_matrix <- matrix(1,num_nodes,num_nodes)
+      diag(return_matrix) <- 0
+    }
     if(effect_type == "sender"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
@@ -171,17 +175,21 @@ Prepare_Network_and_Covariates <- function(formula,
 
   # Generate array which covaries will be transformed into
   transformed_covariates <- array(0,dim=c(num_nodes,num_nodes,num_covariates))
-  transformed_covariates[,,1] <- 1
+
+  #omit this since we are adding in an intercept term
+  #transformed_covariates[,,1] <- 1
   # Set a slice counter to keep track of where we should add the covariates
   # in the resulting covariate array.
-  slice_counter <- 2
+  slice_counter <- 1
 
   # generate vector to store covariate names
   if(!node_covariates_provided & !network_covariates_provided){
     # do nothing
   }else{
     slice_names <- rep("",length = num_covariates)
-    slice_names[1] <- "intercept"
+
+    #remove since we are specifying an intercept
+    #slice_names[1] <- "network"
   }
 
 
@@ -195,9 +203,12 @@ Prepare_Network_and_Covariates <- function(formula,
     node_covariates_list[[i]]$num_levels
     # Loop through covariates
     for(i in 1:length(node_covariates_list)){
-       col_index <- which(tolower(colnames(covariate_data)) ==
+      if(node_covariates_list[[i]]$term == "intercept"){
+        col_index <- 0
+      }else{
+        col_index <- which(tolower(colnames(covariate_data)) ==
                              tolower(node_covariates_list[[i]]$covariate))
-
+      }
       if(length(col_index) == 0){
         stop(paste("There is no matching column name in covariate_data for:",tolower(node_covariates_list[[i]]$covariate)))
       }
@@ -221,13 +232,17 @@ Prepare_Network_and_Covariates <- function(formula,
           }
         }
       }else{
-        add <- generate_covariate_effect_matrix(num_nodes = num_nodes,
-                                                node_names = node_names,
-                                                covariates = covariate_data,
-                                                covariate_column = col_index,
-                                                effect_type = node_covariates_list[[i]]$term)
+          add <- generate_covariate_effect_matrix(num_nodes = num_nodes,
+                                                  node_names = node_names,
+                                                  covariates = covariate_data,
+                                                  covariate_column = col_index,
+                                                  effect_type = node_covariates_list[[i]]$term)
         transformed_covariates[,,slice_counter] <- add
-        slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,sep="_")
+        if(node_covariates_list[[i]]$term == "intercept"){
+          slice_names[slice_counter] <- "intercept"
+        }else{
+          slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,sep="_")
+        }
         slice_counter <- slice_counter + 1
       }
     } # End of loop over node level covariates
@@ -308,10 +323,11 @@ Prepare_Network_and_Covariates <- function(formula,
     return(list(network = network))
   }else{
     #4. standardize covariates
-    for(i in 2:num_covariates){
-      transformed_covariates[,,i] <- (transformed_covariates[,,i]-mean(c(transformed_covariates[,,i])))/sd(c(transformed_covariates[,,i]))
+    if(num_covariates > 1){
+      for(i in 2:num_covariates){
+        transformed_covariates[,,i] <- (transformed_covariates[,,i]-mean(c(transformed_covariates[,,i])))/sd(c(transformed_covariates[,,i]))
+      }
     }
-
     #assign the dimnames to the array object
     dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
     return(list(network = raw_network, transformed_covariates = transformed_covariates, gpar.names = slice_names))

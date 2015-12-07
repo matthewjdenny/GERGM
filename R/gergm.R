@@ -2,7 +2,7 @@
 #' @description The main function provided by the package.
 #'
 #' @param formula A formula object that specifies the relationship between
-#' statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`, `edges`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `edges(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`.
+#' statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. An intercept term is included by default, but can be omitted by setting omit_intercept_term = TRUE.
 #' @param covariate_data A data frame containing node level covariates the user
 #' wished to transform into sender or reciever effects. It must have row names
 #' that match every entry in colnames(raw_network), should have descriptive
@@ -87,6 +87,7 @@
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or
 #' parameter plots are generated.
 #' @param verbose Defaults to TRUE (providing lots of output while model is running). Can be set to FALSE if the user wishes to see less output.
+#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
 #' @param using_correlation_network Defaults to FALSE. Experimental.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -94,7 +95,7 @@
 #' set.seed(12345)
 #' net <- matrix(rnorm(100,0,20),10,10)
 #' colnames(net) <- rownames(net) <- letters[1:10]
-#' formula <- net ~ edges + mutual
+#' formula <- net ~  mutual + ttriads
 #'
 #' test <- gergm(formula,
 #'               normalization_type = "division",
@@ -122,7 +123,7 @@ gergm <- function(formula,
                   transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
                   estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_lambda_updates = 10,
-                  maximum_number_of_theta_updates = 100,
+                  maximum_number_of_theta_updates = 10,
                   number_of_networks_to_simulate = 500,
                   thin = 1,
                   proposal_variance = 0.1,
@@ -137,6 +138,7 @@ gergm <- function(formula,
                   output_name = NULL,
                   generate_plots = TRUE,
                   verbose = TRUE,
+                  omit_intercept_term = FALSE,
                   using_correlation_network = FALSE
                   ){
 
@@ -148,10 +150,20 @@ gergm <- function(formula,
 
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges")
-  possible_structural_terms_undirected <- c("twostars", "ttriads", "edges")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver")
+  possible_structural_terms_undirected <- c("twostars", "ttriads")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+
+  #check for an edges statistic
+  form<- as.formula(formula)
+  parsed <- deparse(form)
+  if(length(parsed) > 1){
+    parsed <- paste0(parsed, collapse = " ")
+  }
+  if(grepl("edges",parsed)){
+    stop("You may not specify an edges statistic.")
+  }
 
   # check terms for undirected network
   if(!network_is_directed){
@@ -159,6 +171,11 @@ gergm <- function(formula,
       formula,
       possible_structural_terms,
       possible_structural_terms_undirected)
+  }
+
+  # automatically add an intercept term unless omit_intercept_term is TRUE
+  if(!omit_intercept_term){
+    formula <- add_intercept_term(formula)
   }
 
   # set logical values for whether we are using MPLE only, whether the network
@@ -317,7 +334,7 @@ gergm <- function(formula,
 
   # change back column names if we are dealing with an undirected network
   if(!network_is_directed){
-    change <- which(colnames(GERGM_Object@theta.coef) == "in2star")
+    change <- which(colnames(GERGM_Object@theta.coef) == "in2stars")
     if(length(change) > 0){
       colnames(GERGM_Object@theta.coef)[change] <- "twostars"
     }
