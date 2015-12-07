@@ -4,25 +4,21 @@
 \alias{simulate_networks}
 \title{A Function to simulate networks from a GERGM with given theta parameters.}
 \usage{
-simulate_networks(formula, edges = 0, recip = 0, ttriads = 0,
-  ctriads = 0, in2star = 0, out2star = 0,
+simulate_networks(formula, mutual = 0, ttriads = 0, ctriads = 0,
+  in2star2 = 0, out2star2 = 0, twostars = 0,
   simulation_method = c("Metropolis", "Gibbs"),
   network_is_directed = c(TRUE, FALSE),
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  simulate_correlation_network = FALSE)
+  omit_intercept_term = FALSE, simulate_correlation_network = FALSE)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
 like to include while simulating the network, and the network the user is
 providing as the initial network. Currently, the following statistics can be
-specified: c("out2star", "in2star",     "ctriads", "recip", "ttriads",
-"edgeweight").}
+specified: c("out2stars", "in2stars",     "ctriads", "mutual", "ttriads").}
 
-\item{edges}{The theta value provided for the edges parameter, defaults to 0.
-Only statistics for structural terms included in formula will be used.}
-
-\item{recip}{The theta value provided for the reciprocity parameter, defaults
+\item{mutual}{The theta value provided for the reciprocity parameter, defaults
 to 0. Only statistics for structural terms included in formula will be used.}
 
 \item{ttriads}{The theta value provided for the transitive triads parameter,
@@ -33,11 +29,7 @@ be used.}
 defaults to 0. Only statistics for structural terms included in formula will
 be used.}
 
-\item{in2star}{The theta value provided for the in 2-stars parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{out2star}{The theta value provided for the out 2-starts parameter,
+\item{twostars}{The theta value provided for the undirected 2-starts parameter,
 defaults to 0. Only statistics for structural terms included in formula will
 be used.}
 
@@ -69,7 +61,17 @@ will be discarded before drawing the samples used for estimation. Default is
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
 
+\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.}
+
 \item{simulate_correlation_network}{Defaults to FALSE. Experimental.}
+
+\item{in2stars}{The theta value provided for the in 2-stars parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
+
+\item{out2stars}{The theta value provided for the out 2-starts parameter,
+defaults to 0. Only statistics for structural terms included in formula will
+be used.}
 }
 \value{
 A list object containing simulated networks and parameters used to
@@ -83,12 +85,11 @@ set.seed(12345)
 net <- matrix(runif(100),10,10)
 diag(net) <- 0
 colnames(net) <- rownames(net) <- letters[1:10]
-formula <- net ~ edges + ttriads + in2star
+formula <- net ~ ttriads + in2stars
 
 test <- simulate_networks(formula,
- edges = 0.2,
  ttriads = 0.6,
- in2star = -0.8,
+ in2stars = -0.8,
  network_is_directed = TRUE,
  simulation_method = "Metropolis",
  number_of_networks_to_simulate = 10000,

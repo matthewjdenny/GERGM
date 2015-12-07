@@ -4,11 +4,8 @@
 #' @param formula A formula object that specifies which statistics the user would
 #' like to include while simulating the network, and the network the user is
 #' providing as the initial network. Currently, the following statistics can be
-#' specified: c("out2star", "in2star", 	"ctriads", "recip", "ttriads",
-#' "edgeweight").
-#' @param edges The theta value provided for the edges parameter, defaults to 0.
-#'  Only statistics for structural terms included in formula will be used.
-#' @param recip The theta value provided for the reciprocity parameter, defaults
+#' specified: c("out2stars", "in2stars", 	"ctriads", "mutual", "ttriads").
+#' @param mutual The theta value provided for the reciprocity parameter, defaults
 #' to 0. Only statistics for structural terms included in formula will be used.
 #' @param ttriads The theta value provided for the transitive triads parameter,
 #' defaults to 0. Only statistics for structural terms included in formula will
@@ -16,10 +13,13 @@
 #' @param ctriads The theta value provided for the cyclic triads parameter,
 #' defaults to 0. Only statistics for structural terms included in formula will
 #' be used.
-#' @param in2star The theta value provided for the in 2-stars parameter,
+#' @param in2stars The theta value provided for the in 2-stars parameter,
 #' defaults to 0. Only statistics for structural terms included in formula will
 #' be used.
-#' @param out2star The theta value provided for the out 2-starts parameter,
+#' @param out2stars The theta value provided for the out 2-starts parameter,
+#' defaults to 0. Only statistics for structural terms included in formula will
+#' be used.
+#' @param twostars The theta value provided for the undirected 2-starts parameter,
 #' defaults to 0. Only statistics for structural terms included in formula will
 #' be used.
 #' @param network_is_directed Logical specifying whether or not the observed
@@ -42,18 +42,18 @@
 #' will be discarded before drawing the samples used for estimation. Default is
 #' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
+#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
 #' @param simulate_correlation_network Defaults to FALSE. Experimental.
 #' @examples
 #' set.seed(12345)
 #' net <- matrix(runif(100),10,10)
 #' diag(net) <- 0
 #' colnames(net) <- rownames(net) <- letters[1:10]
-#' formula <- net ~ edges + ttriads + in2star
+#' formula <- net ~ ttriads + in2stars
 #'
 #' test <- simulate_networks(formula,
-#'  edges = 0.2,
 #'  ttriads = 0.6,
-#'  in2star = -0.8,
+#'  in2stars = -0.8,
 #'  network_is_directed = TRUE,
 #'  simulation_method = "Metropolis",
 #'  number_of_networks_to_simulate = 10000,
@@ -66,12 +66,12 @@
 #' specify the simulation. See the $MCMC_Output field for simulated networks.
 #' @export
 simulate_networks <- function(formula,
-  edges = 0,
-  recip = 0,
+  mutual = 0,
   ttriads = 0,
   ctriads = 0,
-  in2star = 0,
-  out2star = 0,
+  in2star2 = 0,
+  out2star2 = 0,
+  twostars = 0,
   simulation_method = c("Metropolis","Gibbs"),
   network_is_directed = c(TRUE, FALSE),
   number_of_networks_to_simulate = 500,
@@ -80,14 +80,16 @@ simulate_networks <- function(formula,
   downweight_statistics_together = TRUE,
   MCMC_burnin = 100,
   seed = 123,
+  omit_intercept_term = FALSE,
   simulate_correlation_network = FALSE
 ){
 
   # This is the main function to estimate a GERGM model
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2star", "in2star", "ctriads", "recip", "ttriads", "edges")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver")
+  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads")
+  possible_structural_terms_undirected <- c("twostars", "ttriads")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
@@ -98,6 +100,19 @@ simulate_networks <- function(formula,
   simulation_method <- simulation_method[1] #default is Gibbs
   transformation_type <- "cauchy"
   normalization_type <- "division"
+
+  # check terms for undirected network
+  if(!network_is_directed){
+    formula <- parse_undirected_structural_terms(
+      formula,
+      possible_structural_terms,
+      possible_structural_terms_undirected)
+  }
+
+  # automatically add an intercept term unless omit_intercept_term is TRUE
+  if(!omit_intercept_term){
+    formula <- add_intercept_term(formula)
+  }
 
   # if we are using a correlation network, then the network must be undirected.
   if(simulate_correlation_network){
@@ -134,23 +149,20 @@ simulate_networks <- function(formula,
 
   # create theta coefficients
   theta_coeficients = NULL
-  if(out2star != 0){
-    theta_coeficients <- c(theta_coeficients, out2star)
+  if(out2stars != 0){
+    theta_coeficients <- c(theta_coeficients, out2stars)
   }
-  if(in2star != 0){
-    theta_coeficients <- c(theta_coeficients, in2star)
+  if(in2stars != 0 | twostars != 0){
+    theta_coeficients <- c(theta_coeficients, in2stars)
   }
   if(ctriads != 0){
     theta_coeficients <- c(theta_coeficients, ctriads)
   }
-  if(recip != 0){
-    theta_coeficients <- c(theta_coeficients, recip)
+  if(mutual != 0){
+    theta_coeficients <- c(theta_coeficients, mutual)
   }
   if(ttriads != 0){
     theta_coeficients <- c(theta_coeficients, ttriads)
-  }
-  if(edges != 0){
-    theta_coeficients <- c(theta_coeficients, edges)
   }
 
   #1. Create GERGM object from network
@@ -229,8 +241,13 @@ simulate_networks <- function(formula,
 
   print(stats.data)
 
-
-
+  # change back column names if we are dealing with an undirected network
+  if(!network_is_directed){
+    change <- which(colnames(GERGM_Object@theta.coef) == "in2star")
+    if(length(change) > 0){
+      colnames(GERGM_Object@theta.coef)[change] <- "twostars"
+    }
+  }
 
   # make GOF plot
 
