@@ -123,7 +123,7 @@ gergm <- function(formula,
                   transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
                   estimation_method = c("Gibbs", "Metropolis"),
                   maximum_number_of_lambda_updates = 10,
-                  maximum_number_of_theta_updates = 100,
+                  maximum_number_of_theta_updates = 10,
                   number_of_networks_to_simulate = 500,
                   thin = 1,
                   proposal_variance = 0.1,
@@ -149,11 +149,21 @@ gergm <- function(formula,
   # This is the main function to estimate a GERGM model
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads")
+  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
   possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+
+  #check for an edges statistic
+  form<- as.formula(formula)
+  parsed <- deparse(form)
+  if(length(parsed) > 1){
+    parsed <- paste0(parsed, collapse = " ")
+  }
+  if(grepl("edges",parsed)){
+    stop("You may not specify an edges statistic.")
+  }
 
   # check terms for undirected network
   if(!network_is_directed){
@@ -324,7 +334,7 @@ gergm <- function(formula,
 
   # change back column names if we are dealing with an undirected network
   if(!network_is_directed){
-    change <- which(colnames(GERGM_Object@theta.coef) == "in2star")
+    change <- which(colnames(GERGM_Object@theta.coef) == "in2stars")
     if(length(change) > 0){
       colnames(GERGM_Object@theta.coef)[change] <- "twostars"
     }
