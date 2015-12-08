@@ -2,9 +2,9 @@
 #'
 #' @param GERGM_Object The object returned by the estimation procedure using the
 #' GERGM function.
-#' @return A GOF plot.
+#' @return A set of box plots where of simulated network statistics centered at the observed value for those statistics and normalized by their standard deviation. This aids in interpretation as the y-axis can be interpreted as the number of simulated-sample standard deviations above or below the observed statistic.
 #' @export
-GOF <- function(GERGM_Object){
+GOF <- function(GERGM_Object,...){
   #define colors
   UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
@@ -33,7 +33,7 @@ GOF <- function(GERGM_Object){
 
       boxplot(temp, medcol = UMASS_RED,
               xlab = "Network Statistic",
-              ylab = "Standardized, Normalized Values",
+              ylab = "Normalized Statistic Values",
               main = "Blue = Observed Statistic, Red = Simulated Mean")
       zero_line <- rep(0,length(GERGM_Object@stats[2, ]))
       zero_line <- zero_line[c(2,5,6)]
@@ -51,7 +51,7 @@ GOF <- function(GERGM_Object){
 
       boxplot(temp, medcol = UMASS_RED,
               xlab = "Network Statistic",
-              ylab = "Standardized, Normalized Values",
+              ylab = "Normalized Statistic Values",
               main = "Blue = Observed Statistic, Red = Simulated Mean")
       zero_line <- rep(0,length(GERGM_Object@stats[2, ]))
       zero_plot <- rbind(zero_line,zero_line)
