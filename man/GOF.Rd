@@ -4,14 +4,14 @@
 \alias{GOF}
 \title{Generate Goodness Of Fit plot from a GERGM object.}
 \usage{
-GOF(GERGM_Object)
+GOF(GERGM_Object, ...)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
 GERGM function.}
 }
 \value{
-A GOF plot.
+A set of box plots where of simulated network statistics centered at the observed value for those statistics and normalized by their standard deviation. This aids in interpretation as the y-axis can be interpreted as the number of simulated-sample standard deviations above or below the observed statistic.
 }
 \description{
 Generate Goodness Of Fit plot from a GERGM object.
