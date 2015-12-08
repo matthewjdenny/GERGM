@@ -2,9 +2,11 @@
 #'
 #' @param GERGM_Object The object returned by the estimation procedure using the
 #' GERGM function.
+#' @param normalize_coefficients Defaults to FALSE, if TRUE then parameter estimates will be converted be deivided by their standard deviations with and displayed with 95 percent confidence intervals. These coefficients will no longer be comparable, but make graphical interpretation of significance and sign easier.
 #' @return A parameter estimate plot.
 #' @export
-Estimate_Plot <- function(GERGM_Object){
+Estimate_Plot <- function(GERGM_Object,
+                          normalize_coefficients = FALSE){
   #define colors
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
@@ -32,6 +34,14 @@ Estimate_Plot <- function(GERGM_Object){
     data <- rbind(data,data2)
   }
 
+  # standardize coefficients
+  if(normalize_coefficients){
+    for(i in 1:nrow(data)){
+      data$Coefficient[i] <- data$Coefficient[i]/data$SE[i]
+      data$SE[i] <- 1
+    }
+  }
+
 
   # Plot
   if(length(GERGM_Object@lambda.coef[,1]) > 0){
@@ -54,8 +64,15 @@ Estimate_Plot <- function(GERGM_Object){
                   lwd = 1/2,
                   position = ggplot2::position_dodge(width = 1/2),
                   shape = 21, fill = "WHITE")
-  zp1 <- zp1  + ggplot2::theme_bw() +
-    ggplot2::coord_flip() +
-    ggplot2::theme(legend.position="none")
+  if(normalize_coefficients){
+    zp1 <- zp1  + ggplot2::theme_bw() +
+      ggplot2::coord_flip() +
+      ggplot2::theme(legend.position="none") +
+      ggplot2::ylab("Normalized Coefficient")
+  }else{
+    zp1 <- zp1  + ggplot2::theme_bw() +
+      ggplot2::coord_flip() +
+      ggplot2::theme(legend.position="none")
+  }
   print(zp1)
 }

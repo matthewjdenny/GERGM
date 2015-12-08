@@ -4,11 +4,13 @@
 \alias{Estimate_Plot}
 \title{Generate parameter estimate plot with 95 percent CI's from a GERGM object.}
 \usage{
-Estimate_Plot(GERGM_Object)
+Estimate_Plot(GERGM_Object, normalize_coefficients = FALSE)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
 GERGM function.}
+
+\item{normalize_coefficients}{Defaults to FALSE, if TRUE then parameter estimates will be converted be deivided by their standard deviations with and displayed with 95 percent confidence intervals. These coefficients will no longer be comparable, but make graphical interpretation of significance and sign easier.}
 }
 \value{
 A parameter estimate plot.
