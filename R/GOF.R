@@ -2,9 +2,11 @@
 #'
 #' @param GERGM_Object The object returned by the estimation procedure using the
 #' GERGM function.
+#' @param ... Additional Arguments can be passed in. Included for eventual compatibility with XERGM package.
 #' @return A set of box plots where of simulated network statistics centered at the observed value for those statistics and normalized by their standard deviation. This aids in interpretation as the y-axis can be interpreted as the number of simulated-sample standard deviations above or below the observed statistic.
 #' @export
-GOF <- function(GERGM_Object,...){
+GOF <- function(GERGM_Object,
+                ...){
   #define colors
   UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
