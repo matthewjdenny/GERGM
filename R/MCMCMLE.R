@@ -73,44 +73,52 @@ MCMCMLE <- function(num.draws,
   alps <- alphas[which(statistics == 1)]
   GERGM_Object@reduced_weights <- alps
   GERGM_Object@theta.par <- theta.init$par
-  GERGM_Object@MCMC_output
-  GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                         nsim = ceiling(20/thin),
-                         method = method,
-                         shape.parameter = shape.parameter,
-                         together = together,
-                         thin = thin,
-                         MCMC.burnin = MCMC.burnin,
-                         seed1 = seed2,
-                         possible.stats = possible.stats,
-                         verbose = verbose)
 
-  hsn <- GERGM_Object@MCMC_output$Statistics[,which(GERGM_Object@stats_to_use == 1)]
-
-  #Calculate covariance estimate (to scale initial guess theta.init)
-  z.bar <- NULL
-  if(class(hsn) == "numeric"){
-    hsn <- matrix(hsn,ncol =1,nrow = length(hsn))
-    z.bar <- sum(hsn) / 20
-  }else{
-    z.bar <- colSums(hsn) / 20
-  }
-
-  #cat("z.bar", "\n", z.bar, "\n")
-  Cov.est <- 0
-  for(i in 1:dim(hsn)[1]){
-    Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*% t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
-  }
-  Cov.est <- (Cov.est / 20) - z.bar%*%t(z.bar)
-  #cat("Cov.est", "\n", Cov.est)
-  D.inv <- solve(Cov.est)
-  #calculate
+  # if we are not doing a fisher update
   theta <- list()
-  theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
-  if(verbose){
-    cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
+  theta$par <- theta.init$par
+
+  # if we are going to do a fisher update to MPLE thetas
+  if(gain.factor > 0){
+    GERGM_Object <- Simulate_GERGM(GERGM_Object,
+                                   nsim = ceiling(20/thin),
+                                   method = method,
+                                   shape.parameter = shape.parameter,
+                                   together = together,
+                                   thin = thin,
+                                   MCMC.burnin = MCMC.burnin,
+                                   seed1 = seed2,
+                                   possible.stats = possible.stats,
+                                   verbose = verbose)
+
+    hsn <- GERGM_Object@MCMC_output$Statistics[,which(GERGM_Object@stats_to_use == 1)]
+
+    #Calculate covariance estimate (to scale initial guess theta.init)
+    z.bar <- NULL
+    if(class(hsn) == "numeric"){
+      hsn <- matrix(hsn,ncol =1,nrow = length(hsn))
+      z.bar <- sum(hsn) / 20
+    }else{
+      z.bar <- colSums(hsn) / 20
+    }
+
+    #cat("z.bar", "\n", z.bar, "\n")
+    Cov.est <- 0
+    for(i in 1:dim(hsn)[1]){
+      Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*% t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
+    }
+    Cov.est <- (Cov.est / 20) - z.bar%*%t(z.bar)
+    #cat("Cov.est", "\n", Cov.est)
+    D.inv <- solve(Cov.est)
+    #calculate
+    theta <- list()
+    theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
+    if(verbose){
+      cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
+    }
+    GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
   }
-  GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
+
   ##########################################################################
   ## Simulate new networks
   for (i in 1:mc.num.iterations) {
