@@ -8,7 +8,8 @@
 #' that match every entry in colnames(raw_network), should have descriptive
 #' column names.  If left NULL, then no sender or reciever effects will be
 #' added.
-#' @param normalization_type If only a raw_network is provided then, the function
+#' @param normalization_type If only a raw_network is provided and
+#' omit_intercept_term = TRUE then, the function
 #' will automatically check to determine if all edges fall in the [0,1] interval.
 #' If edges are determined to fall outside of this interval, then a trasformation
 #' onto the interval may be specified. If "division" is selected, then the data
@@ -452,6 +453,12 @@ gergm <- function(formula,
       Trace_Plot(GERGM_Object)
     }
   }
+
+  # transform networks back to observed scale
+  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network.\nYou can access these networks through the @MCMC_Output$Networks field returned by this function...\n")
+  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(
+    GERGM_Object,
+    transformation_type)
 
   return(GERGM_Object)
 }
