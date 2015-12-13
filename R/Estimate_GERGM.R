@@ -118,6 +118,10 @@ Estimate_GERGM <- function(formula_object,
           BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
         }
 
+        #store so we can transform back
+        GERGM_Object@BZ <- BZ
+        GERGM_Object@BZstdev <- sig
+
         if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
           GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
         }
@@ -249,6 +253,9 @@ Estimate_GERGM <- function(formula_object,
         for (j in 1:(dim(transform.data)[3])) {
           BZ <- BZ + beta[j] * transform.data[, , j]
         }
+
+        GERGM_Object@BZ <- BZ
+        GERGM_Object@BZstdev <- sig
 
         if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
           GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
