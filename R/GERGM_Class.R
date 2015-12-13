@@ -29,7 +29,9 @@ setClass(Class = "gergm",
            is_correlation_network = "logical",
            undirected_network = "logical",
            simulation_only = "logical",
-           thresholds = "numeric"
+           thresholds = "numeric",
+           BZ = "matrix",
+           BZstdev = "numeric"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
