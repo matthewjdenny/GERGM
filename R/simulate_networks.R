@@ -56,7 +56,7 @@
 #'  in2stars = -0.8,
 #'  network_is_directed = TRUE,
 #'  simulation_method = "Metropolis",
-#'  number_of_networks_to_simulate = 10000,
+#'  number_of_networks_to_simulate = 100,
 #'  thin = 1/10,
 #'  proposal_variance = 0.5,
 #'  downweight_statistics_together = TRUE,
@@ -89,7 +89,7 @@ simulate_networks <- function(formula,
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
@@ -264,6 +264,10 @@ simulate_networks <- function(formula,
   GOF(GERGM_Object)
   Sys.sleep(2)
   Trace_Plot(GERGM_Object)
+
+  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
+  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object,
+                                                               transformation_type)
 
   return_list <- list(formula = GERGM_Object@formula,
                       theta_values = GERGM_Object@theta.coef[,1],

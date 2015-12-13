@@ -70,18 +70,24 @@ Prepare_Network_and_Covariates <- function(formula,
       type <- node_covariates_list[[i]]$term
       if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" | type == "intercept" ){
         num_covariates <- num_covariates + 1
-      }else if(type == "nodefactor"){
+      }else if(type == "nodematch"){
         # need to get the number of levels
         covar <- node_covariates_list[[i]]$covariate
         index <- which(colnames(covariate_data) == covar)
         node_covariates_list[[i]]$levels <- unique(covariate_data[,index])
 
         node_covariates_list[[i]]$num_levels <- length(node_covariates_list[[i]]$levels)
-        num_covariates <- num_covariates + node_covariates_list[[i]]$num_levels - 1
-        base_index <- which(node_covariates_list[[i]]$levels == node_covariates_list[[i]]$base)
-        node_covariates_list[[i]]$base_index <- base_index
+        if(node_covariates_list[[i]]$base == "NULL"){
+          # if the user specified base = NULL then we use all levels for matching
+          num_covariates <- num_covariates + node_covariates_list[[i]]$num_levels
+          node_covariates_list[[i]]$base_index <- 0
+        }else{
+          num_covariates <- num_covariates + node_covariates_list[[i]]$num_levels - 1
+          base_index <- which(node_covariates_list[[i]]$levels == node_covariates_list[[i]]$base)
+          node_covariates_list[[i]]$base_index <- base_index
+        }
       }else{
-        stop(paste("You specified a node level covariate term:",node_covariates_list[[i]]$term, "Node level covariate effects must be one of: 'sender', 'receiver', 'absdiff', 'nodecov' or, 'nodefactor' , please respecify."))
+        stop(paste("You specified a node level covariate term:",node_covariates_list[[i]]$term, "Node level covariate effects must be one of: 'sender', 'receiver', 'absdiff', 'nodecov' or, 'nodematch' , please respecify."))
       }
     }
     cat("You have specified", num_covariates - 1,"node level covariate effects.\n")
@@ -151,7 +157,7 @@ Prepare_Network_and_Covariates <- function(formula,
         }
       }
     }
-    if(effect_type == "nodefactor"){
+    if(effect_type == "nodematch"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
           if(j != k){
@@ -213,7 +219,7 @@ Prepare_Network_and_Covariates <- function(formula,
         stop(paste("There is no matching column name in covariate_data for:",tolower(node_covariates_list[[i]]$covariate)))
       }
 
-      if(node_covariates_list[[i]]$term == "nodefactor"){
+      if(node_covariates_list[[i]]$term == "nodematch"){
         levels_to_include <- node_covariates_list[[i]]$num_levels
         for (j in 1:levels_to_include){
           if(node_covariates_list[[i]]$levels[j] == node_covariates_list[[i]]$base){
@@ -223,7 +229,7 @@ Prepare_Network_and_Covariates <- function(formula,
                                                     node_names = node_names,
                                                     covariates = covariate_data,
                                                     covariate_column = col_index,
-                                                    effect_type = "nodefactor",
+                                                    effect_type = "nodematch",
                                                     level = node_covariates_list[[i]]$levels[j])
             #print(add)
             transformed_covariates[,,slice_counter] <- add

@@ -2,7 +2,7 @@
 #' @description The main function provided by the package.
 #'
 #' @param formula A formula object that specifies the relationship between
-#' statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodefactor(covariate, base = "MyBase")`, `netcov(network)`. An intercept term is included by default, but can be omitted by setting omit_intercept_term = TRUE.
+#' statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodematch(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodematch(covariate, base = "MyBase")`, `netcov(network)`. An intercept term is included by default, but can be omitted by setting omit_intercept_term = TRUE. If the user specifies `nodematch(covariate, base = NULL)`, then all levels of the covariate will be matched on.
 #' @param covariate_data A data frame containing node level covariates the user
 #' wished to transform into sender or reciever effects. It must have row names
 #' that match every entry in colnames(raw_network), should have descriptive
@@ -155,7 +155,7 @@ gergm <- function(formula,
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodefactor", "sender", "receiver", "intercept")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept")
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
@@ -455,9 +455,8 @@ gergm <- function(formula,
   }
 
   # transform networks back to observed scale
-  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network.\nYou can access these networks through the @MCMC_Output$Networks field returned by this function...\n")
-  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(
-    GERGM_Object,
+  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
+  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object,
     transformation_type)
 
   return(GERGM_Object)

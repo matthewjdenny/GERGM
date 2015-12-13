@@ -127,7 +127,7 @@ test_that("Model with covariates runs", {
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
   formula <- net ~ mutual + ttriads + sender("Age") +
-  netcov("network_covariate") + nodefactor("Type",base = "A")
+  netcov("network_covariate") + nodematch("Type",base = "A")
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
