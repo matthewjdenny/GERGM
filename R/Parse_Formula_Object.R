@@ -62,7 +62,8 @@ Parse_Formula_Object <- function(formula,
     possible <- 1:length(rhs_term_names)
     actual <- which(rhs_term_names %in% possible_structural_terms)
     if (length(possible) != length(actual)) {
-      stop(paste("the specified variable", possible_structural_terms[setdiff(possible, actual)],
+      stop(paste("the specified structural term",
+                 possible_structural_terms[setdiff(possible, actual)],
                  "is not an available statistic.", sep = " "))
     }
     # if theta is NULL, assume all ones

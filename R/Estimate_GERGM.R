@@ -122,10 +122,16 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object@BZ <- BZ
         GERGM_Object@BZstdev <- sig
 
-        if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
+        if(transformation_type == "logcauchy"){
+          GERGM_Object@bounded.network <- pst(log(net), BZ, sig, 1)
+        }
+        if( transformation_type == "cauchy"){
           GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
         }
-        if(transformation_type == "lognormal" | transformation_type == "gaussian"){
+        if(transformation_type == "lognormal"){
+          GERGM_Object@bounded.network <- pst(log(net), BZ, sig, Inf)
+        }
+        if( transformation_type == "gaussian"){
           GERGM_Object@bounded.network <- pst(net, BZ, sig, Inf)
         }
 

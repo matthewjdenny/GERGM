@@ -219,12 +219,13 @@ parse_formula_term <- function(term,
                       network = NA,
                       threshold = 0,
                       levels = NA,
+                      same = NA,
                       parens_no_arg = NA,
                       network_matrix_object = NA,
                       num_levels = NA,
                       base_index = NA)
   possible_fields <- c("term","alpha","covariate", "base", "network",
-                       "threshold", "levels", "")
+                       "threshold", "levels", "same", "")
   # if there is an argument to the term -- this will be a lazy implementation
   # where if you do not get the name right, it will simply not be set and a
   # warning will be thrown.
@@ -318,7 +319,7 @@ parse_formula_term <- function(term,
           stop(paste("You must supply network covariates as matrix objects."))
         }
       }else{
-        stop(paste("The network covariate matrix:",return_list$network,"does not apprea to exist, please chec that it is loaded in your current R session."))
+        stop(paste("The network covariate matrix:",return_list$network,"does not appear to exist, please check that it is loaded in your current R session."))
       }
     }else{
       # throw an error because the term was not valid

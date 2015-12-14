@@ -23,6 +23,9 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
           GERGM_Object@BZ,
           GERGM_Object@BZstdev,
           1)
+        if(transformation_type == "logcauchy"){
+          GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+        }
         diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
       }
       if(transformation_type == "lognormal" | transformation_type == "gaussian"){
@@ -31,6 +34,9 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
           GERGM_Object@BZ,
           GERGM_Object@BZstdev,
           Inf)
+        if(transformation_type == "lognormal"){
+          GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+        }
         diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
       }
       GERGM_Object@MCMC_output$Statistics[i,] <- h2(
