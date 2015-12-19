@@ -101,7 +101,7 @@ simulate_networks <- function(formula,
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", nodemix)
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
