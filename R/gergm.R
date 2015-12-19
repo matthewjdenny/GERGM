@@ -393,12 +393,6 @@ gergm <- function(formula,
                           alphas = GERGM_Object@weights,
                           together = downweight_statistics_together)
   }
-  # initialize the network with the observed network
-#   init.statistics <- h2(GERGM_Object@bounded.network,
-#                         triples = triples,
-#                         statistics = rep(1, length(possible_structural_terms)),
-#                         alphas = GERGM_Object@weights,
-#                         together = downweight_statistics_together)
 
   # fix issue with the wrong stats being saved
   GERGM_Object@stats[2,] <- init.statistics
@@ -446,9 +440,6 @@ gergm <- function(formula,
     message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
     GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
   }
-
-  # make GOF plot
-  # Gof_Plot(GERGM_Object)
 
   #4. output everything to the appropriate files and return GERGM object.
   if(generate_plots){
