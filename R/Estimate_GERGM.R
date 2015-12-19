@@ -139,10 +139,19 @@ Estimate_GERGM <- function(formula_object,
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
 
-        theta.new <- mple(GERGM_Object@bounded.network,
-                          statistics = GERGM_Object@stats_to_use,
-                          directed = directed,
-                          verbose = verbose)
+        if(GERGM_Object@is_correlation_network){
+          theta.new <- mple.corr(GERGM_Object@network,
+                                  GERGM_Object@bounded.network,
+                                  statistics = GERGM_Object@stats_to_use,
+                                  directed = directed,
+                                  verbose = verbose)
+        }else{
+          theta.new <- mple(GERGM_Object@bounded.network,
+                             statistics = GERGM_Object@stats_to_use,
+                             directed = directed,
+                             verbose = verbose)
+        }
+
         if(verbose){
           cat("theta.new", theta.new$par, "\n")
         }
