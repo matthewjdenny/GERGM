@@ -68,26 +68,26 @@ Prepare_Network_and_Covariates <- function(formula,
     node_covariates_list <- node_covariates_list[-length(node_covariates_list)]
     for(i in 1:length(node_covariates_list)){
       type <- node_covariates_list[[i]]$term
-      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" | type == "intercept" ){
+      if(type == "sender" | type == "receiver"| type == "absdiff"| type == "nodecov" | type == "intercept" | type == "nodematch"){
         num_covariates <- num_covariates + 1
-      }else if(type == "nodematch"){
+      }else if(type == "nodemix"){
         # need to get the number of levels
         covar <- node_covariates_list[[i]]$covariate
         index <- which(colnames(covariate_data) == covar)
         node_covariates_list[[i]]$levels <- unique(covariate_data[,index])
-
-        node_covariates_list[[i]]$num_levels <- length(node_covariates_list[[i]]$levels)
+        num_levels <- length(node_covariates_list[[i]]$levels)
+        node_covariates_list[[i]]$num_levels <- num_levels
         if(node_covariates_list[[i]]$base == "NULL"){
           # if the user specified base = NULL then we use all levels for matching
-          num_covariates <- num_covariates + node_covariates_list[[i]]$num_levels
+          num_covariates <- num_covariates + num_levels*num_levels
           node_covariates_list[[i]]$base_index <- 0
         }else{
-          num_covariates <- num_covariates + node_covariates_list[[i]]$num_levels - 1
+          num_covariates <- num_covariates + num_levels*num_levels - 1
           base_index <- which(node_covariates_list[[i]]$levels == node_covariates_list[[i]]$base)
           node_covariates_list[[i]]$base_index <- base_index
         }
       }else{
-        stop(paste("You specified a node level covariate term:",node_covariates_list[[i]]$term, "Node level covariate effects must be one of: 'sender', 'receiver', 'absdiff', 'nodecov' or, 'nodematch' , please respecify."))
+        stop(paste("You specified a node level covariate term:",node_covariates_list[[i]]$term, "Node level covariate effects must be one of: 'sender', 'receiver', 'absdiff', 'nodecov', 'nodematch', or 'nodemix' , please respecify."))
       }
     }
     cat("You have specified", num_covariates - 1,"node level covariate effects.\n")
@@ -109,7 +109,8 @@ Prepare_Network_and_Covariates <- function(formula,
                                                covariates,
                                                covariate_column,
                                                effect_type,
-                                               level = NA){
+                                               level = NA,
+                                               level2 = NA){
     return_matrix <- matrix(0,num_nodes,num_nodes)
     if(effect_type == "intercept"){
       return_matrix <- matrix(1,num_nodes,num_nodes)
@@ -161,11 +162,34 @@ Prepare_Network_and_Covariates <- function(formula,
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
           if(j != k){
+            row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+            row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+            # handle both numeric and categorical values
+            if(is.numeric(covariates[row1,covariate_column]) & is.numeric(covariates[row2,covariate_column])){
+              check <- abs(covariates[row1,covariate_column] - covariates[row2,covariate_column])
+            }else{
+              check <- 1
+              if(covariates[row1,covariate_column] == covariates[row2,covariate_column]){
+                check <- 0
+              }
+            }
+            if(check == 0){
+              return_matrix[j,k] <- 1
+            }
+          }
+        }
+      }
+
+    }
+    if(effect_type == "nodemix"){
+      for(j in 1:num_nodes){
+        for(k in 1:num_nodes){
+          if(j != k){
             col1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             colval <- covariates[col1,covariate_column]
             rowval <- covariates[row1,covariate_column]
-            if(level == colval & level == rowval){
+            if(level == colval & level2 == rowval){
               return_matrix[j,k] <- 1
             }
           }
@@ -219,35 +243,48 @@ Prepare_Network_and_Covariates <- function(formula,
         stop(paste("There is no matching column name in covariate_data for:",tolower(node_covariates_list[[i]]$covariate)))
       }
 
-      if(node_covariates_list[[i]]$term == "nodematch"){
+      if(node_covariates_list[[i]]$term == "nodemix"){
         levels_to_include <- node_covariates_list[[i]]$num_levels
         for (j in 1:levels_to_include){
-          if(node_covariates_list[[i]]$levels[j] == node_covariates_list[[i]]$base){
-            #do nothing since we do not include a term for the base
-          }else{
-            add <- generate_covariate_effect_matrix(num_nodes = num_nodes,
-                                                    node_names = node_names,
-                                                    covariates = covariate_data,
-                                                    covariate_column = col_index,
-                                                    effect_type = "nodematch",
-                                                    level = node_covariates_list[[i]]$levels[j])
-            #print(add)
-            transformed_covariates[,,slice_counter] <- add
-            slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,node_covariates_list[[i]]$levels[j],sep="_")
-            slice_counter <- slice_counter + 1
+          for (k in 1:levels_to_include){
+            if(node_covariates_list[[i]]$levels[j] == node_covariates_list[[i]]$base & node_covariates_list[[i]]$levels[k] == node_covariates_list[[i]]$base){
+              #do nothing since we do not include a term for the base
+            }else{
+              add <- generate_covariate_effect_matrix(
+                num_nodes = num_nodes,
+                node_names = node_names,
+                covariates = covariate_data,
+                covariate_column = col_index,
+                effect_type = "nodemix",
+                level = node_covariates_list[[i]]$levels[j],
+                level2 = node_covariates_list[[i]]$levels[k])
+              #print(add)
+              transformed_covariates[,,slice_counter] <- add
+              slice_names[slice_counter] <- paste(
+                node_covariates_list[[i]]$covariate,
+                node_covariates_list[[i]]$term,
+                node_covariates_list[[i]]$levels[j],
+                node_covariates_list[[i]]$levels[k],
+                sep = "_")
+              slice_counter <- slice_counter + 1
+            }
           }
         }
       }else{
-          add <- generate_covariate_effect_matrix(num_nodes = num_nodes,
-                                                  node_names = node_names,
-                                                  covariates = covariate_data,
-                                                  covariate_column = col_index,
-                                                  effect_type = node_covariates_list[[i]]$term)
+          add <- generate_covariate_effect_matrix(
+            num_nodes = num_nodes,
+            node_names = node_names,
+            covariates = covariate_data,
+            covariate_column = col_index,
+            effect_type = node_covariates_list[[i]]$term)
         transformed_covariates[,,slice_counter] <- add
         if(node_covariates_list[[i]]$term == "intercept"){
           slice_names[slice_counter] <- "intercept"
         }else{
-          slice_names[slice_counter] <- paste(node_covariates_list[[i]]$covariate,node_covariates_list[[i]]$term,sep="_")
+          slice_names[slice_counter] <- paste(
+            node_covariates_list[[i]]$covariate,
+            node_covariates_list[[i]]$term,
+            sep = "_")
         }
         slice_counter <- slice_counter + 1
       }
@@ -260,7 +297,10 @@ Prepare_Network_and_Covariates <- function(formula,
   if(network_covariates_provided){
     for(i in 1:num_additional_covars){
       transformed_covariates[,,slice_counter] <- network_covariates_list[[i]]$network_matrix_object
-      slice_names[slice_counter] <- paste(network_covariates_list[[i]]$network,network_covariates_list[[i]]$term,sep="_")
+      slice_names[slice_counter] <- paste(
+        network_covariates_list[[i]]$network,
+        network_covariates_list[[i]]$term,
+        sep = "_")
       slice_counter <- slice_counter + 1
     }
   }
@@ -335,8 +375,12 @@ Prepare_Network_and_Covariates <- function(formula,
       }
     }
     #assign the dimnames to the array object
-    dimnames(transformed_covariates) <- list(node_names,node_names,slice_names)
-    return(list(network = raw_network, transformed_covariates = transformed_covariates, gpar.names = slice_names))
+    dimnames(transformed_covariates) <- list(node_names,
+                                             node_names,
+                                             slice_names)
+    return(list(network = raw_network,
+                transformed_covariates = transformed_covariates,
+                gpar.names = slice_names))
   }
 
 } # End of function definition.

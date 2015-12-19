@@ -127,7 +127,7 @@ test_that("Model with covariates runs", {
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
   formula <- net ~ mutual + ttriads + sender("Age") +
-  netcov("network_covariate") + nodematch("Type",base = "A")
+  netcov("network_covariate") + nodemix("Type",base = "A")
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
@@ -144,8 +144,22 @@ test_that("Model with covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 2)
 
-  check_against <- c(2.037, -0.070, -0.582, 0.582, -0.227, -0.043, -0.040,  0.105, -1.877)
-  check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
-  expect_equal(check, check_against)
+  formula <- net ~ mutual + ttriads + sender("Age") +
+    netcov("network_covariate") + nodematch("Type")
+
+  test <- gergm(formula,
+                covariate_data = node_level_covariates,
+                network_is_directed = TRUE,
+                use_MPLE_only = FALSE,
+                estimation_method = "Metropolis",
+                number_of_networks_to_simulate = 100000,
+                thin = 1/10,
+                proposal_variance = 0.5,
+                downweight_statistics_together = TRUE,
+                MCMC_burnin = 50000,
+                seed = 456,
+                convergence_tolerance = 0.01,
+                MPLE_gain_factor = 0,
+                force_x_theta_updates = 2)
 
 })

@@ -73,6 +73,8 @@ Create_GERGM_Object_From_Formula <- function(object,
 
   # if we are providing a correlation network, transform it
   if(is_correlation_network){
+    diag(network) <- 1
+    print(round(network,2))
     bounded.network <- transform.correlations(network)
   }
 
