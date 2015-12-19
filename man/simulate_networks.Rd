@@ -10,7 +10,7 @@ simulate_networks(formula, mutual = 0, ttriads = 0, ctriads = 0,
   network_is_directed = c(TRUE, FALSE),
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  omit_intercept_term = FALSE, simulate_correlation_network = FALSE)
+  omit_intercept_term = FALSE, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
@@ -71,7 +71,7 @@ will be discarded before drawing the samples used for estimation. Default is
 
 \item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.}
 
-\item{simulate_correlation_network}{Defaults to FALSE. Experimental.}
+\item{...}{Optional arguments, currently unsupported.}
 }
 \value{
 A list object containing simulated networks and parameters used to

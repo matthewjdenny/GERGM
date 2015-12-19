@@ -43,7 +43,7 @@
 #' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
 #' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
-#' @param simulate_correlation_network Defaults to FALSE. Experimental.
+#' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' set.seed(12345)
 #' net <- matrix(runif(100),10,10)
@@ -81,15 +81,27 @@ simulate_networks <- function(formula,
   MCMC_burnin = 100,
   seed = 123,
   omit_intercept_term = FALSE,
-  simulate_correlation_network = FALSE
+  ...
 ){
+
+  # pass in experimental correlation network feature through elipsis
+  simulate_correlation_network= FALSE
+  object <- as.list(substitute(list(...)))[-1L]
+  if(length(object) > 0){
+    if(!is.null(object$simulate_correlation_network)){
+      if(object$simulate_correlation_network){
+        simulate_correlation_network <- TRUE
+        cat("Using experimental correlation network feature...\n")
+      }
+    }
+  }
 
   # This is the main function to estimate a GERGM model
 
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
   possible_structural_terms_undirected <- c("twostars", "ttriads")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", nodemix)
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 

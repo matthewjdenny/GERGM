@@ -1,7 +1,27 @@
 #' @title A Function to estimate a GERGM.
 #' @description The main function provided by the package.
 #'
-#' @param formula A formula object that specifies the relationship between statistics and the observed network. Currently, the user may specify a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodematch(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodematch(covariate, base = "MyBase")`, `netcov(network)`. An intercept term is included by default, but can be omitted by setting omit_intercept_term = TRUE. If the user specifies `nodematch(covariate, base = NULL)`, then all levels of the covariate will be matched on.
+#' @param formula A formula object that specifies the relationship between
+#' statistics and the observed network. Currently, the user may specify a model
+#'  using any combination of the following statistics: `out2stars(alpha = 1)`,
+#'  `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
+#'  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
+#'  `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
+#'  `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
+#'   `nodemix(covariate, base = "MyBase")`, `netcov(network)`. To use
+#'  exponential downweighting for any of the network level terms, simply
+#'  specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted
+#'   from the structural terms if no exponential downweighting is required. In
+#'   this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`,
+#'   `recip`, `ttriads`. If the network is undirected the user may only specify
+#'   the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
+#'   `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`,
+#'   `sender(covariate = "MyCov")`, `nodematch(covariate)`,
+#'   `nodemix(covariate, base = "MyBase")`, `netcov(network)`. An intercept
+#'   term is included by default, but can be omitted by setting
+#'   omit_intercept_term = TRUE. If the user specifies
+#'   `nodemix(covariate, base = NULL)`, then all levels of the covariate
+#'   will be matched on.
 #' @param covariate_data A data frame containing node level covariates the user
 #' wished to transform into sender or reciever effects. It must have row names
 #' that match every entry in colnames(raw_network), should have descriptive
@@ -54,15 +74,18 @@
 #' @param downweight_statistics_together Logical specifying whether or not the
 #' weights should be applied inside or outside the sum. Default is TRUE and user
 #' should not select FALSE under normal circumstances.
-#' @param MCMC_burnin Number of samples from the MCMC simulation procedure that will be discarded before drawing the samples used for estimation. Default is 100.
+#' @param MCMC_burnin Number of samples from the MCMC simulation procedure that
+#' will be discarded before drawing the samples used for estimation.
+#' Default is 100.
 #' @param seed Seed used for reproducibility. Default is 123.
 #' @param convergence_tolerance Threshold designated for stopping criterion. If
 #' the difference of parameter estimates from one iteration to the next all have
 #' a p -value (under a paired t-test) greater than this value, the parameter
 #' estimates are declared to have converged. Default is 0.01.
 #' @param MPLE_gain_factor Multiplicative constant between 0 and 1 that controls
-#' how far away the initial theta estimates will be from the standard MPLEs via a one step Fisher update. In the case of strongly dependent data, it is suggested
-#' to use a value of 0.10. Default is 0.
+#' how far away the initial theta estimates will be from the standard MPLEs via
+#' a one step Fisher update. In the case of strongly dependent data, it is
+#' suggested to use a value of 0.10. Default is 0.
 #' @param acceptable_fit_p_value_threshold A p-value threshold for how closely
 #' statistics of observed network conform to statistics of networks simulated
 #' from GERGM parameterized by converged final parameter estimates. Default value
@@ -90,9 +113,11 @@
 #' "Test_Trace_Plot.pdf"
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or
 #' parameter plots are generated.
-#' @param verbose Defaults to TRUE (providing lots of output while model is running). Can be set to FALSE if the user wishes to see less output.
-#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
-#' @param using_correlation_network Defaults to FALSE. Experimental.
+#' @param verbose Defaults to TRUE (providing lots of output while model is
+#' running). Can be set to FALSE if the user wishes to see less output.
+#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the
+#' user wishes to omit the model intercept term.
+#' @param ... Optional arguments, currently unsupported.
 #' @return A gergm object containing parameter estimates.
 #' @examples
 #' \dontrun{
@@ -142,12 +167,22 @@ gergm <- function(formula,
                   generate_plots = TRUE,
                   verbose = TRUE,
                   omit_intercept_term = FALSE,
-                  using_correlation_network = FALSE
+                  ...
                   ){
 
   # remove experimental support for correlation networks
   # @param using_correlation_network Defaults to FALSE. Experimental.
-  #using_correlation_network = FALSE
+  # pass in experimental correlation network feature through elipsis
+  using_correlation_network = FALSE
+  object <- as.list(substitute(list(...)))[-1L]
+  if(length(object) > 0){
+    if(!is.null(object$using_correlation_network)){
+      if(object$using_correlation_network){
+        using_correlation_network <- TRUE
+        cat("Using experimental correlation network feature...\n")
+      }
+    }
+  }
 
   # This is the main function to estimate a GERGM model
 
