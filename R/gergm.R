@@ -193,16 +193,6 @@ gergm <- function(formula,
   possible_network_terms <- "netcov"
   possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
-  #check for an edges statistic
-  form<- as.formula(formula)
-  parsed <- deparse(form)
-  if(length(parsed) > 1){
-    parsed <- paste0(parsed, collapse = " ")
-  }
-  if(grepl("edges",parsed)){
-    stop("You may not specify an edges statistic.")
-  }
-
   # check terms for undirected network
   if(!network_is_directed){
     formula <- parse_undirected_structural_terms(
@@ -214,6 +204,15 @@ gergm <- function(formula,
   # automatically add an intercept term unless omit_intercept_term is TRUE
   if(!omit_intercept_term){
     formula <- add_intercept_term(formula)
+    #check for an edges statistic
+    form <- as.formula(formula)
+    parsed <- deparse(form)
+    if(length(parsed) > 1){
+      parsed <- paste0(parsed, collapse = " ")
+    }
+    if(grepl("edges",parsed)){
+      stop("You may not specify an edges statistic if omit_intercept_term == FALSE as this will introduce two identical intercept terms and instability in the model. An intercept term is automatically added in the lambda transformation step unless omit_intercept_term == TRUE, and we have found this method of adding an intercept to be less prone to degeneracy.")
+    }
   }
 
   # set logical values for whether we are using MPLE only, whether the network
