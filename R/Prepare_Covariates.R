@@ -100,7 +100,7 @@ Prepare_Network_and_Covariates <- function(formula,
   }else{
     network_covariates_list <- network_covariates_list[-length(network_covariates_list)]
     num_covariates <- num_covariates + length(network_covariates_list)
-    num_additional_covars <- 1
+    num_additional_covars <- length(network_covariates_list)
     cat("You have provided",num_additional_covars,"network covariates.\n")
   }
 
