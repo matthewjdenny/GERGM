@@ -77,7 +77,6 @@ Estimate_GERGM <- function(formula_object,
           theta = theta,
           together = together,
           verbose = verbose,
-          transformation_type = transformation_type,
           net = net,
           GERGM_Object = GERGM_Object)
 
@@ -178,7 +177,6 @@ Estimate_GERGM <- function(formula_object,
           theta = theta,
           together = together,
           verbose = verbose,
-          transformation_type = transformation_type,
           net = net,
           GERGM_Object = GERGM_Object)
 

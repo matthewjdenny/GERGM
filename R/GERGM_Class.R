@@ -31,7 +31,8 @@ setClass(Class = "gergm",
            simulation_only = "logical",
            thresholds = "numeric",
            BZ = "matrix",
-           BZstdev = "numeric"
+           BZstdev = "numeric",
+           transformation_type = "character"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)

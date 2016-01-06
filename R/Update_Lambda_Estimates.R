@@ -3,7 +3,6 @@ Update_Lambda_Estimates <- function(i,
                                     theta,
                                     together,
                                     verbose,
-                                    transformation_type,
                                     net,
                                     GERGM_Object){
   # if we are usinga correlation network, do beta regression
@@ -61,7 +60,7 @@ Update_Lambda_Estimates <- function(i,
     #store so we can transform back
     GERGM_Object@BZ <- BZ
     GERGM_Object@BZstdev <- sig
-
+    transformation_type <- GERGM_Object@transformation_type
     if(transformation_type == "logcauchy"){
       GERGM_Object@bounded.network <- pst(log(net), BZ, sig, 1)
     }
