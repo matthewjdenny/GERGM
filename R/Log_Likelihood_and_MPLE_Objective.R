@@ -61,7 +61,19 @@ llg <- function(par,
   for (i in 1:(dim(z)[3])) {
     BZ <- BZ + beta[i] * z[, , i]
   }
-  net2 <- pst(net, BZ, sig, 1)
+  transformation_type <- GERGM_Object@transformation_type
+  if(transformation_type == "logcauchy"){
+    net2 <- pst(log(net), BZ, sig, 1)
+  }
+  if( transformation_type == "cauchy"){
+    net2 <- pst(net, BZ, sig, 1)
+  }
+  if(transformation_type == "lognormal"){
+    net2 <- pst(log(net), BZ, sig, Inf)
+  }
+  if( transformation_type == "gaussian"){
+    net2 <- pst(net, BZ, sig, Inf)
+  }
   num.nodes <- nrow(net2)
   triples <- t(combn(1:num.nodes, 3))
   temp <- h2(net2,
