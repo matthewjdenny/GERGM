@@ -11,45 +11,61 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
   printseq <- round(seq(1,samples, length.out = 11)[2:11],0)
   printcounter <- 1
   if (length(GERGM_Object@data_transformation) > 0) {
-    for(i in 1:samples){
-      if(i == printseq[printcounter]){
-        cat(10*printcounter,"% complete...\n", sep = "")
-        printcounter <- printcounter +1
-      }
-      # if we did a transformation (which is the default if we are including an intercept)
-      if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
-        GERGM_Object@MCMC_output$Networks[,,i] <- qst(
-          GERGM_Object@MCMC_output$Networks[,,i],
-          GERGM_Object@BZ,
-          GERGM_Object@BZstdev,
-          1)
-        if(transformation_type == "logcauchy"){
-          GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+    if(GERGM_Object@is_correlation_network){
+      cat("Currently not implemented for correlation networks with covariates.")
+    }else{
+      for(i in 1:samples){
+        if(i == printseq[printcounter]){
+          cat(10*printcounter,"% complete...\n", sep = "")
+          printcounter <- printcounter +1
         }
-        diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
-      }
-      if(transformation_type == "lognormal" | transformation_type == "gaussian"){
-        GERGM_Object@MCMC_output$Networks[,,i] <- qst(
-          GERGM_Object@MCMC_output$Networks[,,i],
-          GERGM_Object@BZ,
-          GERGM_Object@BZstdev,
-          Inf)
-        if(transformation_type == "lognormal"){
-          GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+        # if we did a transformation (which is the default if we are including an intercept)
+        if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
+          GERGM_Object@MCMC_output$Networks[,,i] <- qst(
+            GERGM_Object@MCMC_output$Networks[,,i],
+            GERGM_Object@BZ,
+            GERGM_Object@BZstdev,
+            1)
+          if(transformation_type == "logcauchy"){
+            GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+          }
+          diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
         }
-        diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
+        if(transformation_type == "lognormal" | transformation_type == "gaussian"){
+          GERGM_Object@MCMC_output$Networks[,,i] <- qst(
+            GERGM_Object@MCMC_output$Networks[,,i],
+            GERGM_Object@BZ,
+            GERGM_Object@BZstdev,
+            Inf)
+          if(transformation_type == "lognormal"){
+            GERGM_Object@MCMC_output$Networks[,,i] <- exp(GERGM_Object@MCMC_output$Networks[,,i])
+          }
+          diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
+        }
+        GERGM_Object@MCMC_output$Statistics[i,] <- h2(
+          net = GERGM_Object@MCMC_output$Networks[,,i],
+          triples = triples,
+          statistics = stats,
+          alphas = NULL,
+          together = 1,
+          directed = TRUE)
       }
-      GERGM_Object@MCMC_output$Statistics[i,] <- h2(
-        net = GERGM_Object@MCMC_output$Networks[,,i],
-        triples = triples,
-        statistics = stats,
-        alphas = NULL,
-        together = 1,
-        directed = TRUE)
     }
+
   }else{
-    # if we did not do a transformation (only structural terms)
-    cat("Currently not implemented for non-transformed networks.")
+    if(GERGM_Object@is_correlation_network){
+      for(i in 1:samples){
+        if(i == printseq[printcounter]){
+          cat(10*printcounter,"% complete...\n", sep = "")
+          printcounter <- printcounter +1
+        }
+        GERGM_Object@MCMC_output$Networks[,,i] <- bounded.to.correlations(
+          GERGM_Object@MCMC_output$Networks[,,i])
+      }
+    }else{
+      # if we did not do a transformation (only structural terms)
+      cat("Currently not implemented for non-transformed networks.")
+    }
   }
   return(GERGM_Object)
 }
