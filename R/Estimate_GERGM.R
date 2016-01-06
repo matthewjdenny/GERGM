@@ -71,69 +71,19 @@ Estimate_GERGM <- function(formula_object,
       ## If this is true, we don't need to simulate any networks, we simply give
       ## the MPLEs for the theta parameters at each iteration.
       if(MPLE.only == TRUE){
-        cat("Updating Estimates -- Iteration:", i," \n")
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
-        if(verbose){
-          cat("Lambda Estimates", gpar$par,"\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
-        gpar.new <- NULL
-        if(verbose){
-          gpar.new <- optim(par = as.numeric(gpar$par),
-                            llg,
-                            alpha = GERGM_Object@weights,
-                            theta = as.numeric(theta$par),
-                            z = GERGM_Object@data_transformation,
-                            method = "BFGS",
-                            together = together,
-                            GERGM_Object = GERGM_Object,
-                            hessian = T,
-                            control = list(fnscale = -1, trace = 6))
-        }else{
-          gpar.new <- optim(par = as.numeric(gpar$par),
-                            llg,
-                            alpha = GERGM_Object@weights,
-                            theta = as.numeric(theta$par),
-                            z = GERGM_Object@data_transformation,
-                            method = "BFGS",
-                            together = together,
-                            GERGM_Object = GERGM_Object,
-                            hessian = T,
-                            control = list(fnscale = -1, trace = 0))
-        }
-        if(verbose){
-          cat("Lambda estimates", "\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object, "Lambda estimates\n")
-        if(verbose){
-          print(gpar.new$par)
-        }
-        GERGM_Object <- store_console_output(GERGM_Object, toString(gpar.new$par))
-        gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
-        # Transform the unbounded weights to bounded weights via a t-distribution
-        beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
-        sig <- 0.01 + exp(gpar.new$par[length(gpar.new$par)])
-        BZ <- 0
-        for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
-          BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
-        }
+        updates <- Update_Lambda_Estimates(
+          i = i,
+          gpar = gpar,
+          theta = theta,
+          together = together,
+          verbose = verbose,
+          transformation_type = transformation_type,
+          net = net,
+          GERGM_Object = GERGM_Object)
 
-        #store so we can transform back
-        GERGM_Object@BZ <- BZ
-        GERGM_Object@BZstdev <- sig
-
-        if(transformation_type == "logcauchy"){
-          GERGM_Object@bounded.network <- pst(log(net), BZ, sig, 1)
-        }
-        if( transformation_type == "cauchy"){
-          GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
-        }
-        if(transformation_type == "lognormal"){
-          GERGM_Object@bounded.network <- pst(log(net), BZ, sig, Inf)
-        }
-        if( transformation_type == "gaussian"){
-          GERGM_Object@bounded.network <- pst(net, BZ, sig, Inf)
-        }
+        GERGM_Object <- updates$GERGM_Object
+        gpar.new <- updates$gpar.new
+        gpar.std.errors <- updates$gpar.std.errors
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
@@ -222,62 +172,19 @@ Estimate_GERGM <- function(formula_object,
 
       if(MPLE.only != TRUE){
         # Estimate lambda
+        updates <- Update_Lambda_Estimates(
+          i = i,
+          gpar = gpar,
+          theta = theta,
+          together = together,
+          verbose = verbose,
+          transformation_type = transformation_type,
+          net = net,
+          GERGM_Object = GERGM_Object)
 
-        cat("Updating Estimates -- Iteration:", i," \n")
-
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
-        if(verbose){
-          cat("Lambda Estimates", gpar$par,"\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
-        gpar.new <- NULL
-        if(verbose){
-          gpar.new <- optim(par = as.numeric(gpar$par),
-                            llg,
-                            alpha = GERGM_Object@weights,
-                            theta = as.numeric(theta$par),
-                            z = GERGM_Object@data_transformation,
-                            method = "BFGS",
-                            together = together,
-                            GERGM_Object = GERGM_Object,
-                            hessian = T, control = list(fnscale = -1, trace = 6))
-        }else{
-          gpar.new <- optim(par = as.numeric(gpar$par),
-                            llg,
-                            alpha = GERGM_Object@weights,
-                            theta = as.numeric(theta$par),
-                            z = GERGM_Object@data_transformation,
-                            method = "BFGS",
-                            together = together,
-                            GERGM_Object = GERGM_Object,
-                            hessian = T, control = list(fnscale = -1, trace = 0))
-        }
-        if(verbose){
-          cat("Lambda estimates", "\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,"Lambda estimates\n")
-        if(verbose){
-          print(gpar.new$par)
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,toString(gpar.new$par))
-        gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
-        # Transform the unbounded weights to bounded weights via a t-distribution
-        beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
-        sig <- 0.01 + exp(gpar.new$par[length(gpar.new$par)])
-        BZ <- 0
-        for (j in 1:(dim(transform.data)[3])) {
-          BZ <- BZ + beta[j] * transform.data[, , j]
-        }
-
-        GERGM_Object@BZ <- BZ
-        GERGM_Object@BZstdev <- sig
-
-        if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
-          GERGM_Object@bounded.network <- pst(net, BZ, sig, 1)
-        }
-        if(transformation_type == "lognormal" | transformation_type == "gaussian"){
-          GERGM_Object@bounded.network <- pst(net, BZ, sig, Inf)
-        }
+        GERGM_Object <- updates$GERGM_Object
+        gpar.new <- updates$gpar.new
+        gpar.std.errors <- updates$gpar.std.errors
 
         num.nodes <- GERGM_Object@num_nodes
         triples <- t(combn(1:num.nodes, 3))
