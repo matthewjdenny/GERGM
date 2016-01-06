@@ -85,11 +85,11 @@ simulate_networks <- function(formula,
 ){
 
   # pass in experimental correlation network feature through elipsis
-  simulate_correlation_network= FALSE
+  simulate_correlation_network <- FALSE
   object <- as.list(substitute(list(...)))[-1L]
-  if(length(object) > 0){
-    if(!is.null(object$simulate_correlation_network)){
-      if(object$simulate_correlation_network){
+  if (length(object) > 0) {
+    if (!is.null(object$simulate_correlation_network)) {
+      if (object$simulate_correlation_network) {
         simulate_correlation_network <- TRUE
         cat("Using experimental correlation network feature...\n")
       }
@@ -106,12 +106,12 @@ simulate_networks <- function(formula,
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
   #check for an edges statistic
-  form<- as.formula(formula)
+  form <- as.formula(formula)
   parsed <- deparse(form)
-  if(length(parsed) > 1){
+  if (length(parsed) > 1) {
     parsed <- paste0(parsed, collapse = " ")
   }
-  if(grepl("edges",parsed)){
+  if (grepl("edges",parsed)) {
     stop("You may not specify an edges statistic.")
   }
 
@@ -124,7 +124,7 @@ simulate_networks <- function(formula,
   normalization_type <- "division"
 
   # check terms for undirected network
-  if(!network_is_directed){
+  if (!network_is_directed) {
     formula <- parse_undirected_structural_terms(
       formula,
       possible_structural_terms,
@@ -132,17 +132,17 @@ simulate_networks <- function(formula,
   }
 
   # automatically add an intercept term unless omit_intercept_term is TRUE
-  if(!omit_intercept_term){
+  if (!omit_intercept_term) {
     formula <- add_intercept_term(formula)
   }
 
   # if we are using a correlation network, then the network must be undirected.
-  if(simulate_correlation_network){
+  if (simulate_correlation_network) {
     network_is_directed <- FALSE
   }
 
   # convert logical to numeric indicator
-  if(downweight_statistics_together){
+  if (downweight_statistics_together) {
     downweight_statistics_together <- 1
   }else{
     downweight_statistics_together <- 0
@@ -150,7 +150,7 @@ simulate_networks <- function(formula,
 
   #make sure proposal variance is greater than zero
   #make sure proposal variance is greater than zero
-  if(proposal_variance <= 0.001){
+  if (proposal_variance <= 0.001) {
     proposal_variance <- 0.001
     cat("You supplied a proposal variance that was less than or equal to zero.
         It has been reset to 0.001, considder respecifying...\n")
@@ -171,19 +171,19 @@ simulate_networks <- function(formula,
 
   # create theta coefficients
   theta_coeficients = NULL
-  if(out2stars != 0){
+  if (out2stars != 0) {
     theta_coeficients <- c(theta_coeficients, out2stars)
   }
-  if(in2stars != 0 | twostars != 0){
+  if (in2stars != 0 | twostars != 0) {
     theta_coeficients <- c(theta_coeficients, in2stars)
   }
-  if(ctriads != 0){
+  if (ctriads != 0) {
     theta_coeficients <- c(theta_coeficients, ctriads)
   }
-  if(mutual != 0){
+  if (mutual != 0) {
     theta_coeficients <- c(theta_coeficients, mutual)
   }
-  if(ttriads != 0){
+  if (ttriads != 0) {
     theta_coeficients <- c(theta_coeficients, ttriads)
   }
 
@@ -214,7 +214,7 @@ simulate_networks <- function(formula,
   GERGM_Object@simulation_only <- TRUE
   GERGM_Object@theta.par <- theta_coeficients
 
-  if(network_is_directed){
+  if (network_is_directed) {
     GERGM_Object@undirected_network <- FALSE
   }else{
     GERGM_Object@undirected_network <- TRUE
@@ -222,7 +222,7 @@ simulate_networks <- function(formula,
 
 
   # if we are using a correlation network then set field to TRUE.
-  if(simulate_correlation_network){
+  if (simulate_correlation_network) {
     GERGM_Object@is_correlation_network <- TRUE
   }else{
     GERGM_Object@is_correlation_network <- FALSE
@@ -243,7 +243,6 @@ simulate_networks <- function(formula,
   #which(GERGM_Object@stats_to_use == 1)
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
-  pairs <- t(combn(1:num.nodes, 2))
   # initialize the network with the observed network
   init.statistics <- h2(GERGM_Object@bounded.network,
                         triples = triples,
@@ -264,9 +263,9 @@ simulate_networks <- function(formula,
   print(stats.data)
 
   # change back column names if we are dealing with an undirected network
-  if(!network_is_directed){
+  if (!network_is_directed) {
     change <- which(colnames(GERGM_Object@theta.coef) == "in2star")
-    if(length(change) > 0){
+    if (length(change) > 0) {
       colnames(GERGM_Object@theta.coef)[change] <- "twostars"
     }
   }
@@ -278,8 +277,7 @@ simulate_networks <- function(formula,
   Trace_Plot(GERGM_Object)
 
   cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
-  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object,
-                                                               transformation_type)
+  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
 
   return_list <- list(formula = GERGM_Object@formula,
                       theta_values = GERGM_Object@theta.coef[,1],
