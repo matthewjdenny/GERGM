@@ -64,31 +64,34 @@ llg <- function(par,
   transformation_type <- GERGM_Object@transformation_type
   if(transformation_type == "logcauchy"){
     net2 <- pst(log(net), BZ, sig, 1)
+    last_term <- sum(log(dst(log(net[upper.tri(net)]), BZ[upper.tri(net)], sig, 1))) +
+      sum(log(dst(log(net[lower.tri(net)]), BZ[lower.tri(net)], sig, 1)))
   }
   if( transformation_type == "cauchy"){
     net2 <- pst(net, BZ, sig, 1)
+    last_term <- sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, 1))) +
+      sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, 1)))
   }
   if(transformation_type == "lognormal"){
     net2 <- pst(log(net), BZ, sig, Inf)
+    last_term <- sum(log(dst(log(net[upper.tri(net)]), BZ[upper.tri(net)], sig, Inf))) +
+      sum(log(dst(log(net[lower.tri(net)]), BZ[lower.tri(net)], sig, Inf)))
   }
   if( transformation_type == "gaussian"){
     net2 <- pst(net, BZ, sig, Inf)
+    last_term <- sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, Inf))) +
+      sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, Inf)))
   }
   num.nodes <- nrow(net2)
   triples <- t(combn(1:num.nodes, 3))
-  temp <- h2(net2,
-             triples = triples,
-             statistics = statistics,
-             alphas = alphas,
-             together = together)
+
   log.li <- rbind(theta) %*%
     h2(net2,
        triples = triples,
        statistics = statistics,
        alphas = alphas,
        together = together) +
-    sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, 1))) +
-    sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, 1)))
+    last_term
   return(as.numeric(log.li))
 }
 
