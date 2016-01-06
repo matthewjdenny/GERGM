@@ -1,11 +1,11 @@
 Convert_Simulated_Networks_To_Observed_Scale <- function(
-  GERGM_Object,
-  transformation_type){
+  GERGM_Object){
   # determine the number of MCMC samples
   samples <- dim(GERGM_Object@MCMC_output$Networks)[3]
   num.nodes <- GERGM_Object@num_nodes
   triples = t(combn(1:num.nodes, 3))
   stats <- rep(1,length(GERGM_Object@stats_to_use))
+  transformation_type <- GERGM_Object@transformation_type
 
   # figure out what kind of transformation we did, then convert back.
   printseq <- round(seq(1,samples, length.out = 11)[2:11],0)
