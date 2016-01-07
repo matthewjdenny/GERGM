@@ -89,7 +89,7 @@ hysteresis <- function(GERGM_Object,
                                  "ttriads",
                                  "edges")
   currentwd <- getwd()
-
+  simulation_method <- simulation_method[1]
 
   # figure out how many statistics we need to simulate values for
   num_network_terms <- length(GERGM_Object@theta.par)
@@ -102,7 +102,7 @@ hysteresis <- function(GERGM_Object,
     max_val <- current_theta + range * abs(current_theta)
     hysteresis_values <- seq(min_val, max_val, length.out = 2 * steps + 1)
     network_densities <- matrix(0,
-                                nrow = networks_to_simulate,
+                                nrow = ceiling(networks_to_simulate/thin),
                                 ncol = length(hysteresis_values))
     # tell the user what is going on
     which_term <- which(GERGM_Object@stats_to_use > 0)[i]
@@ -119,11 +119,11 @@ hysteresis <- function(GERGM_Object,
 
         # set the current value
         GERGM_Object@theta.par[i] <- hysteresis_values[j]
-
+        print(GERGM_Object@theta.par)
         # simulate networks
         GERGM_Object <- Simulate_GERGM(
           GERGM_Object,
-          nsim = networks_to_simulate + burnin,
+          nsim = networks_to_simulate,
           method = simulation_method,
           MCMC.burnin = burnin,
           thin = thin,
