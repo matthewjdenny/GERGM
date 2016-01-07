@@ -256,7 +256,6 @@ gergm <- function(formula,
   }else{
     downweight_statistics_together <- 0
   }
-  GERGM_Object@downweight_statistics_together <- downweight_statistics_together
 
   #make sure proposal variance is greater than zero
   if (proposal_variance <= 0.001) {
@@ -306,7 +305,7 @@ gergm <- function(formula,
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
   GERGM_Object@simulation_only <- FALSE
   GERGM_Object@transformation_type <- transformation_type
-
+  GERGM_Object@downweight_statistics_together <- downweight_statistics_together
   if (network_is_directed) {
     GERGM_Object@undirected_network <- FALSE
   }else{
