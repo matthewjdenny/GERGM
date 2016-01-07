@@ -78,7 +78,7 @@ hysteresis <- function(GERGM_Object,
                        thin = 1,
                        output_directory = NULL,
                        output_name = NULL,
-                       parallel = TRUE,
+                       parallel = FALSE,
                        cores = 1){
 
   # preliminaries
