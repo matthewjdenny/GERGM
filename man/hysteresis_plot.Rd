@@ -8,6 +8,8 @@ hysteresis_plot(hysteresis_output, ...)
 }
 \arguments{
 \item{hysteresis_output}{The list object output from the hysteresis function.}
+
+\item{...}{Additional arguments currently not supported.}
 }
 \description{
 Generate hysteresis plots for theta parameter estimates

@@ -1,6 +1,7 @@
 #' Generate hysteresis plots for theta parameter estimates
 #'
 #' @param hysteresis_output The list object output from the hysteresis function.
+#' @param ... Additional arguments currently not supported.
 #' @export
 hysteresis_plot <- function(hysteresis_output,
                 ...){

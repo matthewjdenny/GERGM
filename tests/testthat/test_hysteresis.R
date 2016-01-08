@@ -28,16 +28,16 @@ test_that("Simple model with no covariates runs", {
 
   test2 <- hysteresis(test,
                       networks_to_simulate = 20000,
-                      burnin = 10000,
+                      burnin = 20000,
                       range = 2,
-                      steps = 20,
+                      steps = 30,
                       initial_density = 0.2,
                       simulation_method = "Metropolis",
                       proposal_variance = 0.5,
                       seed = 12345,
                       thin = 1/10)
-  plot(x = test2[[1]][[4]]$theta_values,y = test2[[1]][[4]]$mean_densities)
-  plot(x = test2[[2]][[4]]$theta_values,y = test2[[2]][[4]]$mean_densities)
+
+  hysteresis_plot(test2)
 })
 
 
