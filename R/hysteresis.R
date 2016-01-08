@@ -97,9 +97,9 @@ hysteresis <- function(GERGM_Object,
   # figure out how many statistics we need to simulate values for
   num_network_terms <- length(GERGM_Object@theta.par)
   Hysteresis_Results <- vector(mode = "list", length = num_network_terms)
-  bounded_network <- GERGM_Object@bounded.network
   cat("Observed transformed network has density:",
       mean(GERGM_Object@bounded.network),"\n")
+  observed_density <- mean(GERGM_Object@bounded.network)
   # check initial density adjustment
   if (initial_density > 1) {
     initial_density = 1
@@ -203,7 +203,8 @@ hysteresis <- function(GERGM_Object,
       Hysteresis_Results[[i]] <- list(network_densities = network_densities,
                                       mean_densities = mean_densities,
                                       theta_values = hysteresis_values,
-                                      hysteresis_dataframe = hysteresis_dataframe)
+                                      hysteresis_dataframe = hysteresis_dataframe,
+                                      observed_density = observed_density)
     }
   }
   # clean up a return everything
