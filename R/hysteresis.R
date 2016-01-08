@@ -16,6 +16,8 @@
 #' @param steps The number of theta values to simulate above and below the
 #' estimated theta value within the given range. The total number of simulations
 #' is then = 2 * steps + 1. Defaults to 20.
+#' @param initial_density The initial network density used in simulations, can
+#' range from 0 to 1. Defaults to 0.2.
 #' @param simulation_method Simulation method for MCMC estimation. Default is
 #' "Gibbs" but can also be set to "Metropolis".
 #' @param proposal_variance The variance specified for the Metropolis Hastings
@@ -72,6 +74,7 @@ hysteresis <- function(GERGM_Object,
                        burnin = 500,
                        range = 2,
                        steps = 20,
+                       initial_density = 0.2,
                        simulation_method = c("Gibbs", "Metropolis"),
                        proposal_variance = 0.1,
                        seed = 12345,
@@ -94,6 +97,17 @@ hysteresis <- function(GERGM_Object,
   # figure out how many statistics we need to simulate values for
   num_network_terms <- length(GERGM_Object@theta.par)
   Hysteresis_Results <- vector(mode = "list", length = num_network_terms)
+  bounded_network <- GERGM_Object@bounded.network
+  cat("Observed transformed network has density:",
+      mean(GERGM_Object@bounded.network),"\n")
+  # check initial density adjustment
+  if (initial_density > 1) {
+    initial_density = 1
+  }
+  if (initial_density < 0) {
+    initial_density = 0
+  }
+  cat("Setting initial network density to:",initial_density,"\n")
 
   for(i in 1:num_network_terms){
     # figure out the range of values for each parameter
@@ -101,9 +115,14 @@ hysteresis <- function(GERGM_Object,
     min_val <- current_theta - range * abs(current_theta)
     max_val <- current_theta + range * abs(current_theta)
     hysteresis_values <- seq(min_val, max_val, length.out = 2 * steps + 1)
+    last_network <- floor(networks_to_simulate*thin)
     network_densities <- matrix(0,
-                                nrow = ceiling(networks_to_simulate/thin),
-                                ncol = length(hysteresis_values))
+                                nrow = ceiling(networks_to_simulate*thin),
+                                ncol = 2*length(hysteresis_values))
+    #GERGM_Object@bounded.network <- bounded_network
+    n_nodes <- nrow(GERGM_Object@bounded.network)
+    zero_net <- matrix(initial_density,n_nodes,n_nodes)
+    GERGM_Object@bounded.network <- zero_net
     # tell the user what is going on
     which_term <- which(GERGM_Object@stats_to_use > 0)[i]
     cat("Currently simulating networks while varying the",
@@ -115,6 +134,7 @@ hysteresis <- function(GERGM_Object,
 
     }else{
       # loop over values for theta
+      column_counter <- 1
       for(j in 1:length(hysteresis_values)){
 
         # set the current value
@@ -132,18 +152,58 @@ hysteresis <- function(GERGM_Object,
           seed1 = seed,
           possible.stats = possible_structural_terms)
 
+        # assign the last simulated network as the starting network for the next
+        # simulation
+        print(dim(GERGM_Object@MCMC_output$Networks))
+        print(last_network)
+        GERGM_Object@bounded.network <- GERGM_Object@MCMC_output$Networks[,,last_network]
         # save the densities
         nr <- nrow(GERGM_Object@network)
         normalizer <- nr * (nr - 1)
-        network_densities[,j] <- GERGM_Object@MCMC_output$Statistics$edges/normalizer
+        network_densities[,column_counter] <- GERGM_Object@MCMC_output$Statistics$edges/normalizer
+        column_counter <- column_counter + 1
+      }
+      # now back down
+      for(j in length(hysteresis_values):1){
+
+        # set the current value
+        GERGM_Object@theta.par[i] <- hysteresis_values[j]
+        print(GERGM_Object@theta.par)
+        # simulate networks
+        GERGM_Object <- Simulate_GERGM(
+          GERGM_Object,
+          nsim = networks_to_simulate,
+          method = simulation_method,
+          MCMC.burnin = burnin,
+          thin = thin,
+          shape.parameter = proposal_variance,
+          together = GERGM_Object@downweight_statistics_together,
+          seed1 = seed,
+          possible.stats = possible_structural_terms)
+
+        # assign the last simulated network as the starting network for the next
+        # simulation
+        GERGM_Object@bounded.network <- GERGM_Object@MCMC_output$Networks[,,last_network]
+
+        # save the densities
+        nr <- nrow(GERGM_Object@network)
+        normalizer <- nr * (nr - 1)
+        network_densities[,column_counter] <- GERGM_Object@MCMC_output$Statistics$edges/normalizer
+        column_counter <- column_counter + 1
       }
 
       # reset teh theta value
       GERGM_Object@theta.par[i] <- current_theta
       mean_densities <- apply(network_densities,2,mean)
+      thetas <- c(hysteresis_values, rev(hysteresis_values))
+
+      hysteresis_dataframe <- data.frame(theta_values = thetas,
+                                         mean_densities = mean_densities)
+
       Hysteresis_Results[[i]] <- list(network_densities = network_densities,
                                       mean_densities = mean_densities,
-                                      theta_values = hysteresis_values)
+                                      theta_values = hysteresis_values,
+                                      hysteresis_dataframe = hysteresis_dataframe)
     }
   }
   # clean up a return everything

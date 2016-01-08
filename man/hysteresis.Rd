@@ -6,10 +6,10 @@
 structural parameter estimates.}
 \usage{
 hysteresis(GERGM_Object, networks_to_simulate = 1000, burnin = 500,
-  range = 2, steps = 20, simulation_method = c("Gibbs", "Metropolis"),
-  proposal_variance = 0.1, seed = 12345, thin = 1,
-  output_directory = NULL, output_name = NULL, parallel = TRUE,
-  cores = 1)
+  range = 2, steps = 20, initial_density = 0.2,
+  simulation_method = c("Gibbs", "Metropolis"), proposal_variance = 0.1,
+  seed = 12345, thin = 1, output_directory = NULL, output_name = NULL,
+  parallel = FALSE, cores = 1)
 }
 \arguments{
 \item{GERGM_Object}{A GERGM object returned by the gergm() estimation
@@ -31,6 +31,9 @@ scaled to the magnitude of the parameter estimates. Defaults to 2.}
 \item{steps}{The number of theta values to simulate above and below the
 estimated theta value within the given range. The total number of simulations
 is then = 2 * steps + 1. Defaults to 20.}
+
+\item{initial_density}{The initial network density used in simulations, can
+range from 0 to 1. Defaults to 0.2.}
 
 \item{simulation_method}{Simulation method for MCMC estimation. Default is
 "Gibbs" but can also be set to "Metropolis".}
