@@ -124,9 +124,9 @@ hysteresis <- function(GERGM_Object,
     n_nodes <- nrow(GERGM_Object@bounded.network)
     zero_net <- matrix(initial_density,n_nodes,n_nodes)
     GERGM_Object@bounded.network <- zero_net
+    which_term <- which(GERGM_Object@stats_to_use > 0)[i]
     cur_term <- possible_structural_terms[which_term]
     # tell the user what is going on
-    which_term <- which(GERGM_Object@stats_to_use > 0)[i]
     cat("Currently simulating networks while varying the",
         cur_term,"parameter from:",min_val,"to",max_val,"for a total of",
         length(hysteresis_values),"simulations...\n")
@@ -152,8 +152,6 @@ hysteresis <- function(GERGM_Object,
 
       # assign the last simulated network as the starting network for the next
       # simulation
-      print(dim(GERGM_Object@MCMC_output$Networks))
-      print(last_network)
       GERGM_Object@bounded.network <- GERGM_Object@MCMC_output$Networks[,,last_network]
       # save the densities
       nr <- nrow(GERGM_Object@network)
@@ -166,7 +164,7 @@ hysteresis <- function(GERGM_Object,
 
       # set the current value
       GERGM_Object@theta.par[i] <- hysteresis_values[j]
-      print(GERGM_Object@theta.par)
+      cat("Current theta values:",GERGM_Object@theta.par,"\n")
       # simulate networks
       GERGM_Object <- Simulate_GERGM(
         GERGM_Object,
