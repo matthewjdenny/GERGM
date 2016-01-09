@@ -19,8 +19,8 @@ hysteresis_plot <- function(hysteresis_output,
                              Density = hysteresis_output[[i]]$mean_densities,
                              SE = apply(hysteresis_output[[i]]$network_densities,
                                         2,sd),
-                             color = c(rep(UMASS_BLUE,num_thetas),
-                                       rep(UMASS_RED,num_thetas))
+                             color = c(rep("Ascending",num_thetas),
+                                       rep("Descending",num_thetas))
     )
     data <- data.frame(modelFrame)
 
@@ -44,7 +44,7 @@ hysteresis_plot <- function(hysteresis_output,
                    shape = 21, fill = "WHITE")
 
     zp1 <- zp1  + ggplot2::theme_bw() +
-        ggplot2::theme(legend.position="none") +
+        ggplot2::theme(legend.position="top") +
         ggplot2::geom_hline(yintercept = hysteresis_output[[1]]$observed_density) +
         ggplot2::geom_vline(xintercept = hysteresis_output[[i]]$theta_values[middle])
 
