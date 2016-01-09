@@ -5,13 +5,18 @@
 #' To use this package, first load in the network you wish to use as a (square)
 #' matrix, following the example provided below. You may then use the gergm()
 #' function to estimate a model using any combination of the following statistics:
-#' "out2star", "in2star", "ctriads", "recip", "ttriads", "edges",
+#' "out2stars", "in2stars", "ctriads", "mutual", "ttriads",
 #' "absdiff(covariate)", "edgecov(covariate)", "sender(covariate)",
-#' "reciever(covariate)", "nodefactor(covariate)", "netcov(network_covariate)".
-#' The gergm() function will provide all of the estimation and diagnostic
-#' functionality and the parameters of this function can be querried by typing
-#' ?gergm into the R console. You may also plot the initial network using
-#' plot_network() and simulate networks using the simulate_networks() function.
+#' "reciever(covariate)", "nodematch(covariate)", "nodemix(covariate)",
+#' "netcov(network_covariate)". An intercept term is automatically included by
+#' default, but may be excluded. The gergm() function provides all of the basic
+#' estimation and diagnostic functionality and the parameters of this function
+#' can be querried by typing ?gergm into the R console. If you wish to access
+#' additional fit and degeneracy diagnostic functionaly, the GOF(),
+#' Estimate_Plot(), Trace_Plot() and hysteresis() functions can be accessed
+#' directly by the user.  You may also plot the initial network using
+#' plot_network() and simulate networks for given structural parameters using
+#' the simulate_networks() function.
 #'
 #' @docType package
 #' @name GERGM
