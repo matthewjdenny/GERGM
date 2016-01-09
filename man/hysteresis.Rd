@@ -93,7 +93,7 @@ hysteresis_results <- hysteresis(
     range = 2,
     steps = 20,
     simulation_method = "Metropolis",
-    proposal_variance = 0.1)
+    proposal_variance = 0.5)
 }
 }
 
