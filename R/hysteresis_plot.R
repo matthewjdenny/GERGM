@@ -7,7 +7,7 @@ hysteresis_plot <- function(hysteresis_output,
                 ...){
   #define colors
   UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
-  UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
+  UMASS_RED <- rgb(153,0,51,155,maxColorValue = 255)
   num_thetas <- length(hysteresis_output[[1]]$theta_values)
   middle <- floor(num_thetas/2) + 1
   Theta = SE = Density = Order = NULL
@@ -50,7 +50,6 @@ hysteresis_plot <- function(hysteresis_output,
                    ymin = Density - SE*(-qnorm((1-0.9)/2)),
                    ymax = Density + SE*(-qnorm((1-0.9)/2))),
                    lwd = 1)
-                   #position = ggplot2::position_dodge(width = 1/2))
     zp1 <- zp1 + ggplot2::geom_linerange(
       ggplot2::aes(x = Theta,
                    y = Density,
@@ -60,31 +59,22 @@ hysteresis_plot <- function(hysteresis_output,
       ggplot2::geom_point(ggplot2::aes(x = Theta,
                                        y = Density,
                                        shape= Order,
-                                       colour = Order),   # Shape depends on cond
-                 size = 3)+
+                                       colour = Order),
+                 size = 3) +
       ggplot2::scale_shape_manual(values=c( 16, 17))
-
 
     zp1 <- zp1  + ggplot2::theme_bw() +
       ggplot2::theme(legend.justification = c(1, 0),
                      legend.position = c(1, 0),
                      legend.key = ggplot2::element_blank(),
-                     legend.background = ggplot2::element_rect(fill="transparent")) +
+                     legend.background = ggplot2::element_rect(fill = "transparent"),
+                     legend.title = ggplot2::element_blank()) +
       ggplot2::geom_hline(yintercept = hysteresis_output[[1]]$observed_density) +
       ggplot2::geom_vline(xintercept = hysteresis_output[[i]]$theta_values[middle])+
       ggplot2::ggtitle(pretty_structural_terms[index])
 
-
-
     print(zp1)
-
+    Sys.sleep(1)
   }
-
-
-
-
-
-  # Plot
-
 
 }
