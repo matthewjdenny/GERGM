@@ -1,5 +1,8 @@
 #' @title A function to automatically generate hysteresis plots for all
 #' structural parameter estimates.
+#' @description Hysteresis plots were introduced by: Snijders, Tom AB, et al.
+#' "New specifications for exponential random graph models." Sociological
+#' methodology 36.1 (2006): 99-153. They can tell the user about sensitivity of the parameter estimates and whether they should worry about degeneracy.
 #'
 #' @param GERGM_Object A GERGM object returned by the gergm() estimation
 #' function.
@@ -188,7 +191,7 @@ hysteresis <- function(GERGM_Object,
       column_counter <- column_counter + 1
     }
 
-    # reset teh theta value
+    # reset the theta value
     GERGM_Object@theta.par[i] <- current_theta
     mean_densities <- apply(network_densities,2,mean)
     thetas <- c(hysteresis_values, rev(hysteresis_values))

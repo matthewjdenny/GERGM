@@ -59,6 +59,11 @@ and plots will only be plotted to the graphics device.}
 \value{
 A list object containing network densities for simulated networks.
 }
+\description{
+Hysteresis plots were introduced by: Snijders, Tom AB, et al.
+"New specifications for exponential random graph models." Sociological
+methodology 36.1 (2006): 99-153. They can tell the user about sensitivity of the parameter estimates and whether they should worry about degeneracy.
+}
 \examples{
 \dontrun{
 set.seed(12345)
