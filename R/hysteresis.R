@@ -39,8 +39,9 @@
 #' and plots will only be plotted to the graphics device.
 #' @param parallel Logical indicating whether hysteresis plots for each theta
 #' parameter should be simulated in parallel. Can greatly reduce runtime, but
-#' the computer must have  atleast as many cores as theta parameters. Defauts
-#' to FALSE.
+#' the computer must have atleast as many cores as theta parameters. Currently
+#' only functional for Unix based operating systems (OSX, Linux, CentOS, etc.)
+#' Defauts to FALSE.
 #' @return A list object containing network densities for simulated networks.
 #' @examples
 #' \dontrun{
@@ -131,34 +132,41 @@ hysteresis <- function(GERGM_Object,
 
   # if we are doing things in parallel, start a cluster
   if(parallel){
-    #intitalizes snowfall session
-    snowfall::sfInit(parallel = TRUE, cpus = cores)
-
-    #check to see if we are running in parallel
-    if(snowfall::sfParallel())
-      cat( "Running in parallel mode on", snowfall::sfCpus(), "nodes.\n" )
-    else
-      cat( "Running in sequential mode.\n" )
-
-    #export all packages and libraries currently loaded in workspace
-    for (i in 1:length(.packages())){
-      eval(call("sfLibrary", (.packages()[i]), character.only = TRUE))
-    }
-
-    # apply our problem across the cluster using hte indexes we have determined
-    # and load balancing
-    # Export a list of R data objects
-    snowfall::sfExportAll()
-    results <- snowfall::sfClusterApplyLB(1:num_network_terms,
-                                          hysteresis_parallel)
+    vec <- 1:num_network_terms
+    cat("Simulating networks in parallel on",length(vec),
+        "cores. This may take a while...\n")
+    results <- parallel::mclapply(X = vec,
+                                  FUN = hysteresis_parallel,
+                                  mc.cores = length(vec),
+                                  GERGM_Object = GERGM_Object,
+                                  initial_density = initial_density,
+                                  possible_structural_terms = possible_structural_terms,
+                                  networks_to_simulate = networks_to_simulate,
+                                  simulation_method = simulation_method,
+                                  burnin = burnin,
+                                  thin = thin,
+                                  proposal_variance = proposal_variance,
+                                  seed = seed,
+                                  steps = steps,
+                                  observed_density = observed_density,
+                                  range = range)
 
     for(k in 1:length(results)){
+      which_term <- which(GERGM_Object@stats_to_use > 0)[k]
+      cur_term <- possible_structural_terms[which_term]
       Hysteresis_Results[[k]] <- results[[k]]
+      hysteresis_plot(Hysteresis_Results[k])
+      if(!is.null(output_name)){
+        try({
+          pdf(file = paste(output_name,"_hysteresis_",cur_term,".pdf",sep = ""),
+              height = 5,
+              width = 8)
+          hysteresis_plot(Hysteresis_Results[k])
+          dev.off()
+        })
+      }
     }
 
-    #stop the cluster when we are done -- this is very important and must be
-    #done manually every time
-    snowfall::sfStop()
   }else{
     #else do things serially
     for (i in 1:num_network_terms) {

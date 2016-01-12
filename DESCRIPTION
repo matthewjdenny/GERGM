@@ -19,8 +19,8 @@ Imports:
     methods,
     stringr,
     igraph,
-    plyr,
-    snowfall
+    plyr,     
+    parallel
 Depends:
     R (>= 3.2.1)
 LinkingTo: BH,

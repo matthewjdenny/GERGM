@@ -1,5 +1,16 @@
-hysteresis_parallel <- function(i){
-  setwd(output_directory)
+hysteresis_parallel <- function(i,
+                                GERGM_Object,
+                                initial_density,
+                                possible_structural_terms,
+                                networks_to_simulate,
+                                simulation_method,
+                                burnin,
+                                thin,
+                                proposal_variance,
+                                seed,
+                                steps,
+                                observed_density,
+                                range){
 
   # figure out the range of values for each parameter
   current_theta <- GERGM_Object@theta.par[i]
@@ -94,17 +105,44 @@ hysteresis_parallel <- function(i){
                                   observed_density = observed_density,
                                   term = cur_term)
 
-  # now make plots
-  hysteresis_plot(Hysteresis_Results[i])
-  if(!is.null(output_name)){
-    try({
-      pdf(file = paste(output_name,"_hysteresis_",cur_term,".pdf",sep = ""),
-          height = 5,
-          width = 8)
-      hysteresis_plot(Hysteresis_Results[i])
-      dev.off()
-    })
-  }
-
   return(Hysteresis_Results)
 }
+
+
+#intitalizes snowfall session
+#     snowfall::sfInit(parallel = TRUE, cpus = cores)
+#
+#     #check to see if we are running in parallel
+#     if(snowfall::sfParallel())
+#       cat( "Running in parallel mode on", snowfall::sfCpus(), "nodes.\n" )
+#     else
+#       cat( "Running in sequential mode.\n" )
+#
+#     #export all packages and libraries currently loaded in workspace
+#     for (i in 1:length(.packages())){
+#       eval(call("sfLibrary", (.packages()[i]), character.only = TRUE))
+#     }
+#
+#     # apply our problem across the cluster using hte indexes we have determined
+#     # and load balancing
+#     # Export a list of R data objects
+#     snowfall::sfExport("GERGM_Object",
+#                        "initial_density",
+#                        "possible_structural_terms",
+#                        "networks_to_simulate",
+#                        "simulation_method",
+#                        "burnin",
+#                        "thin",
+#                        "proposal_variance",
+#                        "seed",
+#                        "steps",
+#                        "observed_density",
+#                        "range")
+#                        print(vec)
+#     results <- snowfall::sfClusterApplyLB(x = vec,
+#       fun = hysteresis_parallel)
+
+#stop the cluster when we are done -- this is very important and must be
+#done manually every time
+# snowfall::sfStop()
+

@@ -27,8 +27,8 @@ test_that("Simple model with no covariates runs", {
                 force_x_theta_updates = 4)
 
   test2 <- hysteresis(test,
-                      networks_to_simulate = 40000,
-                      burnin = 40000,
+                      networks_to_simulate = 20000,
+                      burnin = 10000,
                       range = 2,
                       steps = 30,
                       initial_density = 0.2,
@@ -37,7 +37,18 @@ test_that("Simple model with no covariates runs", {
                       seed = 12345,
                       thin = 1/10)
 
-  hysteresis_plot(test2)
+  test3 <- hysteresis(test,
+                      networks_to_simulate = 20000,
+                      burnin = 10000,
+                      range = 2,
+                      steps = 30,
+                      initial_density = 0.2,
+                      simulation_method = "Metropolis",
+                      proposal_variance = 0.5,
+                      seed = 12345,
+                      thin = 1/10,
+                      parallel = T)
+
 })
 
 
