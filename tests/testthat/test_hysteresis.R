@@ -17,7 +17,7 @@ test_that("Simple model with no covariates runs", {
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
-                thin = 1/10,
+                thin = 1/100,
                 proposal_variance = 0.5,
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,

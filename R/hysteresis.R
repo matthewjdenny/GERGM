@@ -149,7 +149,12 @@ hysteresis <- function(GERGM_Object,
     # and load balancing
     # Export a list of R data objects
     snowfall::sfExportAll()
-    snowfall::sfClusterApplyLB(1:num_network_terms,hysteresis_parallel)
+    results <- snowfall::sfClusterApplyLB(1:num_network_terms,
+                                          hysteresis_parallel)
+
+    for(k in 1:length(results)){
+      Hysteresis_Results[[k]] <- results[[k]]
+    }
 
     #stop the cluster when we are done -- this is very important and must be
     #done manually every time
