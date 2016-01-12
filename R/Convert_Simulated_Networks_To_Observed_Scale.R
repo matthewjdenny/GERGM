@@ -59,8 +59,10 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
           cat(10*printcounter,"% complete...\n", sep = "")
           printcounter <- printcounter +1
         }
+        # symmetrize incase there were any numerical imperfections
+        symnet <- Symmetrize_Network(GERGM_Object@MCMC_output$Networks[,,i])
         GERGM_Object@MCMC_output$Networks[,,i] <- bounded.to.correlations(
-          GERGM_Object@MCMC_output$Networks[,,i])
+          symnet)
       }
     }else{
       # if we did not do a transformation (only structural terms)
