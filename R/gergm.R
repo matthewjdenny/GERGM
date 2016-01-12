@@ -189,7 +189,8 @@ gergm <- function(formula,
                                  "mutual",
                                  "ttriads",
                                  "edges")
-  possible_structural_terms_undirected <- c("twostars",
+  possible_structural_terms_undirected <- c("edges",
+                                            "twostars",
                                             "ttriads")
   possible_covariate_terms <- c("absdiff",
                                 "nodecov",
