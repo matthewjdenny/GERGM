@@ -306,15 +306,9 @@ parse_formula_term <- function(term,
       }
       # check to make sure a valid network matrix is specified
       if(!is.na(return_list$network) & !is.null(return_list$network)){
-        temp_net <- mget(as.character(return_list$network),
-                         envir = environment(),
-                         ifnotfound = list(not_found = NA))
-        if(class(temp_net) == "list"){
-          temp_net <- mget(as.character(return_list$network),
-                           envir = globalenv(),
-                           ifnotfound = list(not_found = NA))
-        }
-          return_list$network_matrix_object <- temp_net[[1]]
+        temp_net <- dynGet(as.character(as.character(return_list$network)),
+               ifnotfound = get(as.character(as.character(return_list$network))))
+          return_list$network_matrix_object <- temp_net
         if(class(return_list$network_matrix_object)!= "matrix"){
           stop(paste("You must supply network covariates as matrix objects."))
         }
