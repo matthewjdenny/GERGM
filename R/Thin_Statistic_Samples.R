@@ -25,7 +25,7 @@ Thin_Statistic_Samples <- function(statistics){
         cat("Statistics were thinned by a factor of ",thin,", resulting in ",length(thinSeq)," samples.\n", sep = "")
         statistics <- statistics[thinSeq,]
       }else{
-        cat("Thinning statistics to correct for autocorrelation in calculating fit diagnostics resulted in two few samples (less than 100), considder increasing the number of iterations of MCMC sampling...\n")
+        cat("Thinning statistics to correct for autocorrelation in calculating fit diagnostics resulted in two few samples (less than 100), consider increasing the number of iterations of MCMC sampling...\n")
         cat("Statistics were thinned by a factor of ",thin,", resulting in ",length(thinSeq)," samples. Sample size was manually increased to 100.\n", sep = "")
         thinSeq <- round(seq(1,nrow(statistics),length.out = 100))
         statistics <- statistics[thinSeq,]

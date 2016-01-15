@@ -356,12 +356,12 @@ gergm <- function(formula,
 
   #3. Perform degeneracy diagnostics and create GOF plots
   if (!GERGM_Object@theta_estimation_converged) {
-    warning("Estimation proceedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergencecriterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    warning("Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
   if (!GERGM_Object@lambda_estimation_converged) {
-    warning("Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation proceedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    warning("Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
   }
 
   #now simulate from last update of theta parameters
@@ -445,8 +445,8 @@ gergm <- function(formula,
     GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
   }else{
     GERGM_Object@acceptable_fit <- FALSE
-    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
-    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonalbe fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
+    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
+    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
   }
 
   #4. output everything to the appropriate files and return GERGM object.
