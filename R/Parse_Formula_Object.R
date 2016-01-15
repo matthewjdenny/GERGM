@@ -15,11 +15,12 @@ Parse_Formula_Object <- function(formula,
 
   # get the actual response data
   if(is.null(raw_network)){
-    temp_net <- mget(lhs, envir = environment(),ifnotfound = list(not_found = NA))
-    if(class(temp_net) == "list"){
-      temp_net <- mget(lhs, envir = globalenv(),ifnotfound = list(not_found = NA))
-    }
-    net <- as.matrix(temp_net[[1]])
+#     temp_net <- mget(lhs, envir = environment(),ifnotfound = list(not_found = NA))
+#     if(class(temp_net) == "list"){
+#       temp_net <- mget(lhs, envir = globalenv(),ifnotfound = list(not_found = NA))
+#     }
+    net <- dynGet(as.character(lhs),
+                  ifnotfound = get(as.character(lhs)))
   }else{
     net <- raw_network
   }

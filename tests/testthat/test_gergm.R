@@ -2,7 +2,7 @@ test_that("Simple model with no covariates runs", {
   skip_on_cran()
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
-  skip("Skipping test as it can only be run in the global environment.")
+  #skip("Skipping test as it can only be run in the global environment.")
 
   set.seed(12345)
   net <- matrix(rnorm(100,0,20),10,10)
