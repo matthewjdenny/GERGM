@@ -273,42 +273,6 @@ double jacobian(arma::mat partial_correlations){
   return result;
 }
 
-
-
-
-
-
-
-
-
-// Returns the erf() of a value (not super precice, but ok)
-double erf(double x)
-{
-  double y = 1.0 / ( 1.0 + 0.3275911 * x);
-  return 1 - (((((
-      + 1.061405429  * y
-                   - 1.453152027) * y
-                   + 1.421413741) * y
-                   - 0.284496736) * y
-                   + 0.254829592) * y)
-                   * exp (-x * x);
-}
-
-// Returns the probability of x, given the distribution described by mu and sigma.
-double pdf(double x, double mu, double sigma)
-{
-  //Constants
-  static const double pi = 3.14159265;
-  return exp( -1 * (x - mu) * (x - mu) / (2 * sigma * sigma)) / (sigma * sqrt(2.0 * pi));
-}
-
-// Returns the probability of [-inf,x] of a gaussian distribution
-double cdf(double x, double mu, double sigma)
-{
-  return 0.5 * (1 + mjd::erf((x - mu) / (sigma * sqrt(2.0))));
-}
-
-
 // Function to calculate the number of out 2-stars
 double Out2Star(arma::mat net,
                 arma::mat triples,
@@ -611,14 +575,14 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
               new_edge_value= 0.001;
             }
             // calculate the probability of the new edge under current beta dist
-            double lower_bound = mjd::cdf(0,current_edge_value,variance);
-            double upper_bound = mjd::cdf(1,current_edge_value,variance);
-            double raw_prob = mjd::pdf(new_edge_value,current_edge_value,variance);
+            double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+            double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+            double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
             double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
             // calculate the probability of the current edge under new beta dist
-            lower_bound = mjd::cdf(0,new_edge_value,variance);
-            upper_bound = mjd::cdf(1,new_edge_value,variance);
-            raw_prob = mjd::pdf(current_edge_value,new_edge_value,variance);
+            lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+            upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+            raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
             double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
             //save everything
             proposed_edge_weights(i,j) = new_edge_value;
@@ -635,6 +599,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       }
 
     }else{
+      // int counter =  0;
       // Run loop to sample new edge weights
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
@@ -662,16 +627,22 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             }
 
             // calculate the probability of the new edge under current beta dist
-            double lower_bound = mjd::cdf(0,current_edge_value,variance);
-            double upper_bound = mjd::cdf(1,current_edge_value,variance);
-            double raw_prob = mjd::pdf(new_edge_value,current_edge_value,variance);
+            double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+            double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+            double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
             double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
 
             // calculate the probability of the current edge under new beta dist
-            lower_bound = mjd::cdf(0,new_edge_value,variance);
-            upper_bound = mjd::cdf(1,new_edge_value,variance);
-            raw_prob = mjd::pdf(current_edge_value,new_edge_value,variance);
+            lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+            upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+            raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
             double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+            //if(counter < 100){
+            //  Rcpp::Rcout << "lower_bound " << lower_bound <<
+            //    " upper_bound  " << upper_bound <<
+            //      " raw_prob  " << raw_prob << std::endl;
+            //}
 
             //save everything
             proposed_edge_weights(i,j) = new_edge_value;
@@ -682,6 +653,14 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             log_prob_accept += (log_probability_of_current_under_new
                                   - log_probability_of_new_under_current);
 
+            //if(counter < 100){
+            //  Rcpp::Rcout << "prob_old_edge_under_new " << prob_old_edge_under_new <<
+            //    "prob_new_edge_under_old  " << prob_new_edge_under_old << std::endl;
+            //  Rcpp::Rcout << "Isfinite: " << std::isfinite(log_prob_accept) <<
+            //    "Isnan: " << std::isnan(log_prob_accept)<<
+            //      "value: " << log_prob_accept << std::endl;
+            //}
+            //counter += 1
           }
         }
       }
