@@ -86,6 +86,19 @@ Simulate_GERGM <- function(GERGM_Object,
     # Note: these statistics will be the adjusted statistics (for use in the
     # MCMCMLE procedure)
 
+    # more markov chain diagnostics
+    average_log_prob_accept <- mean(samples[[5]])
+    cat("Average log probability of accepting a proposal:", average_log_prob_accept,".\nStandard deviation of log probability of accepting proposal:",sd(samples[[5]]),"\n")
+    if (!is.finite(average_log_prob_accept)) {
+      warning("It appears there is a problem with Metropolis Hastings, consider increasing proposal variance.")
+    }
+
+    GERGM_Object <- store_console_output(GERGM_Object,paste("Average log probability of accepting a proposal:", average_log_prob_accept,".\nStandard deviation of log probability of accepting proposal:",sd(samples[[5]]),"\n"))
+
+    average_edge_weight <- mean(samples[[4]])
+    cat("Average (constrained) simulated network density:", average_edge_weight, "\n")
+    GERGM_Object <- store_console_output(GERGM_Object,paste("Average (constrained) simulated network density:", average_edge_weight, "\n"))
+
     h.statistics <- samples[[3]][start:end,]
     acceptance.rate <- mean(samples[[1]])
     if(verbose){

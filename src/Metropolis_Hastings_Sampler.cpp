@@ -552,12 +552,13 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
   // Allocate variables and data structures
   double variance = shape_parameter;
-  int list_length = 4;
+  int list_length = 5;
   List to_return(list_length);
   int number_of_thetas = statistics_to_use.n_elem;
   int MH_Counter = 0;
   int Storage_Counter = 0;
   arma::vec Accept_or_Reject = arma::zeros (number_of_iterations);
+  arma::vec Log_Prob_Accept = arma::zeros (number_of_iterations);
   arma::cube Network_Samples = arma::zeros (number_of_nodes, number_of_nodes,
       number_of_samples_to_store);
   arma::vec Mean_Edge_Weights = arma::zeros (number_of_samples_to_store);
@@ -736,6 +737,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       }
     }
 
+    Log_Prob_Accept[n] = log_prob_accept;
     Accept_or_Reject[n] = accept_proportion;
     Storage_Counter += 1;
 
@@ -794,5 +796,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   to_return[1] = Network_Samples;
   to_return[2] = Save_H_Statistics;
   to_return[3] = Mean_Edge_Weights;
+  to_return[4] = Log_Prob_Accept;
   return to_return;
 }
