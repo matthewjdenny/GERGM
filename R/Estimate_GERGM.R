@@ -140,7 +140,7 @@ Estimate_GERGM <- function(formula_object,
           }
           GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
           if(verbose){
-            print(p.value1)
+            cat(p.value1, "\n")
           }
           GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
           if(verbose){
@@ -148,7 +148,7 @@ Estimate_GERGM <- function(formula_object,
           }
           GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
           if(verbose){
-            print(p.value2)
+            cat(p.value2, "\n")
           }
           GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
           if (sum(count1) + sum(count2) == 0){
@@ -240,7 +240,7 @@ Estimate_GERGM <- function(formula_object,
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
         if(verbose){
-          print(p.value1)
+          cat(p.value1, "\n")
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
         if(verbose){
@@ -248,7 +248,7 @@ Estimate_GERGM <- function(formula_object,
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
         if(verbose){
-          print(p.value2)
+          cat(p.value2, "\n")
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
 
