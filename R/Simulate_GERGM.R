@@ -21,13 +21,13 @@ Simulate_GERGM <- function(GERGM_Object,
 
   # if we are dealing with an undirected network
   undirect_network <- 0
-  if(GERGM_Object@undirected_network){
+  if (GERGM_Object@undirected_network) {
     undirect_network <- 1
   }
 
   # if we are dealing with a correlation network
   is_correlation_network <- 0
-  if(GERGM_Object@is_correlation_network){
+  if (GERGM_Object@is_correlation_network) {
     is_correlation_network <- 1
     undirect_network <- 1
   }
@@ -88,23 +88,39 @@ Simulate_GERGM <- function(GERGM_Object,
 
     # more markov chain diagnostics
     average_log_prob_accept <- mean(samples[[5]])
-    cat("Average log probability of accepting a proposal:", average_log_prob_accept,".\nStandard deviation of log probability of accepting proposal:",sd(samples[[5]]),"\n")
+    cat("Average log probability of accepting a proposal:",
+        average_log_prob_accept,
+        ".\nStandard deviation of log probability of accepting proposal:",
+        sd(samples[[5]]),"\n")
     if (!is.finite(average_log_prob_accept)) {
       warning("It appears there is a problem with Metropolis Hastings, consider increasing proposal variance.")
     }
 
-    GERGM_Object <- store_console_output(GERGM_Object,paste("Average log probability of accepting a proposal:", average_log_prob_accept,".\nStandard deviation of log probability of accepting proposal:",sd(samples[[5]]),"\n"))
+    GERGM_Object <- store_console_output(GERGM_Object,
+      paste("Average log probability of accepting a proposal:",
+            average_log_prob_accept,
+            ".\nStandard deviation of log probability of accepting proposal:",
+            sd(samples[[5]]),"\n"))
 
     average_edge_weight <- mean(samples[[4]])
-    cat("Average (constrained) simulated network density:", average_edge_weight, "\n")
-    GERGM_Object <- store_console_output(GERGM_Object,paste("Average (constrained) simulated network density:", average_edge_weight, "\n"))
+    cat("Average (constrained) simulated network density:",
+        average_edge_weight, "\n")
+    GERGM_Object <- store_console_output(GERGM_Object,
+      paste("Average (constrained) simulated network density:",
+            average_edge_weight, "\n"))
+
 
     h.statistics <- samples[[3]][start:end,]
     acceptance.rate <- mean(samples[[1]])
-    if(verbose){
-      cat("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n")
+    if (verbose) {
+      cat("Metropolis Hastings Acceptance Rate (target = ",
+          GERGM_Object@target_accept_rate," ): ",
+          acceptance.rate, "\n", sep = "")
     }
-    GERGM_Object <- store_console_output(GERGM_Object,paste("Metropolis Hastings Acceptance Rate (target = 0.25):", acceptance.rate, "\n"))
+    GERGM_Object <- store_console_output(GERGM_Object,
+      paste("Metropolis Hastings Acceptance Rate (target = ",
+            GERGM_Object@target_accept_rate,"):",
+            acceptance.rate, "\n", sep = ""))
 
   }
   h.statistics = data.frame(out2stars = h.statistics[, 1],
