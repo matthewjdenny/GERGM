@@ -28,6 +28,8 @@ single_gergm_specification <- function(i,
                                        generate_plots,
                                        verbose,
                                        omit_intercept_term,
+                                       hyperparameter_optimization ,
+                                       target_accept_rate,
                                        ...){
 
   # 0. go through and assign all variables before calling GERGM
@@ -334,6 +336,32 @@ single_gergm_specification <- function(i,
     stop("omit_intercept_term must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
+  if (length(hyperparameter_optimization) == num_specifications) {
+    if (class(hyperparameter_optimization) == "list") {
+      normalization_type <- hyperparameter_optimization[[i]]
+    } else if (class(hyperparameter_optimization) == "logical") {
+      hyperparameter_optimization <- hyperparameter_optimization[i]
+    } else {
+      stop("hyperparameter_optimization must either be a logical vector or list of logicals.")
+    }
+  } else if (length(hyperparameter_optimization) != 1) {
+    stop("hyperparameter_optimization must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+  }
+
+  if (length(target_accept_rate) == num_specifications) {
+    if (class(target_accept_rate) == "list") {
+      normalization_type <- target_accept_rate[[i]]
+    } else if (class(target_accept_rate) == "numeric") {
+      target_accept_rate <- target_accept_rate[i]
+    } else {
+      stop("target_accept_rate must either be a numeric vector or list of numbers.")
+    }
+  } else if (length(target_accept_rate) != 1) {
+    stop("target_accept_rate must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+  }
+
+
+
   Result <- gergm(formula = formula,
     covariate_data = covariate_data,
     normalization_type = normalization_type,
@@ -359,6 +387,8 @@ single_gergm_specification <- function(i,
     generate_plots = generate_plots,
     verbose = verbose,
     omit_intercept_term = omit_intercept_term,
+    hyperparameter_optimization = hyperparameter_optimization,
+    target_accept_rate = target_accept_rate,
     ... = ...)
 
   return(Result)
