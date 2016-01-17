@@ -204,9 +204,6 @@ simulate_networks <- function(formula,
     is_directed = network_is_directed
   )
 
-  print(GERGM_Object@theta.coef)
-  print(GERGM_Object@theta.par)
-
   GERGM_Object@theta_estimation_converged <- TRUE
   GERGM_Object@lambda_estimation_converged <- TRUE
   GERGM_Object@observed_network  <- GERGM_Object@network
@@ -228,6 +225,10 @@ simulate_networks <- function(formula,
     GERGM_Object@is_correlation_network <- FALSE
   }
 
+  GERGM_Object@proposal_variance <- proposal_variance
+  GERGM_Object@estimation_method <- simulation_method
+  GERGM_Object@target_accept_rate <- 0.25
+
 
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
@@ -235,7 +236,6 @@ simulate_networks <- function(formula,
                                  method = simulation_method,
                                  MCMC.burnin = MCMC_burnin,
                                  thin = thin,
-                                 shape.parameter = proposal_variance,
                                  together = downweight_statistics_together,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)

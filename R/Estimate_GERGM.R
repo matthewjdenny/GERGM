@@ -4,12 +4,10 @@ Estimate_GERGM <- function(formula_object,
                            directed,
                            MPLE.only,
                            transform.data = NULL,
-                           method,
                            max.num.iterations,
                            mc.num.iterations,
                            nsim,
                            thin,
-                           shape.parameter,
                            exponential_weights = NULL,
                            together,
                            MCMC.burnin,
@@ -37,19 +35,19 @@ Estimate_GERGM <- function(formula_object,
   #rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
   # Flag if statistics do not meet requirement for Gibbs
-  if (method == "Gibbs" & sum(GERGM_Object@weights != 1) > 0) {
+  if (GERGM_Object@estimation_method == "Gibbs" & sum(GERGM_Object@weights != 1) > 0) {
     warning(paste0("Some statistics do not have second order derivative = 0.",
                    " Switching to Metropolis"))
-    method = "Metropolis"
+    GERGM_Object@estimation_method = "Metropolis"
   }
 
-  if(method == "Gibbs" & GERGM_Object@is_correlation_network){
+  if(GERGM_Object@estimation_method == "Gibbs" & GERGM_Object@is_correlation_network){
     warning("Gibbs sampling is currently not implemented for correlation networks, switching to Metropolis Hastings.")
-    method = "Metropolis"
+    GERGM_Object@estimation_method = "Metropolis"
   }
 
   # Flag if Metropolis is specified but Gibbs is OK
-  if (method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
+  if (GERGM_Object@estimation_method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
     cat("\nAll statistics have second order derivative = 0. Consider switching to Gibbs for speed.\n\n")
     # method = "Gibbs"
   }
@@ -195,8 +193,6 @@ Estimate_GERGM <- function(formula_object,
                              theta = theta$par,
                              alpha = alpha,
                              directed = directed,
-                             method = method,
-                             shape.parameter = shape.parameter,
                              together = together,
                              tolerance = tolerance,
                              seed2 = seed,
@@ -326,8 +322,6 @@ Estimate_GERGM <- function(formula_object,
                            theta = theta$par,
                            alpha = alpha,
                            directed = directed,
-                           method = method,
-                           shape.parameter = shape.parameter,
                            together = together,
                            tolerance = tolerance,
                            seed2 = seed,

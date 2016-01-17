@@ -339,20 +339,20 @@ gergm <- function(formula,
   }
 
   # set adaptive metropolis parameters
-  GERGM_Object@adaptive_metropolis = adaptive_metropolis
-  GERGM_Object@target_accept_rate = target_accept_rate
+  GERGM_Object@adaptive_metropolis <- adaptive_metropolis
+  GERGM_Object@target_accept_rate <- target_accept_rate
+  GERGM_Object@proposal_variance <- proposal_variance
+  GERGM_Object@estimation_method <- estimation_method
 
   #2. Estimate GERGM
   GERGM_Object <- Estimate_GERGM(formula,
                                  directed = network_is_directed,
                                  MPLE.only = use_MPLE_only,
                                  transform.data = data_transformation,
-                                 method = estimation_method,
                                  max.num.iterations = maximum_number_of_lambda_updates,
                                  mc.num.iterations = maximum_number_of_theta_updates,
                                  nsim = number_of_networks_to_simulate,
                                  thin = thin,
-                                 shape.parameter = proposal_variance,
                                  exponential_weights = GERGM_Object@weights,
                                  together = downweight_statistics_together,
                                  MCMC.burnin = MCMC_burnin,
@@ -379,10 +379,8 @@ gergm <- function(formula,
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                  nsim = number_of_networks_to_simulate,
-                                 method = estimation_method,
                                  MCMC.burnin = MCMC_burnin,
                                  thin = thin,
-                                 shape.parameter = proposal_variance,
                                  together = downweight_statistics_together,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)

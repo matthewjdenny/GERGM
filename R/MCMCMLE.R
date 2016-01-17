@@ -6,8 +6,6 @@ MCMCMLE <- function(num.draws,
                     theta = NULL,
                     alpha = NULL,
                     directed ,
-                    method ,
-                    shape.parameter ,
                     together ,
                     seed2 ,
                     gain.factor,
@@ -38,7 +36,6 @@ MCMCMLE <- function(num.draws,
   GERGM_Object <- store_console_output(GERGM_Object, paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
-  pairs <- t(combn(1:num.nodes, 2))
   if(GERGM_Object@is_correlation_network){
     # initialize the network with the observed network
     initial_network <- GERGM_Object@network
@@ -82,8 +79,6 @@ MCMCMLE <- function(num.draws,
   if(gain.factor > 0){
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                    nsim = ceiling(20/thin),
-                                   method = method,
-                                   shape.parameter = shape.parameter,
                                    together = together,
                                    thin = thin,
                                    MCMC.burnin = MCMC.burnin,
@@ -125,8 +120,6 @@ MCMCMLE <- function(num.draws,
     GERGM_Object@theta.par <- as.numeric(theta$par)
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                            nsim = num.draws,
-                           method = method,
-                           shape.parameter = shape.parameter,
                            together = together,
                            thin = thin,
                            MCMC.burnin = MCMC.burnin,
@@ -214,7 +207,7 @@ MCMCMLE <- function(num.draws,
     # check to see if we had a zero percent accept rate if using MH, and if so,
     # then adjust proposal variance and try again -- do not signal convergence.
     allow_convergence = TRUE
-    if (method == "Metropolis") {
+    if (GERGM_Object@estimation_method == "Metropolis") {
       if (GERGM_Object@MCMC_output$Acceptance.rate == 0){
         cat("Acceptance rate was zero, decreasing proposal variance...\n")
         allow_convergence = FALSE

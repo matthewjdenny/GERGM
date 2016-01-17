@@ -1,12 +1,10 @@
 # Simulate a gergm
 Simulate_GERGM <- function(GERGM_Object,
                            nsim,
-                           method,
                            MCMC.burnin,
                            weights = GERGM_Object@weights,
                            coef = GERGM_Object@theta.par,
                            thin ,
-                           shape.parameter ,
                            together ,
                            seed1,
 						               possible.stats,
@@ -33,7 +31,7 @@ Simulate_GERGM <- function(GERGM_Object,
   }
 
   # Gibbs Simulation
-  if (method == "Gibbs") {
+  if (GERGM_Object@estimation_method == "Gibbs") {
     nets <- Gibbs_Sampler(GERGM_Object,
                           thetas,
                           MCMC.burnin = MCMC.burnin,
@@ -53,7 +51,7 @@ Simulate_GERGM <- function(GERGM_Object,
   }
 
   # Metropolis Hastings Simulation
-  if (method == "Metropolis") {
+  if (GERGM_Object@estimation_method == "Metropolis") {
     #need to put the thetas into a full length vector for MH function
     stat.indx <- which(GERGM_Object@stats_to_use > 0)
     #cat("stat.idx",stat.indx,"\n" )
@@ -65,7 +63,7 @@ Simulate_GERGM <- function(GERGM_Object,
     store <- ceiling((nsim + MCMC.burnin)/sample_every)
     samples <- Metropolis_Hastings_Sampler(
       number_of_iterations = nsim + MCMC.burnin,
-      shape_parameter = shape.parameter,
+      shape_parameter = GERGM_Object@proposal_variance,
       number_of_nodes = num.nodes,
       statistics_to_use = GERGM_Object@stats_to_use,
       initial_network = GERGM_Object@bounded.network,
