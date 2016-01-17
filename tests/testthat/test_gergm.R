@@ -90,6 +90,9 @@ test <- gergm(formula,
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
+check_against <- c(-0.222,  0.079)
+expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
+
 #check that code works with MPLE only
 
 formula <- net ~ ttriads + in2stars
@@ -109,6 +112,9 @@ test <- gergm(formula,
               MPLE_gain_factor = 0,
               force_x_theta_updates = 2,
               force_x_lambda_updates = 3)
+
+check_against <- c(-0.610,  0.226)
+expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
 
@@ -161,5 +167,8 @@ test_that("Model with covariates runs", {
                 convergence_tolerance = 0.01,
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 2)
+
+  check_against <- c(1.438, -0.083, -0.017, -0.024,  3.103,  0.132, -1.837)
+  expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
