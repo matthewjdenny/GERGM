@@ -124,11 +124,26 @@ MCMCMLE <- function(mc.num.iterations,
         # upping the gain factor
         if (GERGM_Object@estimation_method == "Metropolis") {
           GERGM_Object@weights <- 0.9 * GERGM_Object@weights
+          cat("Reducing exponential weights by 10 percent to:",
+              GERGM_Object@weights,
+              "in an attempt to address degeneracy issue...\n")
+          GERGM_Object <- store_console_output(GERGM_Object,paste(
+            "Reducing exponential weights by 10 percent to:",
+            GERGM_Object@weights,
+            "in an attempt to address degeneracy issue..."))
+
           if (GERGM_Object@MPLE_gain_factor == 0) {
             GERGM_Object@MPLE_gain_factor <- 0.05
           } else {
             GERGM_Object@MPLE_gain_factor <- 1.05 * GERGM_Object@MPLE_gain_factor
           }
+          cat("Increasing MPLE gain factor by 5 percent percent to:",
+              GERGM_Object@MPLE_gain_factor,
+              "as exponential weights have decreased...\n")
+          GERGM_Object <- store_console_output(GERGM_Object,paste(
+            "Increasing MPLE gain factor by 5 percent percent to:",
+            GERGM_Object@MPLE_gain_factor,
+            "as exponential weights have decreased..."))
           # re-estimate thetas with more downweighting
           FIX_DEGENERACY <- TRUE
         }
@@ -139,6 +154,13 @@ MCMCMLE <- function(mc.num.iterations,
         new_burnin <- 2 * old_burinin
         GERGM_Object@number_of_simulations <- new_nsim
         GERGM_Object@burnin <- new_burnin
+        cat("Doubling burnin from:", old_burinin, "to", new_burnin,
+            "and number of networks simulated from:", old_nsim, "to", new_nsim,
+            "in an attempt to address degeneracy issue...\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste(
+          "Doubling burnin from:", old_burinin, "to", new_burnin,
+          "and number of networks simulated from:", old_nsim, "to", new_nsim,
+          "in an attempt to address degeneracy issue..."))
       }else{
         message("Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
         GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
