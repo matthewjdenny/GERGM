@@ -150,8 +150,9 @@ parameter plots are generated.}
 running). Can be set to FALSE if the user wishes to see less output.}
 
 \item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the
-user wishes to omit the model intercept term.
-#' @param hyperparameter_optimization Logical indicating whether automatic
+user wishes to omit the model intercept term.}
+
+\item{hyperparameter_optimization}{Logical indicating whether automatic
 hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
 the algorithm will automatically seek to find an optimal burnin and number of
 networks to simulate, and if using Metropolis Hasings, will attempt to select
