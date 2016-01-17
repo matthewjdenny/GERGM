@@ -140,14 +140,6 @@ simulate_networks <- function(formula,
   if (simulate_correlation_network) {
     network_is_directed <- FALSE
   }
-
-  # convert logical to numeric indicator
-  if (downweight_statistics_together) {
-    downweight_statistics_together <- 1
-  }else{
-    downweight_statistics_together <- 0
-  }
-
   #make sure proposal variance is greater than zero
   #make sure proposal variance is greater than zero
   if (proposal_variance <= 0.001) {
@@ -210,32 +202,20 @@ simulate_networks <- function(formula,
   GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
   GERGM_Object@simulation_only <- TRUE
   GERGM_Object@theta.par <- theta_coeficients
-
-  if (network_is_directed) {
-    GERGM_Object@undirected_network <- FALSE
-  }else{
-    GERGM_Object@undirected_network <- TRUE
-  }
-
-
-  # if we are using a correlation network then set field to TRUE.
-  if (simulate_correlation_network) {
-    GERGM_Object@is_correlation_network <- TRUE
-  }else{
-    GERGM_Object@is_correlation_network <- FALSE
-  }
-
+  GERGM_Object@directed_network <- network_is_directed
+  GERGM_Object@is_correlation_network <- simulate_correlation_network
   GERGM_Object@proposal_variance <- proposal_variance
   GERGM_Object@estimation_method <- simulation_method
   GERGM_Object@target_accept_rate <- 0.25
+  GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
+  GERGM_Object@thin <- thin
+  GERGM_Object@burnin <- MCMC_burnin
+  GERGM_Object@downweight_statistics_together <- downweight_statistics_together
+
 
 
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                                 nsim = number_of_networks_to_simulate,
-                                 MCMC.burnin = MCMC_burnin,
-                                 thin = thin,
-                                 together = downweight_statistics_together,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)
 

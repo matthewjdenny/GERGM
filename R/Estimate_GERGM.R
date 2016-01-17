@@ -1,19 +1,11 @@
 
 # Function to estimate gergms
 Estimate_GERGM <- function(formula_object,
-                           directed,
                            MPLE.only,
-                           transform.data = NULL,
                            max.num.iterations,
                            mc.num.iterations,
-                           nsim,
-                           thin,
-                           exponential_weights = NULL,
-                           together,
-                           MCMC.burnin,
                            seed,
                            tolerance,
-                           gain.factor,
                            possible.stats,
                            GERGM_Object,
                            force_x_theta_updates,
@@ -23,15 +15,9 @@ Estimate_GERGM <- function(formula_object,
 
   # set the seed
   set.seed(seed)
-
-  # set our exponential down weights
-  alpha <- exponential_weights
-
-  statistics <- GERGM_Object@stats_to_use
-  alphas <- GERGM_Object@weights
   net <- GERGM_Object@network
 
-  rhs.formula <- possible.stats[statistics > 0]
+  rhs.formula <- possible.stats[GERGM_Object@stats_to_use > 0]
   #rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
   # Flag if statistics do not meet requirement for Gibbs
@@ -73,7 +59,7 @@ Estimate_GERGM <- function(formula_object,
           i = i,
           gpar = gpar,
           theta = theta,
-          together = together,
+          together = GERGM_Object@downweight_statistics_together,
           verbose = verbose,
           net = net,
           GERGM_Object = GERGM_Object)
@@ -90,12 +76,12 @@ Estimate_GERGM <- function(formula_object,
           theta.new <- mple.corr(GERGM_Object@network,
                                   GERGM_Object@bounded.network,
                                   statistics = GERGM_Object@stats_to_use,
-                                  directed = directed,
+                                  directed = GERGM_Object@directed_network,
                                   verbose = verbose)
         }else{
           theta.new <- mple(GERGM_Object@bounded.network,
                              statistics = GERGM_Object@stats_to_use,
-                             directed = directed,
+                             directed = GERGM_Object@directed_network,
                              verbose = verbose)
         }
 
@@ -108,9 +94,9 @@ Estimate_GERGM <- function(formula_object,
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste("theta", theta$par, "\n"))
         if(verbose){
-          cat("statistics", statistics, "\n")
+          cat("statistics", GERGM_Object@stats_to_use, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", statistics, "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", GERGM_Object@stats_to_use, "\n"))
         theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
         GERGM_Object@theta.par <- theta.new$par
 
@@ -167,13 +153,13 @@ Estimate_GERGM <- function(formula_object,
         gpar <- gpar.new
       }
 
-      if(MPLE.only != TRUE){
+      if (MPLE.only != TRUE) {
         # Estimate lambda
         updates <- Update_Lambda_Estimates(
           i = i,
           gpar = gpar,
           theta = theta,
-          together = together,
+          together = GERGM_Object@downweight_statistics_together,
           verbose = verbose,
           net = net,
           GERGM_Object = GERGM_Object)
@@ -187,20 +173,15 @@ Estimate_GERGM <- function(formula_object,
         pairs <- t(combn(1:num.nodes, 2))
 
         # Estimate theta
-        ret_list <- MCMCMLE(num.draws = nsim,
-                             mc.num.iterations = mc.num.iterations,
-                             thin = thin, MCMC.burnin = MCMC.burnin,
-                             theta = theta$par,
-                             alpha = alpha,
-                             directed = directed,
-                             together = together,
-                             tolerance = tolerance,
-                             seed2 = seed,
-                             gain.factor = gain.factor,
-							               possible.stats = possible.stats,
-							               GERGM_Object= GERGM_Object,
-							               force_x_theta_updates = force_x_theta_updates,
-							               verbose = verbose)
+        ret_list <- MCMCMLE(
+          mc.num.iterations = mc.num.iterations,
+          theta = theta$par,
+          tolerance = tolerance,
+          seed2 = seed,
+          possible.stats = possible.stats,
+          GERGM_Object = GERGM_Object,
+          force_x_theta_updates = force_x_theta_updates,
+          verbose = verbose)
 
         theta.new <- ret_list[[1]]
         GERGM_Object <- ret_list[[2]]
@@ -234,26 +215,31 @@ Estimate_GERGM <- function(formula_object,
         if(verbose){
           cat("Theta p.values", "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,
+                                             paste("Theta p.values", "\n"))
         if(verbose){
           cat(p.value1, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
+        GERGM_Object <- store_console_output(GERGM_Object,
+                                             paste0(p.value1,collapse = " "))
         if(verbose){
           cat("Lambda p.values", "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,
+                                             paste("Lambda p.values", "\n"))
         if(verbose){
           cat(p.value2, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
+        GERGM_Object <- store_console_output(GERGM_Object,
+                                             paste0(p.value2,collapse = " "))
 
         if (sum(count1) + sum(count2) == 0){
           message("Theta parameter estimates have converged...")
           if(force_x_lambda_updates > i){
             cat("Forcing",force_x_lambda_updates,"lambda updates...\n")
           }else{
-            GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+            GERGM_Object <- store_console_output(GERGM_Object,
+                              "Parameter estimates have converged")
             GERGM_Object@theta_estimation_converged <- TRUE
             GERGM_Object@lambda_estimation_converged <- TRUE
             theta <- theta.new
@@ -287,9 +273,6 @@ Estimate_GERGM <- function(formula_object,
     theta$par <- rep(0, num.theta)
     num.nodes <- GERGM_Object@num_nodes
     if(MPLE.only == TRUE){
-      ###
-      statistics <- GERGM_Object@stats_to_use
-      alphas <- GERGM_Object@weights
       if(verbose){
         cat("Estimating Theta via MPLE... \n")
       }
@@ -297,12 +280,12 @@ Estimate_GERGM <- function(formula_object,
       if(GERGM_Object@is_correlation_network){
         theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
                                 statistics = GERGM_Object@stats_to_use,
-                                directed = directed,
+                                directed = GERGM_Object@directed_network,
                                 verbose = verbose)
       }else{
         theta.init <- mple(GERGM_Object@bounded.network,
                            statistics = GERGM_Object@stats_to_use,
-                           directed = directed,
+                           directed = GERGM_Object@directed_network,
                            verbose = verbose)
       }
 
@@ -315,21 +298,15 @@ Estimate_GERGM <- function(formula_object,
     }
 
     if(MPLE.only != TRUE){
-      ret_list <- MCMCMLE(num.draws = nsim,
-                           mc.num.iterations = mc.num.iterations,
-                           thin = thin,
-                           MCMC.burnin = MCMC.burnin,
-                           theta = theta$par,
-                           alpha = alpha,
-                           directed = directed,
-                           together = together,
-                           tolerance = tolerance,
-                           seed2 = seed,
-                           gain.factor = gain.factor,
-                           possible.stats = possible.stats,
-                           GERGM_Object = GERGM_Object,
-                           force_x_theta_updates = force_x_theta_updates,
-                           verbose = verbose)
+      ret_list <- MCMCMLE(
+        mc.num.iterations = mc.num.iterations,
+        theta = theta$par,
+        tolerance = tolerance,
+        seed2 = seed,
+        possible.stats = possible.stats,
+        GERGM_Object = GERGM_Object,
+        force_x_theta_updates = force_x_theta_updates,
+        verbose = verbose)
 
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]

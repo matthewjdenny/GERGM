@@ -27,7 +27,7 @@ log.l <- function(thetas,
                    GERGM_Object)[1, ]
   }else{
     dir <- TRUE
-    if(GERGM_Object@undirected_network){
+    if(!GERGM_Object@directed_network){
       dir <- FALSE
     }
     num.nodes <- nrow(GERGM_Object@bounded.network)

@@ -1,14 +1,7 @@
-MCMCMLE <- function(num.draws,
-                    mc.num.iterations,
+MCMCMLE <- function(mc.num.iterations,
                     tolerance,
-                    thin = 1,
-                    MCMC.burnin,
-                    theta = NULL,
-                    alpha = NULL,
-                    directed ,
-                    together ,
+                    theta,
                     seed2 ,
-                    gain.factor,
 					          possible.stats,
 					          GERGM_Object,
 					          force_x_theta_updates,
@@ -24,11 +17,11 @@ MCMCMLE <- function(num.draws,
   if(GERGM_Object@is_correlation_network){
     theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
                             statistics = GERGM_Object@stats_to_use,
-                            directed = directed)
+                            directed = GERGM_Object@directed_network )
   }else{
     theta.init <- mple(GERGM_Object@bounded.network,
                        statistics = GERGM_Object@stats_to_use,
-                       directed = directed)
+                       directed = GERGM_Object@directed_network )
   }
   if(verbose){
     cat("\nMPLE Thetas: ", theta.init$par, "\n")
@@ -43,12 +36,13 @@ MCMCMLE <- function(num.draws,
     init.statistics <- h2(GERGM_Object@network,
                           triples = triples,
                           statistics = rep(1, length(possible.stats)),
-                          alphas = alphas, together = together)
+                          alphas = alphas,
+                          together = GERGM_Object@downweight_statistics_together)
     obs.stats <- h2(GERGM_Object@network,
                     triples = triples,
                     statistics = GERGM_Object@stats_to_use,
                     alphas = alphas,
-                    together = together)
+                    together = GERGM_Object@downweight_statistics_together)
   }else{
     # initialize the network with the observed network
     initial_network <- GERGM_Object@bounded.network
@@ -56,12 +50,13 @@ MCMCMLE <- function(num.draws,
     init.statistics <- h2(GERGM_Object@bounded.network,
                           triples = triples,
                           statistics = rep(1, length(possible.stats)),
-                          alphas = alphas, together = together)
+                          alphas = alphas,
+                          together = GERGM_Object@downweight_statistics_together)
     obs.stats <- h2(GERGM_Object@bounded.network,
                     triples = triples,
                     statistics = GERGM_Object@stats_to_use,
                     alphas = alphas,
-                    together = together)
+                    together = GERGM_Object@downweight_statistics_together)
   }
 
 
@@ -76,12 +71,8 @@ MCMCMLE <- function(num.draws,
   theta$par <- theta.init$par
 
   # if we are going to do a fisher update to MPLE thetas
-  if(gain.factor > 0){
+  if(GERGM_Object@MPLE_gain_factor > 0){
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                                   nsim = ceiling(20/thin),
-                                   together = together,
-                                   thin = thin,
-                                   MCMC.burnin = MCMC.burnin,
                                    seed1 = seed2,
                                    possible.stats = possible.stats,
                                    verbose = verbose)
@@ -107,7 +98,8 @@ MCMCMLE <- function(num.draws,
     D.inv <- solve(Cov.est)
     #calculate
     theta <- list()
-    theta$par <- theta.init$par - gain.factor * D.inv %*% (z.bar - obs.stats)
+    theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
+      D.inv %*% (z.bar - obs.stats)
     if(verbose){
       cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
     }
@@ -119,10 +111,6 @@ MCMCMLE <- function(num.draws,
   for (i in 1:mc.num.iterations) {
     GERGM_Object@theta.par <- as.numeric(theta$par)
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                           nsim = num.draws,
-                           together = together,
-                           thin = thin,
-                           MCMC.burnin = MCMC.burnin,
                            seed1 = seed2,
                            possible.stats = possible.stats,
                            verbose = verbose)
@@ -154,7 +142,7 @@ MCMCMLE <- function(num.draws,
                        alpha = GERGM_Object@reduced_weights,
                        hsnet = hsn,
                        ltheta = as.numeric(theta$par),
-                       together = together,
+                       together = GERGM_Object@downweight_statistics_together,
                        possible.stats= possible.stats,
                        GERGM_Object = GERGM_Object,
                        method = "BFGS",
@@ -166,7 +154,7 @@ MCMCMLE <- function(num.draws,
                          alpha = GERGM_Object@reduced_weights,
                          hsnet = hsn,
                          ltheta = as.numeric(theta$par),
-                         together = together,
+                         together = GERGM_Object@downweight_statistics_together,
                          possible.stats= possible.stats,
                          GERGM_Object = GERGM_Object,
                          method = "BFGS",

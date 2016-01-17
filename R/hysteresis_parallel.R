@@ -2,11 +2,6 @@ hysteresis_parallel <- function(i,
                                 GERGM_Object,
                                 initial_density,
                                 possible_structural_terms,
-                                networks_to_simulate,
-                                simulation_method,
-                                burnin,
-                                thin,
-                                proposal_variance,
                                 seed,
                                 steps,
                                 observed_density,
@@ -18,10 +13,10 @@ hysteresis_parallel <- function(i,
   min_val <- current_theta - range * theta_se
   max_val <- current_theta + range * theta_se
   hysteresis_values <- seq(min_val, max_val, length.out = 2 * steps + 1)
-  last_network <- floor(networks_to_simulate*thin)
+  last_network <- floor(GERGM_Object@number_of_simulations*GERGM_Object@thin)
   network_densities <- matrix(0,
-                              nrow = ceiling(networks_to_simulate*thin),
-                              ncol = 2*length(hysteresis_values))
+    nrow = ceiling(GERGM_Object@number_of_simulations*GERGM_Object@thin),
+    ncol = 2*length(hysteresis_values))
   #GERGM_Object@bounded.network <- bounded_network
   n_nodes <- nrow(GERGM_Object@bounded.network)
   zero_net <- matrix(initial_density,n_nodes,n_nodes)
@@ -43,10 +38,6 @@ hysteresis_parallel <- function(i,
     # simulate networks
     GERGM_Object <- Simulate_GERGM(
       GERGM_Object,
-      nsim = networks_to_simulate,
-      MCMC.burnin = burnin,
-      thin = thin,
-      together = GERGM_Object@downweight_statistics_together,
       seed1 = seed,
       possible.stats = possible_structural_terms)
 
@@ -68,10 +59,6 @@ hysteresis_parallel <- function(i,
     # simulate networks
     GERGM_Object <- Simulate_GERGM(
       GERGM_Object,
-      nsim = networks_to_simulate,
-      MCMC.burnin = burnin,
-      thin = thin,
-      together = GERGM_Object@downweight_statistics_together,
       seed1 = seed,
       possible.stats = possible_structural_terms)
 
