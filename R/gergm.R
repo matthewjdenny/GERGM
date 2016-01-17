@@ -117,10 +117,15 @@
 #' running). Can be set to FALSE if the user wishes to see less output.
 #' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the
 #' user wishes to omit the model intercept term.
-#' @param adaptive_metropolis Logical indicating whether adaptive Metropolis
-#' Hastings should be used (automatic adjustment of the proposal_variance to hit
-#' a specified acceptance rate). Defaults to FALSE, but is often a very good
-#' idea.
+#' @param hyperparameter_optimization Logical indicating whether automatic
+#' hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
+#' the algorithm will automatically seek to find an optimal burnin and number of
+#' networks to simulate, and if using Metropolis Hasings, will attempt to select
+#' a proposal variance that leads to a acceptance rate within +-0.05 of
+#' target_accept_rate. Furthermore, if degeneracy is detected, the algorithm
+#' will attempt to adress the issue automatically. WARNING: This feature is
+#' experimental, and may greatly increase runtime. Please monitor console
+#' output!
 #' @param target_accept_rate The target Metropolis Hastings acceptance rate.
 #' Defaults to 0.25
 #' @param ... Optional arguments, currently unsupported.
@@ -173,7 +178,7 @@ gergm <- function(formula,
                   generate_plots = TRUE,
                   verbose = TRUE,
                   omit_intercept_term = FALSE,
-                  adaptive_metropolis = FALSE,
+                  hyperparameter_optimization = FALSE,
                   target_accept_rate = 0.25,
                   ...
                   ){
@@ -327,7 +332,7 @@ gergm <- function(formula,
 
 
   # set adaptive metropolis parameters
-  GERGM_Object@adaptive_metropolis <- adaptive_metropolis
+  GERGM_Object@hyperparameter_optimization <- hyperparameter_optimization
   GERGM_Object@target_accept_rate <- target_accept_rate
   GERGM_Object@proposal_variance <- proposal_variance
   GERGM_Object@estimation_method <- estimation_method

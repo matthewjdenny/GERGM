@@ -16,7 +16,7 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
   generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE,
-  adaptive_metropolis = FALSE, target_accept_rate = 0.25, ...)
+  hyperparameter_optimization = FALSE, target_accept_rate = 0.25, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -160,10 +160,15 @@ running). Can be set to FALSE if the user wishes to see less output.}
 \item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the
 user wishes to omit the model intercept term.}
 
-\item{adaptive_metropolis}{Logical indicating whether adaptive Metropolis
-Hastings should be used (automatic adjustment of the proposal_variance to hit
-a specified acceptance rate). Defaults to FALSE, but is often a very good
-idea.}
+\item{hyperparameter_optimization}{Logical indicating whether automatic
+hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
+the algorithm will automatically seek to find an optimal burnin and number of
+networks to simulate, and if using Metropolis Hasings, will attempt to select
+a proposal variance that leads to a acceptance rate within +-0.05 of
+target_accept_rate. Furthermore, if degeneracy is detected, the algorithm
+will attempt to adress the issue automatically. WARNING: This feature is
+experimental, and may greatly increase runtime. Please monitor console
+output!}
 
 \item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
 Defaults to 0.25}
