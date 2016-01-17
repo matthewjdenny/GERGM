@@ -46,7 +46,7 @@ MCMCMLE <- function(mc.num.iterations,
           possible.stats = possible.stats,
           verbose = verbose)
         cat("Proposal variance optimization complete! Proposal variance is:",
-            ERGM_Object@proposal_variance,"\n")
+            GERGM_Object@proposal_variance,"\n")
       }
     }
 
