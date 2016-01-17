@@ -259,12 +259,6 @@ gergm <- function(formula,
     stop("You have specified a transformation that is not recognized. Please
          specify one of: Cauchy, LogCauchy, Gaussian, or LogNormal")
   }
-  # convert logical to numeric indicator
-  if (downweight_statistics_together) {
-    downweight_statistics_together <- 1
-  }else{
-    downweight_statistics_together <- 0
-  }
 
   #make sure proposal variance is greater than zero
   if (proposal_variance <= 0.001) {
@@ -315,11 +309,8 @@ gergm <- function(formula,
   GERGM_Object@simulation_only <- FALSE
   GERGM_Object@transformation_type <- transformation_type
   GERGM_Object@downweight_statistics_together <- downweight_statistics_together
-  if (network_is_directed) {
-    GERGM_Object@undirected_network <- FALSE
-  }else{
-    GERGM_Object@undirected_network <- TRUE
-  }
+  GERGM_Object@directed_network <- network_is_directed
+
 
   if (!is.null(data_transformation)) {
     GERGM_Object@data_transformation <- data_transformation
@@ -332,37 +323,29 @@ gergm <- function(formula,
   }
 
   # if we are using a correlation network then set field to TRUE.
-  if (using_correlation_network) {
-    GERGM_Object@is_correlation_network <- TRUE
-  }else{
-    GERGM_Object@is_correlation_network <- FALSE
-  }
+  GERGM_Object@is_correlation_network <- using_correlation_network
+
 
   # set adaptive metropolis parameters
   GERGM_Object@adaptive_metropolis <- adaptive_metropolis
   GERGM_Object@target_accept_rate <- target_accept_rate
   GERGM_Object@proposal_variance <- proposal_variance
   GERGM_Object@estimation_method <- estimation_method
+  GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
+  GERGM_Object@thin <- thin
+  GERGM_Object@burnin <- MCMC_burnin
+  GERGM_Object@MPLE_gain_factor <- MPLE_gain_factor
 
   #2. Estimate GERGM
   GERGM_Object <- Estimate_GERGM(formula,
-                                 directed = network_is_directed,
                                  MPLE.only = use_MPLE_only,
-                                 transform.data = data_transformation,
                                  max.num.iterations = maximum_number_of_lambda_updates,
                                  mc.num.iterations = maximum_number_of_theta_updates,
-                                 nsim = number_of_networks_to_simulate,
-                                 thin = thin,
-                                 exponential_weights = GERGM_Object@weights,
-                                 together = downweight_statistics_together,
-                                 MCMC.burnin = MCMC_burnin,
                                  seed = seed,
                                  tolerance = convergence_tolerance,
-                                 gain.factor = MPLE_gain_factor,
                                  possible.stats = possible_structural_terms,
                                  GERGM_Object = GERGM_Object,
                                  force_x_theta_updates = force_x_theta_updates,
-                                 transformation_type = transformation_type,
                                  verbose = verbose,
                                  force_x_lambda_updates = force_x_lambda_updates)
 
@@ -378,10 +361,6 @@ gergm <- function(formula,
 
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                                 nsim = number_of_networks_to_simulate,
-                                 MCMC.burnin = MCMC_burnin,
-                                 thin = thin,
-                                 together = downweight_statistics_together,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)
 
