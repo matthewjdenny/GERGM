@@ -44,10 +44,8 @@ hysteresis_parallel <- function(i,
     GERGM_Object <- Simulate_GERGM(
       GERGM_Object,
       nsim = networks_to_simulate,
-      method = simulation_method,
       MCMC.burnin = burnin,
       thin = thin,
-      shape.parameter = proposal_variance,
       together = GERGM_Object@downweight_statistics_together,
       seed1 = seed,
       possible.stats = possible_structural_terms)
@@ -62,7 +60,7 @@ hysteresis_parallel <- function(i,
     column_counter <- column_counter + 1
   }
   # now back down
-  for(j in length(hysteresis_values):1){
+  for (j in length(hysteresis_values):1) {
 
     # set the current value
     GERGM_Object@theta.par[i] <- hysteresis_values[j]
@@ -71,10 +69,8 @@ hysteresis_parallel <- function(i,
     GERGM_Object <- Simulate_GERGM(
       GERGM_Object,
       nsim = networks_to_simulate,
-      method = simulation_method,
       MCMC.burnin = burnin,
       thin = thin,
-      shape.parameter = proposal_variance,
       together = GERGM_Object@downweight_statistics_together,
       seed1 = seed,
       possible.stats = possible_structural_terms)

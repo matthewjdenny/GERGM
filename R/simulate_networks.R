@@ -233,7 +233,6 @@ simulate_networks <- function(formula,
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                  nsim = number_of_networks_to_simulate,
-                                 method = simulation_method,
                                  MCMC.burnin = MCMC_burnin,
                                  thin = thin,
                                  together = downweight_statistics_together,

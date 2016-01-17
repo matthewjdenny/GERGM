@@ -105,6 +105,8 @@ hysteresis <- function(GERGM_Object,
 
 
   simulation_method <- simulation_method[1]
+  GERGM_Object@proposal_variance <- proposal_variance
+  GERGM_Object@estimation_method <- simulation_method
 
   # figure out how many statistics we need to simulate values for
   num_network_terms <- length(GERGM_Object@theta.par)
@@ -142,10 +144,8 @@ hysteresis <- function(GERGM_Object,
                                   initial_density = initial_density,
                                   possible_structural_terms = possible_structural_terms,
                                   networks_to_simulate = networks_to_simulate,
-                                  simulation_method = simulation_method,
                                   burnin = burnin,
                                   thin = thin,
-                                  proposal_variance = proposal_variance,
                                   seed = seed,
                                   steps = steps,
                                   observed_density = observed_density,
@@ -202,10 +202,8 @@ hysteresis <- function(GERGM_Object,
         GERGM_Object <- Simulate_GERGM(
           GERGM_Object,
           nsim = networks_to_simulate,
-          method = simulation_method,
           MCMC.burnin = burnin,
           thin = thin,
-          shape.parameter = proposal_variance,
           together = GERGM_Object@downweight_statistics_together,
           seed1 = seed,
           possible.stats = possible_structural_terms)
@@ -229,10 +227,8 @@ hysteresis <- function(GERGM_Object,
         GERGM_Object <- Simulate_GERGM(
           GERGM_Object,
           nsim = networks_to_simulate,
-          method = simulation_method,
           MCMC.burnin = burnin,
           thin = thin,
-          shape.parameter = proposal_variance,
           together = GERGM_Object@downweight_statistics_together,
           seed1 = seed,
           possible.stats = possible_structural_terms)
