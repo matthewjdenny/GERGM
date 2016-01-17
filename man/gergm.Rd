@@ -15,7 +15,8 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
-  generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE, ...)
+  generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE,
+  adaptive_metropolis = FALSE, target_accept_rate = 0.25, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -158,6 +159,14 @@ running). Can be set to FALSE if the user wishes to see less output.}
 
 \item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the
 user wishes to omit the model intercept term.}
+
+\item{adaptive_metropolis}{Logical indicating whether adaptive Metropolis
+Hastings should be used (automatic adjustment of the proposal_variance to hit
+a specified acceptance rate). Defaults to FALSE, but is often a very good
+idea.}
+
+\item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
+Defaults to 0.25}
 
 \item{...}{Optional arguments, currently unsupported.}
 }

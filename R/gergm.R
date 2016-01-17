@@ -117,6 +117,12 @@
 #' running). Can be set to FALSE if the user wishes to see less output.
 #' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the
 #' user wishes to omit the model intercept term.
+#' @param adaptive_metropolis Logical indicating whether adaptive Metropolis
+#' Hastings should be used (automatic adjustment of the proposal_variance to hit
+#' a specified acceptance rate). Defaults to FALSE, but is often a very good
+#' idea.
+#' @param target_accept_rate The target Metropolis Hastings acceptance rate.
+#' Defaults to 0.25
 #' @param ... Optional arguments, currently unsupported.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -167,6 +173,8 @@ gergm <- function(formula,
                   generate_plots = TRUE,
                   verbose = TRUE,
                   omit_intercept_term = FALSE,
+                  adaptive_metropolis = FALSE,
+                  target_accept_rate = 0.25,
                   ...
                   ){
 
@@ -329,6 +337,10 @@ gergm <- function(formula,
   }else{
     GERGM_Object@is_correlation_network <- FALSE
   }
+
+  # set adaptive metropolis parameters
+  GERGM_Object@adaptive_metropolis = adaptive_metropolis
+  GERGM_Object@target_accept_rate = target_accept_rate
 
   #2. Estimate GERGM
   GERGM_Object <- Estimate_GERGM(formula,

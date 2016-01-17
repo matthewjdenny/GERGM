@@ -33,7 +33,9 @@ setClass(Class = "gergm",
            BZ = "matrix",
            BZstdev = "numeric",
            transformation_type = "character",
-           downweight_statistics_together = "numeric"
+           downweight_statistics_together = "numeric",
+           adaptive_metropolis = "logical",
+           target_accept_rate = "numeric"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
