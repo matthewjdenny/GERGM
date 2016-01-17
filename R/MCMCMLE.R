@@ -194,11 +194,15 @@ MCMCMLE <- function(mc.num.iterations,
 
     # check to see if we had a zero percent accept rate if using MH, and if so,
     # then adjust proposal variance and try again -- do not signal convergence.
-    allow_convergence = TRUE
+    allow_convergence <- TRUE
     if (GERGM_Object@estimation_method == "Metropolis") {
       if (GERGM_Object@MCMC_output$Acceptance.rate == 0){
-        cat("Acceptance rate was zero, decreasing proposal variance...\n")
-        allow_convergence = FALSE
+        old <- GERGM_Object@proposal_variance
+        new <- old/2
+        cat("Acceptance rate was zero, decreasing proposal variance from",old,
+            "to",new,"and simulating a new set of networks...\n")
+        GERGM_Object@proposal_variance <- new
+        allow_convergence <- FALSE
       }
     }
     if (allow_convergence) {
@@ -208,19 +212,24 @@ MCMCMLE <- function(mc.num.iterations,
           if(verbose){
             message("Parameter estimates have converged")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+          GERGM_Object <- store_console_output(GERGM_Object,
+                            "Parameter estimates have converged")
           GERGM_Object@theta_estimation_converged <- TRUE
           return(list(theta.new,GERGM_Object))
         }else{
           if(verbose){
-            message(paste("Forcing",force_x_theta_updates,"iterations of theta updates..."),sep = " ")
+            message(paste("Forcing",force_x_theta_updates,
+                          "iterations of theta updates..."),sep = " ")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,paste("Forcing",force_x_theta_updates,"iterations of theta updates..."))
+          GERGM_Object <- store_console_output(GERGM_Object,paste("Forcing",
+                            force_x_theta_updates,
+                            "iterations of theta updates..."))
         }
       }
+      # only updat parameter estimates if we had an acceptance rate greater than zero
+      theta <- theta.new
+      GERGM_Object@theta.par <- as.numeric(theta$par)
     }
-    theta <- theta.new
-    GERGM_Object@theta.par <- as.numeric(theta$par)
   }
   return(list(theta.new,GERGM_Object))
 }
