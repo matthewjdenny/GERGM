@@ -35,8 +35,21 @@ MCMCMLE <- function(mc.num.iterations,
       init.statistics <- MPLE_Results$init.statistics
       FIX_DEGENERACY <- FALSE
     }
-
     GERGM_Object@theta.par <- as.numeric(theta$par)
+
+    # now optimize the proposal variance if we are using Metropolis Hasings
+    if (GERGM_Object@hyperparameter_optimization){
+      if (GERGM_Object@estimation_method == "Metropolis") {
+        GERGM_Object@proposal_variance <- Optimize_Proposal_Variance(
+          GERGM_Object = GERGM_Object,
+          seed2 = seed2,
+          possible.stats = possible.stats,
+          verbose = verbose)
+        cat("Proposal variance optimization complete! Proposal variance is:",
+            ERGM_Object@proposal_variance,"\n")
+      }
+    }
+
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                            seed1 = seed2,
                            possible.stats = possible.stats,
