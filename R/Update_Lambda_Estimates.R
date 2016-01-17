@@ -7,7 +7,7 @@ Update_Lambda_Estimates <- function(i,
                                     GERGM_Object){
   # if we are usinga correlation network, do beta regression
   if(GERGM_Object@is_correlation_network){
-
+    stop("Currently not implemented! Set omit_intercept_term = TRUE and include an edges term in specification...")
   }else{
     #do our normal t regression
     cat("Updating Estimates -- Iteration:", i," \n")
