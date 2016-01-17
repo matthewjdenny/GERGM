@@ -211,23 +211,33 @@ MCMCMLE <- function(num.draws,
       return(list(theta.new,GERGM_Object))
     }
 
-    if (sum(count) == 0){
-      #conditional to check and see if we are requiring a second update
-      if(i >= force_x_theta_updates){
-        if(verbose){
-          message("Parameter estimates have converged")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
-        GERGM_Object@theta_estimation_converged <- TRUE
-        return(list(theta.new,GERGM_Object))
-      }else{
-        if(verbose){
-          message(paste("Forcing",force_x_theta_updates,"iterations of theta updates..."),sep = " ")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("Forcing",force_x_theta_updates,"iterations of theta updates..."))
+    # check to see if we had a zero percent accept rate if using MH, and if so,
+    # then adjust proposal variance and try again -- do not signal convergence.
+    allow_convergence = TRUE
+    if (method == "Metropolis") {
+      if (GERGM_Object@MCMC_output$Acceptance.rate == 0){
+        cat("Acceptance rate was zero, decreasing proposal variance...\n")
+        allow_convergence = FALSE
       }
     }
-    #cat("\n", "Theta Estimates", theta.new$par, "\n",sep = "")
+    if (allow_convergence) {
+      if (sum(count) == 0){
+        #conditional to check and see if we are requiring more updates
+        if(i >= force_x_theta_updates){
+          if(verbose){
+            message("Parameter estimates have converged")
+          }
+          GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+          GERGM_Object@theta_estimation_converged <- TRUE
+          return(list(theta.new,GERGM_Object))
+        }else{
+          if(verbose){
+            message(paste("Forcing",force_x_theta_updates,"iterations of theta updates..."),sep = " ")
+          }
+          GERGM_Object <- store_console_output(GERGM_Object,paste("Forcing",force_x_theta_updates,"iterations of theta updates..."))
+        }
+      }
+    }
     theta <- theta.new
     GERGM_Object@theta.par <- as.numeric(theta$par)
   }
