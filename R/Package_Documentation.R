@@ -16,7 +16,12 @@
 #' Estimate_Plot(), Trace_Plot() and hysteresis() functions can be accessed
 #' directly by the user.  You may also plot the initial network using
 #' plot_network() and simulate networks for given structural parameters using
-#' the simulate_networks() function.
+#' the simulate_networks() function. Experimental support for specifying
+#' multiple GERGMs in parallel (allowing for different equations, dependent
+#' networks and covariates) is available in the parallel_gergm() function.
+#' An experimental feature which seeks to automatically optimize model
+#' hyperparameters for best fit and to attempt to deal with degeneracy issues
+#' can be turned on be specifying hyperparameter_optimization = TRUE.
 #'
 #' @docType package
 #' @name GERGM
