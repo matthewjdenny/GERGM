@@ -1,6 +1,8 @@
 test_that("Parallel GERGMs", {
   skip_on_cran()
 
+  skip("Tests should not call parallel processes")
+
   set.seed(12345)
   net <- matrix(runif(100,0,1),10,10)
   colnames(net) <- rownames(net) <- letters[1:10]
