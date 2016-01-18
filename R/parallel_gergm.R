@@ -1,10 +1,11 @@
 #' @title A Function to estimate a number of GERGMs in parallel, each with its own equation.
 #' @description Allows the user to run multiple specifications at once in
 #' parallel. All varaibles (excluding formula_list, observed_network_list,
-#' covariate_data_list, network_data_list and cores) be be either specified as a
-#' single value or as a vector of values equal to the length of formula_list, if
-#' the user wishes to use different values for each specification. Currently
-#' only functional for Unix based operating systems (OSX, Linux, CentOS, etc.)
+#' covariate_data_list, network_data_list, cores and generate_plots) be be
+#' either specified as a single value or as a vector of values equal to the
+#' length of formula_list, if the user wishes to use different values for each
+#' specification. Currently only functional for Unix based operating systems
+#' (OSX, Linux, CentOS, etc.)
 #'
 #' @param formula_list A list of formula objects that specifies the relationship
 #' between statistics and the observed network for each gergm. See the gergm()
@@ -103,7 +104,9 @@
 #' be a character string or NULL. For example, if "Test" is supplied as the
 #' output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estim
 #' ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
-#' "Test_Trace_Plot.pdf"
+#' "Test_Trace_Plot.pdf". Must be the same length as the number of specifications
+#' or specification_i will be automatically used to distinguich between
+#' specifications.
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or
 #' parameter plots are generated.
 #' @param verbose Defaults to TRUE (providing lots of output while model is
@@ -131,8 +134,8 @@ parallel_gergm <- function(
   network_data_list = NULL,
   cores = 1,
   normalization_type = c("log","division"),
-  network_is_directed = c(TRUE, FALSE),
-  use_MPLE_only = c(FALSE, TRUE),
+  network_is_directed = TRUE,
+  use_MPLE_only = FALSE,
   transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
   estimation_method = c("Gibbs", "Metropolis"),
   maximum_number_of_lambda_updates = 10,
@@ -158,19 +161,59 @@ parallel_gergm <- function(
   ...
 ){
 
-  # get the number of specifications
-  num_specifications <- length(formula_list)
+  # get the number of specifications as the max of the lengths of these lists.
+  # then tell the user how many specifications they have
+  l1 <- 1
+  if (class(formula_list) == "list") {
+    l1 <- length(formula_list)
+  }
+  l2 <- 1
+  if (class(observed_network_list) == "list") {
+    l2 <- length(observed_network_list)
+  }
+  l3 <- 1
+  if (class(covariate_data_list) == "list") {
+    l3 <- length(covariate_data_list)
+  }
+  l4 <- 1
+  if (class(network_data_list) == "list") {
+    l4 <- length(network_data_list)
+  }
+  num_specifications <- max(l1, l2, l3, l4)
+  cat("Estimating",num_specifications,"specifications on", cores,"cores...\n")
 
-  if(length(formula_list) == 1){
+  if (num_specifications == 1) {
     stop("You have only included one specification, use the gergm() function.")
   }
+
+  if (class(generate_plots) == "logical" & length(generate_plots) == 1) {
+    # we are OK
+  } else {
+    stop("generate_plots must be either TRUE or FALSE, and of length one.")
+  }
+
+
 
   vec <- 1:num_specifications
   cat("Running",num_specifications,"GERGM specifications on",cores,
       "cores. This may take a while...\n")
-  GERGM_Results_List <- parallel::mclapply(X = vec,
-    FUN = hysteresis_parallel,
-    mc.cores = cores,
+
+  # intitalizes snowfall session
+  snowfall::sfInit(parallel = TRUE, cpus = cores)
+
+  #check to see if we are running in parallel
+  if(snowfall::sfParallel())
+    cat( "Running in parallel mode on", snowfall::sfCpus(), "nodes.\n" )
+  else
+    cat( "Running in sequential mode.\n" )
+
+  #export all packages and libraries currently loaded in workspace
+  for (i in 1:length(.packages())){
+    eval(call("sfLibrary", (.packages()[i]), character.only = TRUE))
+  }
+
+  GERGM_Results_List <- snowfall::sfClusterApplyLB(x = vec,
+    fun = single_gergm_specification,
     num_specifications = num_specifications,
     formula_list = formula_list,
     observed_network_list = observed_network_list,
@@ -194,14 +237,97 @@ parallel_gergm <- function(
     acceptable_fit_p_value_threshold = acceptable_fit_p_value_threshold,
     force_x_theta_updates = force_x_theta_updates,
     force_x_lambda_updates = force_x_lambda_updates,
-    output_directory = output_directory,
-    output_name = output_name,
-    generate_plots = generate_plots,
+    output_directory = NULL,
+    output_name = NULL,
+    generate_plots = FALSE,
     verbose = verbose,
     omit_intercept_term = omit_intercept_term,
     hyperparameter_optimization = hyperparameter_optimization,
     target_accept_rate = target_accept_rate,
     ... = ...)
+
+  # stop the cluster when we are done -- this is very important and must be
+  # done manually every time
+  snowfall::sfStop()
+
+  # make plots if requested by user:
+  if (generate_plots) {
+    for(i in 1:num_specifications) {
+      cat("Generating diagnostic plots for specification:",i,"\n")
+
+      if (!is.null(output_directory)) {
+        if (length(output_directory) == num_specifications) {
+          if (class(output_directory) == "list") {
+            normalization_type <- output_directory[[i]]
+          } else if (class(output_directory) == "character") {
+            output_directory <- output_directory[i]
+          } else {
+            output_directory <- getwd()
+          }
+        } else if (length(output_directory) != 1) {
+          cat("You provided",length(output_directory),
+              "output directories, which is not of length 1 or",
+              num_specifications,"setting output directory to:",getwd(),"\n\n" )
+          output_directory <- getwd()
+        }
+      }
+
+      if (!is.null(output_name)) {
+        if (length(output_name) == num_specifications) {
+          if (class(output_name) == "list") {
+            normalization_type <- output_name[[i]]
+          } else if (class(output_name) == "character") {
+            output_name <- output_name[i]
+          } else {
+            output_name <- paste("specification_",i,sep = "")
+          }
+        } else {
+          cat("You provided",length(output_directory),
+              "output directories, which is not of length",
+              num_specifications,
+              "setting output name for current specification to:",
+              paste("specification_",i,sep = ""),"\n\n" )
+          output_name <- paste("specification_",i,sep = "")
+        }
+      }
+
+      GERGM_Object <- GERGM_Results_List[[i]]
+      # only generate output if output_name is not NULL
+      if (!is.null(output_name)) {
+        if (is.null(output_directory)) {
+          output_directory <- getwd()
+        }
+        current_directory <- getwd()
+        setwd(output_directory)
+
+        pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
+        GOF(GERGM_Object)
+        dev.off()
+
+        pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
+        Estimate_Plot(GERGM_Object)
+        dev.off()
+
+        pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""), height = 4, width = 6)
+        Trace_Plot(GERGM_Object)
+        dev.off()
+
+        save(GERGM_Object, file = paste(output_name,"_GERGM_Object.Rdata",sep = ""))
+
+        write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
+
+        setwd(current_directory)
+      } else {
+        # if we are not saving everything to a directory then just print stuff to
+        # the graphics device
+        GOF(GERGM_Object)
+        Sys.sleep(2)
+        Estimate_Plot(GERGM_Object)
+        Sys.sleep(2)
+        Trace_Plot(GERGM_Object)
+      }
+    }
+  }
 
 
   return(GERGM_Results_List)

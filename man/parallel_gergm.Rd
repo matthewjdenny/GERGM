@@ -6,10 +6,10 @@
 \usage{
 parallel_gergm(formula_list, observed_network_list,
   covariate_data_list = NULL, network_data_list = NULL, cores = 1,
-  normalization_type = c("log", "division"), network_is_directed = c(TRUE,
-  FALSE), use_MPLE_only = c(FALSE, TRUE), transformation_type = c("Cauchy",
-  "LogCauchy", "Gaussian", "LogNormal"), estimation_method = c("Gibbs",
-  "Metropolis"), maximum_number_of_lambda_updates = 10,
+  normalization_type = c("log", "division"), network_is_directed = TRUE,
+  use_MPLE_only = FALSE, transformation_type = c("Cauchy", "LogCauchy",
+  "Gaussian", "LogNormal"), estimation_method = c("Gibbs", "Metropolis"),
+  maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 10,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
@@ -141,7 +141,9 @@ output directly to .pdf files, it will be printed to the console instead. Must
 be a character string or NULL. For example, if "Test" is supplied as the
 output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estim
 ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
-"Test_Trace_Plot.pdf"}
+"Test_Trace_Plot.pdf". Must be the same length as the number of specifications
+or specification_i will be automatically used to distinguich between
+specifications.}
 
 \item{generate_plots}{Defaults to TRUE, if FALSE, then no diagnostic or
 parameter plots are generated.}
@@ -173,9 +175,10 @@ A list of gergm objects for each model specified.
 \description{
 Allows the user to run multiple specifications at once in
 parallel. All varaibles (excluding formula_list, observed_network_list,
-covariate_data_list, network_data_list and cores) be be either specified as a
-single value or as a vector of values equal to the length of formula_list, if
-the user wishes to use different values for each specification. Currently
-only functional for Unix based operating systems (OSX, Linux, CentOS, etc.)
+covariate_data_list, network_data_list, cores and generate_plots) be be
+either specified as a single value or as a vector of values equal to the
+length of formula_list, if the user wishes to use different values for each
+specification. Currently only functional for Unix based operating systems
+(OSX, Linux, CentOS, etc.)
 }
 
