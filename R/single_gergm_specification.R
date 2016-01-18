@@ -35,7 +35,23 @@ single_gergm_specification <- function(i,
   # 0. go through and assign all variables before calling GERGM
 
   # get the formula
-  formula <- as.formula(formula_list[[i]])
+  if (length(formula_list) == num_specifications) {
+    formula <- as.formula(formula_list[[i]])
+  } else if (length(formula_list) == 1) {
+    if (class(formula_list) == "list") {
+      formula <- as.formula(formula_list[[1]])
+    } else if (class(formula_list) == "character" |
+               class(formula_list) == "formula") {
+      formula <- as.formula(formula_list)
+    } else {
+      stop("formula_list must be provided as either a list of formulas, a string,
+           or a formula")
+    }
+  } else {
+    stop(paste("formula_list must either be of length 1 or of length",
+               num_specifications))
+  }
+
 
   # figure out what the user called the dependent network variable and assign the
   # matrix in this list to that value so things work.
@@ -43,16 +59,84 @@ single_gergm_specification <- function(i,
     stop("'formula' must be a formula object.")
   }
   lhs <- deparse(formula[[2]])
-  assign(lhs,observed_network_list[[i]])
+
+  if(is.null(observed_network_list)){
+    net <- dynGet(as.character(lhs),
+                  ifnotfound = get(as.character(lhs)))
+    assign(lhs,net)
+  }else{
+    if (class(observed_network_list) == "matrix") {
+      assign(lhs,observed_network_list)
+    } else {
+      if (length(observed_network_list) == num_specifications) {
+        assign(lhs,observed_network_list[[i]])
+      } else if (length(observed_network_list) == 1) {
+        if (class(observed_network_list) == "list") {
+          assign(lhs,observed_network_list[[1]])
+        } else {
+          stop("observed_network_list must be provided as either a list of
+             matrices or a single numeric matrix")
+        }
+      } else {
+        stop(paste("observed_network_list must either be of length 1 or of length",
+                   num_specifications))
+      }
+    }
+  }
 
   # get the covariate data frame
-  covariate_data <- covariate_data_list[[i]]
+  if (is.null(covariate_data_list)) {
+    covariate_data <- NULL
+  } else {
+    if (class(covariate_data_list) == "data.frame") {
+      covariate_data <- covariate_data_list
+    } else {
+      if (length(covariate_data_list) == num_specifications) {
+        covariate_data <- covariate_data_list[[i]]
+      } else if (length(covariate_data_list) == 1) {
+        if (class(covariate_data_list) == "list") {
+          covariate_data <- covariate_data_list[[1]]
+        } else {
+          stop("covariate_data_list must be provided as either a list of
+               data.frames or a single data.frame")
+        }
+        } else {
+          stop(paste("covariate_data_list must either be of length 1 or of length",
+                     num_specifications))
+      }
+    }
+  }
 
-  # assign all network covariate data objects
-  if(class(network_data_list[[i]])  == "list"){
-    temp <- network_data_list[[i]]
-    for(j in 1:length(temp)){
-      assign(names(temp)[j],temp[[j]])
+  if (!is.null(network_data_list)) {
+    # assign all network covariate data objects
+    if (length(network_data_list) == num_specifications) {
+      temp <- network_data_list[[i]]
+      for(j in 1:length(temp)){
+        assign(names(temp)[j],temp[[j]])
+      }
+    } else if (length(network_data_list) == 1) {
+      if (class(network_data_list) == "list" &
+          class(network_data_list[[1]]) == "matrix") {
+        for(j in 1:length(network_data_list)){
+          assign(names(network_data_list)[j],network_data_list[[j]])
+        }
+      } else if (class(network_data_list) == "list") {
+        temp <- network_data_list[[1]]
+        for(j in 1:length(temp)){
+          assign(names(temp)[j],temp[[j]])
+        }
+      } else if (class(network_data_list) == "symbol") {
+        net <- dynGet(as.character(network_data_list),
+                      ifnotfound = get(as.character(network_data_list)))
+        assign(as.character(network_data_list),net)
+      } else {
+        stop("network_data_list must be provided as either a list of
+             lists or a single matrix object")
+      }
+    } else {
+      for(j in 1:length(temp)){
+        assign(names(network_data_list)[j],network_data_list[[j]])
+      }
     }
   }
 
@@ -68,8 +152,8 @@ single_gergm_specification <- function(i,
     } else {
       stop("normalization_type must either be a character vector or list of strings.")
     }
-  } else if (length(normalization_type) != 1) {
-    stop("normalization_type must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+  } else if (length(normalization_type) > 2) {
+    stop("normalization_type must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(network_is_directed) == num_specifications) {
@@ -81,7 +165,7 @@ single_gergm_specification <- function(i,
       stop("network_is_directed must either be a logical vector or list of logicals.")
     }
   } else if (length(network_is_directed) != 1) {
-    stop("network_is_directed must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("network_is_directed must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(use_MPLE_only) == num_specifications) {
@@ -93,7 +177,7 @@ single_gergm_specification <- function(i,
       stop("use_MPLE_only must either be a logical vector or list of logicals.")
     }
   } else if (length(use_MPLE_only) != 1) {
-    stop("use_MPLE_only must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("use_MPLE_only must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(transformation_type) == num_specifications) {
@@ -104,8 +188,8 @@ single_gergm_specification <- function(i,
     } else {
       stop("transformation_type must either be a character vector or list of strings.")
     }
-  } else if (length(transformation_type) != 1) {
-    stop("transformation_type must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+  } else if (length(transformation_type) > 4) {
+    stop("transformation_type must either be the same length as the number of specifications or of length four, in which case it will be the same across all specifications.")
   }
 
   if (length(estimation_method) == num_specifications) {
@@ -116,8 +200,9 @@ single_gergm_specification <- function(i,
     } else {
       stop("estimation_method must either be a character vector or list of strings.")
     }
-  } else if (length(estimation_method) != 1) {
-    stop("estimation_method must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+  } else if (length(estimation_method) > 2) {
+    # pass through default
+    stop("estimation_method must either be the same length as the number of specifications or of length two, in which case it will be the same across all specifications.")
   }
 
   if (length(maximum_number_of_lambda_updates) == num_specifications) {
@@ -129,7 +214,7 @@ single_gergm_specification <- function(i,
       stop("maximum_number_of_lambda_updates must either be a numeric vector or list of numbers.")
     }
   } else if (length(maximum_number_of_lambda_updates) != 1) {
-    stop("maximum_number_of_lambda_updates must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("maximum_number_of_lambda_updates must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(maximum_number_of_theta_updates) == num_specifications) {
@@ -141,7 +226,7 @@ single_gergm_specification <- function(i,
       stop("maximum_number_of_theta_updates must either be a numeric vector or list of numbers.")
     }
   } else if (length(maximum_number_of_theta_updates) != 1) {
-    stop("maximum_number_of_theta_updates must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("maximum_number_of_theta_updates must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(number_of_networks_to_simulate) == num_specifications) {
@@ -153,7 +238,7 @@ single_gergm_specification <- function(i,
       stop("number_of_networks_to_simulate must either be a numeric vector or list of numbers.")
     }
   } else if (length(number_of_networks_to_simulate) != 1) {
-    stop("number_of_networks_to_simulate must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("number_of_networks_to_simulate must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(thin) == num_specifications) {
@@ -165,7 +250,7 @@ single_gergm_specification <- function(i,
       stop("thin must either be a numeric vector or list of numbers.")
     }
   } else if (length(thin) != 1) {
-    stop("thin must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("thin must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(proposal_variance) == num_specifications) {
@@ -177,7 +262,7 @@ single_gergm_specification <- function(i,
       stop("proposal_variance must either be a numeric vector or list of numbers.")
     }
   } else if (length(proposal_variance) != 1) {
-    stop("proposal_variance must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("proposal_variance must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(downweight_statistics_together) == num_specifications) {
@@ -189,7 +274,7 @@ single_gergm_specification <- function(i,
       stop("downweight_statistics_together must either be a logical vector or list of logicals.")
     }
   } else if (length(downweight_statistics_together) != 1) {
-    stop("downweight_statistics_together must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("downweight_statistics_together must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(MCMC_burnin) == num_specifications) {
@@ -201,7 +286,7 @@ single_gergm_specification <- function(i,
       stop("MCMC_burnin must either be a numeric vector or list of numbers.")
     }
   } else if (length(MCMC_burnin) != 1) {
-    stop("MCMC_burnin must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("MCMC_burnin must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(seed) == num_specifications) {
@@ -213,7 +298,7 @@ single_gergm_specification <- function(i,
       stop("seed must either be a numeric vector or list of numbers.")
     }
   } else if (length(seed) != 1) {
-    stop("seed must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("seed must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(convergence_tolerance) == num_specifications) {
@@ -225,7 +310,7 @@ single_gergm_specification <- function(i,
       stop("convergence_tolerance must either be a numeric vector or list of numbers.")
     }
   } else if (length(convergence_tolerance) != 1) {
-    stop("convergence_tolerance must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("convergence_tolerance must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(MPLE_gain_factor) == num_specifications) {
@@ -237,7 +322,7 @@ single_gergm_specification <- function(i,
       stop("MPLE_gain_factor must either be a numeric vector or list of numbers.")
     }
   } else if (length(MPLE_gain_factor) != 1) {
-    stop("MPLE_gain_factor must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("MPLE_gain_factor must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(acceptable_fit_p_value_threshold) == num_specifications) {
@@ -249,7 +334,7 @@ single_gergm_specification <- function(i,
       stop("acceptable_fit_p_value_threshold must either be a numeric vector or list of numbers.")
     }
   } else if (length(acceptable_fit_p_value_threshold) != 1) {
-    stop("acceptable_fit_p_value_threshold must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("acceptable_fit_p_value_threshold must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(force_x_theta_updates) == num_specifications) {
@@ -261,7 +346,7 @@ single_gergm_specification <- function(i,
       stop("force_x_theta_updates must either be a numeric vector or list of numbers.")
     }
   } else if (length(force_x_theta_updates) != 1) {
-    stop("force_x_theta_updates must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("force_x_theta_updates must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(force_x_lambda_updates) == num_specifications) {
@@ -273,43 +358,7 @@ single_gergm_specification <- function(i,
       stop("force_x_lambda_updates must either be a numeric vector or list of numbers.")
     }
   } else if (length(force_x_lambda_updates) != 1) {
-    stop("force_x_lambda_updates must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
-  }
-
-  if (length(output_directory) == num_specifications) {
-    if (class(output_directory) == "list") {
-      normalization_type <- output_directory[[i]]
-    } else if (class(output_directory) == "character") {
-      output_directory <- output_directory[i]
-    } else {
-      stop("output_directory must either be a character vector or list of strings.")
-    }
-  } else if (length(output_directory) != 1) {
-    stop("output_directory must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
-  }
-
-  if (length(output_name) == num_specifications) {
-    if (class(output_name) == "list") {
-      normalization_type <- output_name[[i]]
-    } else if (class(output_name) == "character") {
-      output_name <- output_name[i]
-    } else {
-      stop("output_name must either be a character vector or list of strings.")
-    }
-  } else if (length(output_name) != 1) {
-    stop("output_name must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
-  }
-
-  if (length(generate_plots) == num_specifications) {
-    if (class(generate_plots) == "list") {
-      normalization_type <- generate_plots[[i]]
-    } else if (class(generate_plots) == "logical") {
-      generate_plots <- generate_plots[i]
-    } else {
-      stop("generate_plots must either be a logical vector or list of logicals.")
-    }
-  } else if (length(generate_plots) != 1) {
-    stop("generate_plots must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("force_x_lambda_updates must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(verbose) == num_specifications) {
@@ -321,7 +370,7 @@ single_gergm_specification <- function(i,
       stop("verbose must either be a logical vector or list of logicals.")
     }
   } else if (length(verbose) != 1) {
-    stop("verbose must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("verbose must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(omit_intercept_term) == num_specifications) {
@@ -333,7 +382,7 @@ single_gergm_specification <- function(i,
       stop("omit_intercept_term must either be a logical vector or list of logicals.")
     }
   } else if (length(omit_intercept_term) != 1) {
-    stop("omit_intercept_term must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("omit_intercept_term must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(hyperparameter_optimization) == num_specifications) {
@@ -345,7 +394,7 @@ single_gergm_specification <- function(i,
       stop("hyperparameter_optimization must either be a logical vector or list of logicals.")
     }
   } else if (length(hyperparameter_optimization) != 1) {
-    stop("hyperparameter_optimization must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("hyperparameter_optimization must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
   if (length(target_accept_rate) == num_specifications) {
@@ -357,10 +406,8 @@ single_gergm_specification <- function(i,
       stop("target_accept_rate must either be a numeric vector or list of numbers.")
     }
   } else if (length(target_accept_rate) != 1) {
-    stop("target_accept_rate must eithe be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
+    stop("target_accept_rate must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
-
-
 
   Result <- gergm(formula = formula,
     covariate_data = covariate_data,
@@ -390,6 +437,7 @@ single_gergm_specification <- function(i,
     hyperparameter_optimization = hyperparameter_optimization,
     target_accept_rate = target_accept_rate,
     ... = ...)
+  print(str(Result))
 
   return(Result)
 }
