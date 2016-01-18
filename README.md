@@ -1,7 +1,7 @@
 # GERGM -- Master: [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=master)](https://travis-ci.org/matthewjdenny/GERGM) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/GERGM)](http://cran.r-project.org/package=GERGM) Development: [![Travis-CI Build Status](https://travis-ci.org/matthewjdenny/GERGM.svg?branch=Development)](https://travis-ci.org/matthewjdenny/GERGM)
 An R package to estimate Generalized Exponential Random Graph Models
 
-NOTE: **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
+**PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
 
 ## Model Overview 
 
@@ -32,7 +32,8 @@ Now we can install from Github using the following line:
 
 I have had success installing this way on most major operating systems with R 3.2.0+ installed, but if you do not have the latest version of R installed, or run into some install errors (please email if you do), it should work as long as you install the dependencies first with the following block of code:
 
-    install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods","stringr"), dependencies = TRUE)
+    install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods",
+    "stringr","igraph", "plyr", "parallel", "coda"), dependencies = TRUE)
 
 Once the `GERGM` package is installed, you may access its functionality as you would any other package by calling:
 
@@ -42,7 +43,9 @@ If all went well, check out the `?GERGM` help file to see a full working example
 
 ## Basic Useage
 
-To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`,  `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodematch(covariate)`, `nodemix(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2stars`, `in2stars`, `ctriads`, `mutual`, `ttriads`, . If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,  `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodematch(covariate)`, `nodemix(covariate, base = "MyBase")`, `netcov(network)`. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`.
+To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the gergm() function to estimate a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`,  `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodematch(covariate)`, `nodemix(covariate, base = "MyBase")`, `netcov(network)`. To use exponential downweighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential downweighting is required. In this case, the terms may be provided as: `out2stars`, `in2stars`, `ctriads`, `mutual`, `ttriads`, . If the network is undirected the user may only specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,  `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `nodematch(covariate)`, `nodemix(covariate, base = "MyBase")`, `netcov(network)`. The `gergm()` function will provide all of the estimation and diagnostic functionality and the parameters of this function can be querried by typing `?gergm` into the R console. You may also generate diagnostic plots using a GERGM Object returned by the `gergm()` function by using any of the following functions: `Estimate_Plot()`, `GOF()`, `Trace_Plot()`. Furthmore, you may investigate the sensitivity of parameter estimates using the `hysteresis()` function. This function simulates large numbers of networks at parameter values around the estimated parameter values an plots the mean network density at each of these values to examine whether the model becomes degenerate due to small deviations in the parameter estimates. See the following reference for details:
+
+* Snijders, Tom AB, et al. "New specifications for exponential random graph models." Sociological methodology 36.1 (2006): 99-153.
 
 ## Examples
 
@@ -60,10 +63,10 @@ Here are two simple working examples using the `gergm()` function:
     	          normalization_type = "division",
     	          network_is_directed = TRUE,
     	          use_MPLE_only = FALSE,
-    	          estimation_method = "Metropolis",
+    	          estimation_method = "Gibbs",
     	          number_of_networks_to_simulate = 40000,
     	          thin = 1/10,
-    	          proposal_variance = 0.5,
+    	          proposal_variance = 0.2,
     	          downweight_statistics_together = TRUE,
     	          MCMC_burnin = 10000,
     	          seed = 456,
@@ -91,7 +94,7 @@ Here are two simple working examples using the `gergm()` function:
     	          estimation_method = "Metropolis",
     	          number_of_networks_to_simulate = 100000,
     	          thin = 1/10,
-    	          proposal_variance = 0.5,
+    	          proposal_variance = 0.2,
     	          downweight_statistics_together = TRUE,
     	          MCMC_burnin = 50000,
     	          seed = 456,
@@ -105,6 +108,54 @@ Here are two simple working examples using the `gergm()` function:
     GOF(test)
     # Generate Trace Plot
     Trace_Plot(test)
+    # Generate Hysteresis plots for all structural parameter estimates
+    hysteresis_results <- hysteresis(test,
+                                     networks_to_simulate = 1000,
+                                     burnin = 500,
+                                     range = 2,
+                                     steps = 20,
+                                     simulation_method = "Metropolis",
+                                     proposal_variance = 0.2)
+    
+There is also now functionality to run multiple `gergm()` model specifications in parallel using the `parallel_gergm()` function. This can come in very handy if the user wishes to specify the same model but for a large number of networks, or multiple models for the same network. Another useful (experimental) feature that can now be turned out is `hyperparameter_optimization = TRUE`, which will seek to automatically optimize the number of networks simulated during MCMC, the burnin, the Metropolis Hastings proposal variance and will seek to address any issues with model degeneracy that arise during estimation by reducing exponential weights if using Metropolis Hastings. This feature is generally meant to make it easier and less time intensive to find a model that fits the data well.  
+
+    set.seed(12345)
+    net <- matrix(runif(100,0,1),10,10)
+    colnames(net) <- rownames(net) <- letters[1:10]
+    node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                               Height = c(70,70,67,58,65,67,64,74,76,80),
+                               Type = c("A","B","B","A","A","A","B","B","C","C"))
+    rownames(node_level_covariates) <- letters[1:10]
+    network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
+
+    network_data_list <- list(network_covariate = network_covariate)
+
+    formula <- net ~ mutual + ttriads + sender("Age") +
+      netcov("network_covariate") + nodematch("Type",base = "A")
+    formula2 <- net ~ mutual + ttriads + sender("Age") +
+      netcov("network_covariate") + nodemix("Type",base = "A")
+
+    form_list <- list(f1 = formula,
+                      f2 = formula2)
+
+    testp <- parallel_gergm(formula_list = form_list,
+                            observed_network_list = net,
+                            covariate_data_list = node_level_covariates,
+                            network_data_list = network_data_list,
+                            cores = 2,
+                            network_is_directed = TRUE,
+                            use_MPLE_only = FALSE,
+                            estimation_method = "Metropolis",
+                            number_of_networks_to_simulate = 100000,
+                            thin = 1/100,
+                            proposal_variance = 0.1,
+                            downweight_statistics_together = TRUE,
+                            MCMC_burnin = 50000,
+                            seed = 456,
+                            convergence_tolerance = 0.01,
+                            MPLE_gain_factor = 0,
+                            force_x_theta_updates = 2,
+                            hyperparameter_optimization = TRUE)
 
 Finally, if you specified an `output_directory` and `output_name`, you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assesing model fit and in determining the statistical significance of theta parameter estimates. 
 
@@ -121,4 +172,4 @@ If `output_name` is specified in the `gergm()` function, then five files will be
 
 ## Testing
             
-So far, this package has been tested successfully on OSX 10.9.5 and Windows 7. Please email me at <mdenny@psu.edu> if you have success on another OS or run into any problems.
+So far, this package has been tested successfully on OSX, CentOS 7, Ubuntu and Windows 7. Please email me at <mdenny@psu.edu> if you have success on another OS or run into any problems.
