@@ -19,7 +19,8 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
   dampening_counter <- 1
   # find the optimal proposal variance
   while (!FOUND_ACCEPTABLE_PROP_VAR) {
-    cat("Simulating",Opt_Prop_Var@number_of_simulations,
+    cat("--------- START HYPERPARAMETER OPTIMIZATION ---------",
+        "\nSimulating",Opt_Prop_Var@number_of_simulations,
         "networks with proposal variance:", Opt_Prop_Var@proposal_variance,"\n")
     Opt_Prop_Var <- Simulate_GERGM(Opt_Prop_Var,
                                    seed1 = seed2,

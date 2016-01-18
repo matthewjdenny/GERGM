@@ -46,7 +46,9 @@ MCMCMLE <- function(mc.num.iterations,
           possible.stats = possible.stats,
           verbose = verbose)
         cat("Proposal variance optimization complete! Proposal variance is:",
-            GERGM_Object@proposal_variance,"\n")
+            GERGM_Object@proposal_variance,"\n",
+            "--------- END HYPERPARAMETER OPTIMIZATION ---------",
+            "\n\n")
       }
     }
 
@@ -126,6 +128,14 @@ MCMCMLE <- function(mc.num.iterations,
     }
     GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
 
+    # calculate MCMC chain convergence diagnostic
+    geweke_stat <- as.numeric(coda::geweke.diag(hsn.tot$edges)$z)
+    cat("MCMC convergence Geweke test statistic:",geweke_stat,
+        "\n(If the absolute value is greater than 1.7, increase MCMC_burnin)\n")
+    GERGM_Object <- store_console_output(GERGM_Object,
+      paste("MCMC convergence Geweke test statistic:",geweke_stat,
+      "\n(If the absolute value is greater than 1.7, increase MCMC_burnin)\n"))
+
     allow_convergence <- TRUE
     if(max(abs(theta.new$par)) > 10000000){
       if(GERGM_Object@hyperparameter_optimization){
@@ -179,7 +189,29 @@ MCMCMLE <- function(mc.num.iterations,
         GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, returning previous thetas. Model output should not be trusted. Try specifying a larger number of simulations or a different parameterization.")
         return(list(theta.new,GERGM_Object))
       }
+    } else if (abs(geweke_stat) > 1.7){
+      # if model was not degenerate but Geweke statistics say it did not converge
+      # double number of iterations and burnin automatically.
+      if (GERGM_Object@hyperparameter_optimization){
+        old_nsim <- GERGM_Object@number_of_simulations
+        old_burinin <- GERGM_Object@burnin
+        new_nsim <- 2 * old_nsim
+        new_burnin <- 2 * old_burinin
+        GERGM_Object@number_of_simulations <- new_nsim
+        GERGM_Object@burnin <- new_burnin
+        cat("Doubling burnin from:", old_burinin, "to", new_burnin,
+            "and number of networks simulated from:", old_nsim, "to", new_nsim,
+            "in an attempt to address degeneracy issue...\n")
+        GERGM_Object <- store_console_output(GERGM_Object,paste(
+          "Doubling burnin from:", old_burinin, "to", new_burnin,
+          "and number of networks simulated from:", old_nsim, "to", new_nsim,
+          "in an attempt to address degeneracy issue..."))
+        # do not allow convergence
+        allow_convergence <- FALSE
+      }
     }
+
+
 
     # check to see if we had a zero percent accept rate if using MH, and if so,
     # then adjust proposal variance and try again -- do not signal convergence.
