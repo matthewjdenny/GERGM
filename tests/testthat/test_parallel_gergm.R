@@ -14,9 +14,11 @@ test_that("Parallel GERGMs", {
 
   formula <- net ~ mutual + ttriads + sender("Age") +
     netcov("network_covariate") + nodematch("Type",base = "A")
+  formula2 <- net ~ mutual + ttriads + sender("Age") +
+    netcov("network_covariate") + nodemix("Type",base = "A")
 
   form_list <- list(f1 = formula,
-                    f2 = formula)
+                    f2 = formula2)
 
   testl <- parallel_gergm(formula_list = form_list,
                 observed_network_list = net,
@@ -44,9 +46,9 @@ test_that("Parallel GERGMs", {
   expect_equal(check, check_against)
 
   test <- testl[[2]]
-  check_against <- c(1.288, -0.075, -0.017, -0.025,  3.127, 0.132, -1.837)
-  check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
-  expect_equal(check, check_against)
+  check_against <- c(0.835, -0.073, -0.016, -0.026, -0.024, -0.056, -0.055,
+                     -0.035, 0.002, -0.040, -0.050,  3.056,  0.129, -1.931)
+  expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
 
