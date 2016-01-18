@@ -23,7 +23,9 @@ Imports:
     parallel,
     coda
 Depends:
-    R (>= 3.2.1)
+    R (>= 3.2.1),
+    snow,
+    snowfall
 LinkingTo: BH,
     Rcpp,
     RcppArmadillo
