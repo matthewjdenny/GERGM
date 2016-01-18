@@ -23,7 +23,7 @@
 NULL
 #> NULL
 
-#' @import methods snowfall snow
+#' @import methods
 NULL
 
 #' @importFrom grDevices dev.off gray pdf rgb colorRampPalette

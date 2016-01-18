@@ -199,20 +199,10 @@ parallel_gergm <- function(
       "cores. This may take a while...\n")
 
   # intitalizes snowfall session
-  snowfall::sfInit(parallel = TRUE, cpus = cores)
+  cl <- parallel::makeCluster(getOption("cl.cores", cores))
 
-  #check to see if we are running in parallel
-  if(snowfall::sfParallel())
-    cat( "Running in parallel mode on", snowfall::sfCpus(), "nodes.\n" )
-  else
-    cat( "Running in sequential mode.\n" )
-
-  #export all packages and libraries currently loaded in workspace
-  for (i in 1:length(.packages())){
-    eval(call("sfLibrary", (.packages()[i]), character.only = TRUE))
-  }
-
-  GERGM_Results_List <- snowfall::sfClusterApplyLB(x = vec,
+  GERGM_Results_List <- parallel::clusterApplyLB(cl = cl,
+    x = vec,
     fun = single_gergm_specification,
     num_specifications = num_specifications,
     formula_list = formula_list,
@@ -246,9 +236,8 @@ parallel_gergm <- function(
     target_accept_rate = target_accept_rate,
     ... = ...)
 
-  # stop the cluster when we are done -- this is very important and must be
-  # done manually every time
-  snowfall::sfStop()
+  # stop the cluster when we are done
+  parallel::stopCluster(cl)
 
   # make plots if requested by user:
   if (generate_plots) {
