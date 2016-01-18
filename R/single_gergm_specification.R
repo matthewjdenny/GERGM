@@ -437,7 +437,6 @@ single_gergm_specification <- function(i,
     hyperparameter_optimization = hyperparameter_optimization,
     target_accept_rate = target_accept_rate,
     ... = ...)
-  print(str(Result))
 
   return(Result)
 }
