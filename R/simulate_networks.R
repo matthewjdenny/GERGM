@@ -230,7 +230,10 @@ simulate_networks <- function(formula,
                         together = downweight_statistics_together)
 
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
-  #calculate t.test p-values for calculating the difference in the means of
+
+  # save these statistics so we can make GOF plots in the future, otherwise
+  # they would be the transformed statistics which would produce poor GOF plots.
+  GERGM_Object@simulated_statistics_for_GOF <- hsn.tot
 
 
   stats.data <- data.frame(Observed = init.statistics,

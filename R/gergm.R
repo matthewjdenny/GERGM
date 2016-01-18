@@ -400,6 +400,9 @@ gergm <- function(formula,
   GERGM_Object@stats[2,] <- init.statistics
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
 
+  # save these statistics so we can make GOF plots in the future, otherwise
+  # they would be the transformed statistics which would produce poor GOF plots.
+  GERGM_Object@simulated_statistics_for_GOF <- hsn.tot
   #thin statsitics
   hsn.tot <- Thin_Statistic_Samples(hsn.tot)
 

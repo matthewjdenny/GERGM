@@ -12,7 +12,7 @@ GOF <- function(GERGM_Object,
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
 
   if (GERGM_Object@simulation_only) {
-    temp <- GERGM_Object@MCMC_output$Statistics
+    temp <- GERGM_Object@simulated_statistics_for_GOF
 
     boxplot(temp, medcol = UMASS_BLUE,
             xlab = "Network Statistic",
@@ -21,9 +21,9 @@ GOF <- function(GERGM_Object,
   } else {
     if (!GERGM_Object@directed_network) {
       #input is the GERGM_Object, we are going to normalize all statistics
-      temp <- GERGM_Object@MCMC_output$Statistics
+      temp <- GERGM_Object@simulated_statistics_for_GOF
 
-      temp2 <- apply(GERGM_Object@MCMC_output$Statistics,2,sd)
+      temp2 <- apply(GERGM_Object@simulated_statistics_for_GOF,2,sd)
       for (i in 1:ncol(temp)) {
         temp[,i] <- temp[,i] - GERGM_Object@stats[2,i]
         temp[,i] <- temp[,i]/temp2[i]
@@ -43,9 +43,9 @@ GOF <- function(GERGM_Object,
       boxplot(zero_plot, add = T, medcol = UMASS_BLUE, names = F)
     } else {
       #input is the GERGM_Object, we are going to normalize all statistics
-      temp <- GERGM_Object@MCMC_output$Statistics
+      temp <- GERGM_Object@simulated_statistics_for_GOF
 
-      temp2 <- apply(GERGM_Object@MCMC_output$Statistics,2,sd)
+      temp2 <- apply(GERGM_Object@simulated_statistics_for_GOF,2,sd)
       for(i in 1:ncol(temp)){
         temp[,i] <- temp[,i] - GERGM_Object@stats[2,i]
         temp[,i] <- temp[,i]/temp2[i]
