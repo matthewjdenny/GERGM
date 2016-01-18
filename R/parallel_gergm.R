@@ -126,6 +126,46 @@
 #' Defaults to 0.25
 #' @param ... Optional arguments, currently unsupported.
 #' @return A list of gergm objects for each model specified.
+#' @examples
+#' \dontrun{
+#' set.seed(12345)
+#' net <- matrix(runif(100,0,1),10,10)
+#' colnames(net) <- rownames(net) <- letters[1:10]
+#' node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+#'                            Height = c(70,70,67,58,65,67,64,74,76,80),
+#'                            Type = c("A","B","B","A","A","A","B","B","C","C"))
+#' rownames(node_level_covariates) <- letters[1:10]
+#' network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
+#'
+#' network_data_list <- list(network_covariate = network_covariate)
+#'
+#' formula <- net ~ mutual + ttriads + sender("Age") +
+#'   netcov("network_covariate") + nodematch("Type",base = "A")
+#' formula2 <- net ~ mutual + ttriads + sender("Age") +
+#'   netcov("network_covariate") + nodemix("Type",base = "A")
+#'
+#' form_list <- list(f1 = formula,
+#'                   f2 = formula2)
+#'
+#' testl <- parallel_gergm(formula_list = form_list,
+#'                         observed_network_list = net,
+#'                         covariate_data_list = node_level_covariates,
+#'                         network_data_list = network_data_list,
+#'                         cores = 2,
+#'                         network_is_directed = TRUE,
+#'                         use_MPLE_only = FALSE,
+#'                         estimation_method = "Metropolis",
+#'                         number_of_networks_to_simulate = 100000,
+#'                         thin = 1/100,
+#'                         proposal_variance = 0.1,
+#'                         downweight_statistics_together = TRUE,
+#'                         MCMC_burnin = 50000,
+#'                         seed = 456,
+#'                         convergence_tolerance = 0.01,
+#'                         MPLE_gain_factor = 0,
+#'                         force_x_theta_updates = 2,
+#'                         hyperparameter_optimization = TRUE)
+#' }
 #' @export
 parallel_gergm <- function(
   formula_list,
