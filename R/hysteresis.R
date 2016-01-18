@@ -39,8 +39,7 @@
 #' and plots will only be plotted to the graphics device.
 #' @param parallel Logical indicating whether hysteresis plots for each theta
 #' parameter should be simulated in parallel. Can greatly reduce runtime, but
-#' the computer must have atleast as many cores as theta parameters. Currently
-#' only functional for Unix based operating systems (OSX, Linux, CentOS, etc.)
+#' the computer must have atleast as many cores as theta parameters.
 #' Defauts to FALSE.
 #' @return A list object containing network densities for simulated networks.
 #' @examples
@@ -140,16 +139,22 @@ hysteresis <- function(GERGM_Object,
     vec <- 1:num_network_terms
     cat("Simulating networks in parallel on",length(vec),
         "cores. This may take a while...\n")
-    results <- parallel::mclapply(X = vec,
-                                  FUN = hysteresis_parallel,
-                                  mc.cores = length(vec),
-                                  GERGM_Object = GERGM_Object,
-                                  initial_density = initial_density,
-                                  possible_structural_terms = possible_structural_terms,
-                                  seed = seed,
-                                  steps = steps,
-                                  observed_density = observed_density,
-                                  range = range)
+    cl <- parallel::makeCluster(getOption("cl.cores", cores))
+
+    results <- parallel::clusterApplyLB(cl = cl,
+      X = vec,
+      FUN = hysteresis_parallel,
+      mc.cores = length(vec),
+      GERGM_Object = GERGM_Object,
+      initial_density = initial_density,
+      possible_structural_terms = possible_structural_terms,
+      seed = seed,
+      steps = steps,
+      observed_density = observed_density,
+      range = range)
+
+    # stop the cluster when we are done
+    parallel::stopCluster(cl)
 
     for(k in 1:length(results)){
       which_term <- which(GERGM_Object@stats_to_use > 0)[k]

@@ -4,8 +4,7 @@
 #' covariate_data_list, network_data_list, cores and generate_plots) be be
 #' either specified as a single value or as a vector of values equal to the
 #' length of formula_list, if the user wishes to use different values for each
-#' specification. Currently only functional for Unix based operating systems
-#' (OSX, Linux, CentOS, etc.)
+#' specification.
 #'
 #' @param formula_list A list of formula objects that specifies the relationship
 #' between statistics and the observed network for each gergm. See the gergm()

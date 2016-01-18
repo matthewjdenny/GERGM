@@ -59,8 +59,7 @@ and plots will only be plotted to the graphics device.}
 
 \item{parallel}{Logical indicating whether hysteresis plots for each theta
 parameter should be simulated in parallel. Can greatly reduce runtime, but
-the computer must have atleast as many cores as theta parameters. Currently
-only functional for Unix based operating systems (OSX, Linux, CentOS, etc.)
+the computer must have atleast as many cores as theta parameters.
 Defauts to FALSE.}
 }
 \value{

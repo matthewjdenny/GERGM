@@ -178,8 +178,7 @@ parallel. All varaibles (excluding formula_list, observed_network_list,
 covariate_data_list, network_data_list, cores and generate_plots) be be
 either specified as a single value or as a vector of values equal to the
 length of formula_list, if the user wishes to use different values for each
-specification. Currently only functional for Unix based operating systems
-(OSX, Linux, CentOS, etc.)
+specification.
 }
 \examples{
 \dontrun{
