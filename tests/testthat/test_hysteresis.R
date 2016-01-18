@@ -49,6 +49,8 @@ test_that("Simple model with no covariates runs", {
                       thin = 1/10,
                       parallel = T)
 
+  hysteresis_plot(test3)
+
 })
 
 

@@ -44,24 +44,20 @@ hysteresis_plot <- function(hysteresis_output,
       ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
 
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0, colour = gray(1/2), lty = 2)
-    zp1 <- zp1 + ggplot2::geom_linerange(
-      ggplot2::aes(x = Theta,
-                   y = Density,
-                   ymin = Density - SE*(-qnorm((1-0.9)/2)),
-                   ymax = Density + SE*(-qnorm((1-0.9)/2))),
-                   lwd = 1)
-    zp1 <- zp1 + ggplot2::geom_linerange(
-      ggplot2::aes(x = Theta,
-                   y = Density,
-                   ymin = Density - SE*(-qnorm((1-0.95)/2)),
-                   ymax = Density + SE*(-qnorm((1-0.95)/2))),
-                   lwd = 0.5) +
+
+    zp1 <- zp1 + ggplot2::geom_ribbon(data = data,
+                 ggplot2::aes(x = Theta,
+                     ymin = Density - SE*(-qnorm((1 - 0.95)/2)),
+                     ymax = Density + SE*(-qnorm((1 - 0.95)/2))),
+                alpha = 0.3,
+                fill = "grey90") +
+
       ggplot2::geom_point(ggplot2::aes(x = Theta,
                                        y = Density,
-                                       shape= Order,
+                                       shape = Order,
                                        colour = Order),
                  size = 3) +
-      ggplot2::scale_shape_manual(values=c( 16, 17))
+      ggplot2::scale_shape_manual(values = c( 16, 17))
 
     zp1 <- zp1  + ggplot2::theme_bw() +
       ggplot2::theme(legend.justification = c(1, 0),
@@ -78,3 +74,17 @@ hysteresis_plot <- function(hysteresis_output,
   }
 
 }
+
+# old confidence intervals
+#     zp1 <- zp1 + ggplot2::geom_linerange(
+#       ggplot2::aes(x = Theta,
+#                    y = Density,
+#                    ymin = Density - SE*(-qnorm((1-0.9)/2)),
+#                    ymax = Density + SE*(-qnorm((1-0.9)/2))),
+#                    lwd = 1)
+#     zp1 <- zp1 + ggplot2::geom_linerange(
+#       ggplot2::aes(x = Theta,
+#                    y = Density,
+#                    ymin = Density - SE*(-qnorm((1-0.95)/2)),
+#                    ymax = Density + SE*(-qnorm((1-0.95)/2))),
+#                    lwd = 0.5) +
