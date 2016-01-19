@@ -142,9 +142,8 @@ hysteresis <- function(GERGM_Object,
     cl <- parallel::makeCluster(getOption("cl.cores", cores))
 
     results <- parallel::clusterApplyLB(cl = cl,
-      X = vec,
-      FUN = hysteresis_parallel,
-      mc.cores = length(vec),
+      x = vec,
+      fun = hysteresis_parallel,
       GERGM_Object = GERGM_Object,
       initial_density = initial_density,
       possible_structural_terms = possible_structural_terms,
