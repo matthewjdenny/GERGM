@@ -177,6 +177,8 @@ MCMCMLE <- function(mc.num.iterations,
         new_burnin <- 2 * old_burinin
         GERGM_Object@number_of_simulations <- new_nsim
         GERGM_Object@burnin <- new_burnin
+        old_thin <- GERGM_Object@thin
+        GERGM_Object@thin <- old_thin/2
         cat("Doubling burnin from:", old_burinin, "to", new_burnin,
             "and number of networks simulated from:", old_nsim, "to", new_nsim,
             "in an attempt to address degeneracy issue...\n")
@@ -199,6 +201,8 @@ MCMCMLE <- function(mc.num.iterations,
         new_burnin <- 2 * old_burinin
         GERGM_Object@number_of_simulations <- new_nsim
         GERGM_Object@burnin <- new_burnin
+        old_thin <- GERGM_Object@thin
+        GERGM_Object@thin <- old_thin/2
         cat("Doubling burnin from:", old_burinin, "to", new_burnin,
             "and number of networks simulated from:", old_nsim, "to", new_nsim,
             "in an attempt to address degeneracy issue...\n")
