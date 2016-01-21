@@ -140,7 +140,9 @@ MCMCMLE <- function(mc.num.iterations,
       "\n(If the absolute value is greater than 1.7, increase MCMC_burnin)\n"))
 
     allow_convergence <- TRUE
-    if (max(abs(theta.new$par)) > 10000000) {
+    # see if the parameter values hav increased more than four orders of
+    # magnitude over the past values.
+    if (max(abs(theta.new$par)) > 10000 * max(abs(theta$par))) {
       if (GERGM_Object@hyperparameter_optimization) {
         message("Parameter estimates appear to have become degenerate, attempting to fix the problem...")
         GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, attempting to fix the problem...")
