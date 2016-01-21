@@ -74,11 +74,11 @@ MCMCMLE <- function(mc.num.iterations,
     cat("Simulated (averages) and observed network statistics...\n")
     print(stats.data)
     GERGM_Object <- store_console_output(GERGM_Object,toString(stats.data))
-    if(verbose){
+    if (verbose) {
       cat("\nOptimizing theta estimates... \n")
     }
     GERGM_Object <- store_console_output(GERGM_Object,"\nOptimizing Theta Estimates... \n")
-    if(verbose){
+    if (verbose) {
     theta.new <- optim(par = theta$par,
                        log.l,
                        alpha = GERGM_Object@reduced_weights,
@@ -90,7 +90,7 @@ MCMCMLE <- function(mc.num.iterations,
                        method = "BFGS",
                        hessian = T,
                        control = list(fnscale = -1, trace = 6))
-    }else{
+    } else {
       theta.new <- optim(par = theta$par,
                          log.l,
                          alpha = GERGM_Object@reduced_weights,
@@ -103,27 +103,30 @@ MCMCMLE <- function(mc.num.iterations,
                          hessian = T,
                          control = list(fnscale = -1, trace = 0))
     }
-    if(verbose){
+    if (verbose) {
       cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
     }
     GERGM_Object <- store_console_output(GERGM_Object,paste("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = ""))
-    theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
+
+    # need to fix this!!!!
+    theta.std.errors <- 1 / sqrt(diag(solve(-theta.new$hessian)))
+    # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
     # Calculate the p-value based on a z-test of differences
     # The tolerance is the alpha at which differences are significant
     p.value <- rep(0,length(as.numeric(theta$par)))
     count <- rep(0, length(as.numeric(theta$par)))
-    for(j in 1:length(theta$par)){
+    for (j in 1:length(theta$par)) {
       #two sided z test
       p.value[j] <- 2*pnorm(-abs((as.numeric(theta.new$par)[j] - as.numeric(theta$par)[j])/theta.std.errors[j]))
       #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
       #if we reject any of the tests then convergence has not been reached!
-      if(p.value[j] < tolerance){count[j] = 1}
+      if (p.value[j] < tolerance) {count[j] = 1}
     }
-    if(verbose){
+    if (verbose) {
       cat("\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
     }
     GERGM_Object <- store_console_output(GERGM_Object,"\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
-    if(verbose){
+    if (verbose) {
       cat(round(p.value,3), "\n \n")
     }
     GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
@@ -137,8 +140,8 @@ MCMCMLE <- function(mc.num.iterations,
       "\n(If the absolute value is greater than 1.7, increase MCMC_burnin)\n"))
 
     allow_convergence <- TRUE
-    if(max(abs(theta.new$par)) > 10000000){
-      if(GERGM_Object@hyperparameter_optimization){
+    if (max(abs(theta.new$par)) > 10000000) {
+      if (GERGM_Object@hyperparameter_optimization) {
         message("Parameter estimates appear to have become degenerate, attempting to fix the problem...")
         GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates appear to have become degenerate, attempting to fix the problem...")
         # do not allow convergence
