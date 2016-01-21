@@ -2,52 +2,92 @@
 #'
 #' @param GERGM_Object The object returned by the estimation procedure using the
 #' GERGM function.
-#' @param normalize_coefficients Defaults to FALSE, if TRUE then parameter estimates will be converted be deivided by their standard deviations with and displayed with 95 percent confidence intervals. These coefficients will no longer be comparable, but make graphical interpretation of significance and sign easier.
+#' @param normalize_coefficients Defaults to FALSE, if TRUE then parameter
+#' estimates will be converted be deivided by their standard deviations with
+#' and displayed with 95 percent confidence intervals. These coefficients will
+#' no longer be comparable, but make graphical interpretation of significance
+#' and sign easier.
+#' @param coefficients_to_plot An optional argument indicating which kind of
+#' parameters to plot. Can be one of "both","covariate", or "structural". Useful
+#' for creating separate parameter plots for covariates and structural
+#' parameters when these parameters are on very different scales.
 #' @return A parameter estimate plot.
 #' @export
-Estimate_Plot <- function(GERGM_Object,
-                          normalize_coefficients = FALSE){
+Estimate_Plot <- function(
+  GERGM_Object,
+  normalize_coefficients = FALSE,
+  coefficients_to_plot = c("both","covariate","structural")
+  ){
+
+  coefficients_to_plot <- coefficients_to_plot[1]
+
   #define colors
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
   Model <- Variable <- Coefficient <- SE <- NULL
-  # make sure that we use rows as estimates and se are in a two row matrix
-  modelFrame <- data.frame(Variable = colnames(GERGM_Object@theta.coef) ,
-                           Coefficient = as.numeric(GERGM_Object@theta.coef[1,]),
-                           SE = as.numeric(GERGM_Object@theta.coef[2,]),
-                           Model = "Theta Estimates"
-  )
-  data <- data.frame(modelFrame)
 
-  #now add in lambda estimates
-  if(length(GERGM_Object@lambda.coef) > 1){
-    temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
-    temp1 <- temp1[1:(length(temp1)-1)]
-    temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
-    temp2 <- temp2[1:(length(temp2)-1)]
-    modelFrame2 <- data.frame(Variable = dimnames(GERGM_Object@data_transformation)[[3]] ,
-                              Coefficient = temp1,
-                              SE = temp2,
-                              Model = "Lambda Estimates"
+  if (coefficients_to_plot == "both") {
+    # make sure that we use rows as estimates and se are in a two row matrix
+    modelFrame <- data.frame(Variable = colnames(GERGM_Object@theta.coef) ,
+                             Coefficient = as.numeric(GERGM_Object@theta.coef[1,]),
+                             SE = as.numeric(GERGM_Object@theta.coef[2,]),
+                             Model = "Theta Estimates"
     )
-    data2 <- data.frame(modelFrame2)
-    data <- rbind(data,data2)
+    data <- data.frame(modelFrame)
+
+    #now add in lambda estimates
+    if(length(GERGM_Object@lambda.coef) > 1){
+      temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
+      temp1 <- temp1[1:(length(temp1)-1)]
+      temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
+      temp2 <- temp2[1:(length(temp2)-1)]
+      modelFrame2 <- data.frame(Variable = dimnames(GERGM_Object@data_transformation)[[3]] ,
+                                Coefficient = temp1,
+                                SE = temp2,
+                                Model = "Lambda Estimates"
+      )
+      data2 <- data.frame(modelFrame2)
+      data <- rbind(data,data2)
+    }
+  } else if (coefficients_to_plot == "covariate") {
+    #now add in lambda estimates
+    if(length(GERGM_Object@lambda.coef) > 1){
+      temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
+      temp1 <- temp1[1:(length(temp1)-1)]
+      temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
+      temp2 <- temp2[1:(length(temp2)-1)]
+      modelFrame2 <- data.frame(Variable = dimnames(GERGM_Object@data_transformation)[[3]] ,
+                                Coefficient = temp1,
+                                SE = temp2,
+                                Model = "Lambda Estimates"
+      )
+      data2 <- data.frame(modelFrame2)
+      data <- rbind(data,data2)
+    }
+  } else if (coefficients_to_plot == "structural") {
+    # make sure that we use rows as estimates and se are in a two row matrix
+    modelFrame <- data.frame(Variable = colnames(GERGM_Object@theta.coef) ,
+                             Coefficient = as.numeric(GERGM_Object@theta.coef[1,]),
+                             SE = as.numeric(GERGM_Object@theta.coef[2,]),
+                             Model = "Theta Estimates"
+    )
+    data <- data.frame(modelFrame)
   }
 
   # standardize coefficients
-  if(normalize_coefficients){
-    for(i in 1:nrow(data)){
+  if (normalize_coefficients) {
+    for (i in 1:nrow(data)) {
       data$Coefficient[i] <- data$Coefficient[i]/data$SE[i]
       data$SE[i] <- 1
     }
   }
 
-
   # Plot
-  if(length(GERGM_Object@lambda.coef[,1]) > 0){
+  if (length(GERGM_Object@lambda.coef[,1]) > 0 &
+     (coefficients_to_plot == "covariate" | coefficients_to_plot == "both")) {
     zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
       ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
-  }else{
+  } else {
     zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
       ggplot2::scale_color_manual(values = UMASS_BLUE)
   }
