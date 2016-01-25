@@ -98,7 +98,7 @@ Estimate_GERGM <- function(formula_object,
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", GERGM_Object@stats_to_use, "\n"))
 
-        theta.std.errors <- 1 / sqrt(diag(solve(-theta.new$hessian)))
+        theta.std.errors <- sqrt(diag(solve(-theta.new$hessian)))
         # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
         GERGM_Object@theta.par <- theta.new$par
 
@@ -189,7 +189,7 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- ret_list[[2]]
 
         # Calculate standard errors
-        theta.std.errors <- 1 / sqrt(diag(solve(-theta.new$hessian)))
+        theta.std.errors <- sqrt(diag(solve(-theta.new$hessian)))
         # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
 
         # Stop if lambda and theta estimates converge.
@@ -296,7 +296,7 @@ Estimate_GERGM <- function(formula_object,
       GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
       theta <- theta.init
       lambda <- as.data.frame(0)
-      theta.std.errors <- 1 / sqrt(diag(solve(-theta.init$hessian)))
+      theta.std.errors <- sqrt(diag(solve(-theta.init$hessian)))
       # theta.std.errors <- 1 / sqrt(abs(diag(theta.init$hessian)))
       GERGM_Object@theta.par <- theta.init$par
     }
@@ -315,7 +315,7 @@ Estimate_GERGM <- function(formula_object,
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]
 
-      theta.std.errors <- 1 / sqrt(diag(solve(-theta.new$hessian)))
+      theta.std.errors <- sqrt(diag(solve(-theta.new$hessian)))
       # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
       lambda <- as.data.frame(0)

@@ -109,7 +109,7 @@ MCMCMLE <- function(mc.num.iterations,
     GERGM_Object <- store_console_output(GERGM_Object,paste("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = ""))
 
     # need to fix this!!!!
-    theta.std.errors <- 1 / sqrt(diag(solve(-theta.new$hessian)))
+    theta.std.errors <- sqrt(diag(solve(-theta.new$hessian)))
     nans <- which(is.nan(theta.std.errors))
     allow_convergence <- TRUE
     nan_stderrors <- FALSE
