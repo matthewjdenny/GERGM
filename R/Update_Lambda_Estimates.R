@@ -48,7 +48,10 @@ Update_Lambda_Estimates <- function(i,
       print(gpar.new$par)
     }
     GERGM_Object <- store_console_output(GERGM_Object, toString(gpar.new$par))
-    gpar.std.errors <- 1 / sqrt(abs(diag(gpar.new$hessian)))
+    temp <- calculate_standard_errors(hessian = gpar.new$hessian,
+                                      GERGM_Object = GERGM_Object)
+    gpar.std.errors <- temp$std_errors
+    GERGM_Object <- temp$GERGM_Object
     # Transform the unbounded weights to bounded weights via a t-distribution
     beta <- gpar.new$par[1:(length(gpar.new$par) - 1)]
     sig <- 0.01 + exp(gpar.new$par[length(gpar.new$par)])
