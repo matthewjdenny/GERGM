@@ -42,7 +42,9 @@ setClass(Class = "gergm",
            thin = "numeric",
            burnin = "numeric",
            MPLE_gain_factor = "numeric",
-           simulated_statistics_for_GOF = "data.frame"
+           simulated_statistics_for_GOF = "data.frame",
+           hessians = "list",
+           standard_errors = "list"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
