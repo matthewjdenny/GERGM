@@ -275,10 +275,12 @@ simulate_networks <- function(formula,
   }
 
   # make GOF plot
+  try({
+    GOF(GERGM_Object)
+    Sys.sleep(2)
+    Trace_Plot(GERGM_Object)
+  })
 
-  GOF(GERGM_Object)
-  Sys.sleep(2)
-  Trace_Plot(GERGM_Object)
 
   cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
   GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)

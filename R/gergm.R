@@ -456,31 +456,34 @@ gergm <- function(formula,
       current_directory <- getwd()
       setwd(output_directory)
 
-      pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
-      GOF(GERGM_Object)
-      dev.off()
+      try({
+        pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
+        GOF(GERGM_Object)
+        dev.off()
 
-      pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
-      Estimate_Plot(GERGM_Object)
-      dev.off()
+        pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
+        Estimate_Plot(GERGM_Object)
+        dev.off()
 
-      pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""), height = 4, width = 6)
-      Trace_Plot(GERGM_Object)
-      dev.off()
+        pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""), height = 4, width = 6)
+        Trace_Plot(GERGM_Object)
+        dev.off()
 
-      save(GERGM_Object, file = paste(output_name,"_GERGM_Object.Rdata",sep = ""))
+        save(GERGM_Object, file = paste(output_name,"_GERGM_Object.Rdata",sep = ""))
 
-      write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
-
+        write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
+      })
       setwd(current_directory)
     } else{
       # if we are not saving everything to a directory then just print stuff to
       # the graphics device
-      GOF(GERGM_Object)
-      Sys.sleep(2)
-      Estimate_Plot(GERGM_Object)
-      Sys.sleep(2)
-      Trace_Plot(GERGM_Object)
+      try({
+        GOF(GERGM_Object)
+        Sys.sleep(2)
+        Estimate_Plot(GERGM_Object)
+        Sys.sleep(2)
+        Trace_Plot(GERGM_Object)
+      })
     }
   }
 
