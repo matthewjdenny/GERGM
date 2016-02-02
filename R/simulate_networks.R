@@ -43,6 +43,15 @@
 #' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
 #' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
+#' @param GERGM_Object Optional argument allowing the user to supply a GERGM
+#' object output by the gergm() estimation function in order to simualt further
+#' networks. Defaults to NULL. If a GERGM object is provided, any user specified
+#' parameter values will be ignored and the final parameter estimates from the
+#' gergm() function will be used instead. When using this option, the folowing
+#' terms must still be specified: number_of_networks_to_simulate, thin, and
+#' MCMC_burnin. proposal_variance may also be specified, or if set equal to NULL,
+#' then the proposal variance from parameter estimation will be used instead (
+#' this option is likely preferred in most situations).
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' set.seed(12345)
@@ -63,7 +72,8 @@
 #'  MCMC_burnin = 1000,
 #'  seed = 456)
 #' @return A list object containing simulated networks and parameters used to
-#' specify the simulation. See the $MCMC_Output field for simulated networks.
+#' specify the simulation. See the $MCMC_Output field for simulated networks. If
+#' GERGM_Object is provded, then a GERGM object will be returned instead.
 #' @export
 simulate_networks <- function(formula,
   mutual = 0,
@@ -81,136 +91,148 @@ simulate_networks <- function(formula,
   MCMC_burnin = 100,
   seed = 123,
   omit_intercept_term = FALSE,
+  GERGM_Object = NULL,
   ...
 ){
 
-  # pass in experimental correlation network feature through elipsis
-  simulate_correlation_network <- FALSE
-  object <- as.list(substitute(list(...)))[-1L]
-  if (length(object) > 0) {
-    if (!is.null(object$simulate_correlation_network)) {
-      if (object$simulate_correlation_network) {
-        simulate_correlation_network <- TRUE
-        cat("Using experimental correlation network feature...\n")
+  if (is.null(GERGM_Object)) {
+    # pass in experimental correlation network feature through elipsis
+    simulate_correlation_network <- FALSE
+    object <- as.list(substitute(list(...)))[-1L]
+    if (length(object) > 0) {
+      if (!is.null(object$simulate_correlation_network)) {
+        if (object$simulate_correlation_network) {
+          simulate_correlation_network <- TRUE
+          cat("Using experimental correlation network feature...\n")
+        }
       }
     }
-  }
 
-  # This is the main function to estimate a GERGM model
+    # This is the main function to estimate a GERGM model
 
-  # hard coded possible stats
-  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
-  possible_structural_terms_undirected <- c("twostars", "ttriads")
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
-  possible_network_terms <- "netcov"
-  # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+    # hard coded possible stats
+    possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
+    possible_structural_terms_undirected <- c("twostars", "ttriads")
+    possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
+    possible_network_terms <- "netcov"
+    # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
-  #check for an edges statistic
-  form <- as.formula(formula)
-  parsed <- deparse(form)
-  if (length(parsed) > 1) {
-    parsed <- paste0(parsed, collapse = " ")
-  }
-  if (grepl("edges",parsed)) {
-    stop("You may not specify an edges statistic.")
-  }
+    #check for an edges statistic
+    form <- as.formula(formula)
+    parsed <- deparse(form)
+    if (length(parsed) > 1) {
+      parsed <- paste0(parsed, collapse = " ")
+    }
+    if (grepl("edges",parsed)) {
+      stop("You may not specify an edges statistic.")
+    }
 
-  # set logical values for whether we are using MPLE only, whether the network
-  # is directed, and which estimation method we are using as well as the
-  # transformation type
-  network_is_directed <- network_is_directed[1] #default is TRUE
-  simulation_method <- simulation_method[1] #default is Gibbs
-  transformation_type <- "cauchy"
-  normalization_type <- "division"
+    # set logical values for whether we are using MPLE only, whether the network
+    # is directed, and which estimation method we are using as well as the
+    # transformation type
+    network_is_directed <- network_is_directed[1] #default is TRUE
+    simulation_method <- simulation_method[1] #default is Gibbs
+    transformation_type <- "cauchy"
+    normalization_type <- "division"
 
-  # check terms for undirected network
-  if (!network_is_directed) {
-    formula <- parse_undirected_structural_terms(
+    # check terms for undirected network
+    if (!network_is_directed) {
+      formula <- parse_undirected_structural_terms(
+        formula,
+        possible_structural_terms,
+        possible_structural_terms_undirected)
+    }
+
+    # automatically add an intercept term unless omit_intercept_term is TRUE
+    if (!omit_intercept_term) {
+      formula <- add_intercept_term(formula)
+    }
+
+    # if we are using a correlation network, then the network must be undirected.
+    if (simulate_correlation_network) {
+      network_is_directed <- FALSE
+    }
+    #make sure proposal variance is greater than zero
+    #make sure proposal variance is greater than zero
+    if (proposal_variance <= 0.001) {
+      proposal_variance <- 0.001
+      cat("You supplied a proposal variance that was less than or equal to zero.
+          It has been reset to 0.001, considder respecifying...\n")
+    }
+
+    formula <- as.formula(formula)
+
+    #0. Prepare the data
+    Transformed_Data <- Prepare_Network_and_Covariates(
       formula,
       possible_structural_terms,
-      possible_structural_terms_undirected)
+      possible_covariate_terms,
+      possible_network_terms,
+      covariate_data = NULL,
+      normalization_type = normalization_type,
+      is_correlation_network = simulate_correlation_network,
+      is_directed = network_is_directed)
+
+    # create theta coefficients
+    theta_coeficients = NULL
+    if (out2stars != 0) {
+      theta_coeficients <- c(theta_coeficients, out2stars)
+    }
+    if (in2stars != 0 | twostars != 0) {
+      theta_coeficients <- c(theta_coeficients, in2stars)
+    }
+    if (ctriads != 0) {
+      theta_coeficients <- c(theta_coeficients, ctriads)
+    }
+    if (mutual != 0) {
+      theta_coeficients <- c(theta_coeficients, mutual)
+    }
+    if (ttriads != 0) {
+      theta_coeficients <- c(theta_coeficients, ttriads)
+    }
+
+    #1. Create GERGM object from network
+
+    GERGM_Object <- Create_GERGM_Object_From_Formula(
+      formula,
+      theta.coef = theta_coeficients,
+      possible_structural_terms,
+      possible_covariate_terms,
+      possible_network_terms,
+      raw_network = Transformed_Data$network,
+      together = 1,
+      transform.data = NULL,
+      lambda.coef = NULL,
+      transformation_type = transformation_type,
+      is_correlation_network = simulate_correlation_network,
+      is_directed = network_is_directed
+    )
+
+    GERGM_Object@theta_estimation_converged <- TRUE
+    GERGM_Object@lambda_estimation_converged <- TRUE
+    GERGM_Object@observed_network  <- GERGM_Object@network
+    GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
+    GERGM_Object@simulation_only <- TRUE
+    GERGM_Object@theta.par <- theta_coeficients
+    GERGM_Object@directed_network <- network_is_directed
+    GERGM_Object@is_correlation_network <- simulate_correlation_network
+    GERGM_Object@proposal_variance <- proposal_variance
+    GERGM_Object@estimation_method <- simulation_method
+    GERGM_Object@target_accept_rate <- 0.25
+    GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
+    GERGM_Object@thin <- thin
+    GERGM_Object@burnin <- MCMC_burnin
+    GERGM_Object@downweight_statistics_together <- downweight_statistics_together
+  } else {
+    # a GERGM_Object was provided
+    if (!is.null(proposal_variance)) {
+      GERGM_Object@proposal_variance <- proposal_variance
+    }
+    GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
+    GERGM_Object@thin <- thin
+    GERGM_Object@burnin <- MCMC_burnin
   }
 
-  # automatically add an intercept term unless omit_intercept_term is TRUE
-  if (!omit_intercept_term) {
-    formula <- add_intercept_term(formula)
-  }
-
-  # if we are using a correlation network, then the network must be undirected.
-  if (simulate_correlation_network) {
-    network_is_directed <- FALSE
-  }
-  #make sure proposal variance is greater than zero
-  #make sure proposal variance is greater than zero
-  if (proposal_variance <= 0.001) {
-    proposal_variance <- 0.001
-    cat("You supplied a proposal variance that was less than or equal to zero.
-        It has been reset to 0.001, considder respecifying...\n")
-  }
-
-  formula <- as.formula(formula)
-
-  #0. Prepare the data
-  Transformed_Data <- Prepare_Network_and_Covariates(
-    formula,
-    possible_structural_terms,
-    possible_covariate_terms,
-    possible_network_terms,
-    covariate_data = NULL,
-    normalization_type = normalization_type,
-    is_correlation_network = simulate_correlation_network,
-    is_directed = network_is_directed)
-
-  # create theta coefficients
-  theta_coeficients = NULL
-  if (out2stars != 0) {
-    theta_coeficients <- c(theta_coeficients, out2stars)
-  }
-  if (in2stars != 0 | twostars != 0) {
-    theta_coeficients <- c(theta_coeficients, in2stars)
-  }
-  if (ctriads != 0) {
-    theta_coeficients <- c(theta_coeficients, ctriads)
-  }
-  if (mutual != 0) {
-    theta_coeficients <- c(theta_coeficients, mutual)
-  }
-  if (ttriads != 0) {
-    theta_coeficients <- c(theta_coeficients, ttriads)
-  }
-
-  #1. Create GERGM object from network
-
-  GERGM_Object <- Create_GERGM_Object_From_Formula(
-    formula,
-    theta.coef = theta_coeficients,
-    possible_structural_terms,
-    possible_covariate_terms,
-    possible_network_terms,
-    raw_network = Transformed_Data$network,
-    together = 1,
-    transform.data = NULL,
-    lambda.coef = NULL,
-    transformation_type = transformation_type,
-    is_correlation_network = simulate_correlation_network,
-    is_directed = network_is_directed
-  )
-
-  GERGM_Object@theta_estimation_converged <- TRUE
-  GERGM_Object@lambda_estimation_converged <- TRUE
-  GERGM_Object@observed_network  <- GERGM_Object@network
-  GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
-  GERGM_Object@simulation_only <- TRUE
-  GERGM_Object@theta.par <- theta_coeficients
-  GERGM_Object@directed_network <- network_is_directed
-  GERGM_Object@is_correlation_network <- simulate_correlation_network
-  GERGM_Object@proposal_variance <- proposal_variance
-  GERGM_Object@estimation_method <- simulation_method
-  GERGM_Object@target_accept_rate <- 0.25
-  GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
-  GERGM_Object@thin <- thin
-  GERGM_Object@burnin <- MCMC_burnin
-  GERGM_Object@downweight_statistics_together <- downweight_statistics_together
 
 
 
@@ -261,9 +283,14 @@ simulate_networks <- function(formula,
   cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
   GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
 
-  return_list <- list(formula = GERGM_Object@formula,
-                      theta_values = GERGM_Object@theta.coef[,1],
-                      alpha_values = GERGM_Object@weights,
-                      MCMC_Output = GERGM_Object@MCMC_output)
-  return(return_list)
+  if (is.null(GERGM_Object)) {
+    return_list <- list(formula = GERGM_Object@formula,
+                        theta_values = GERGM_Object@theta.coef[,1],
+                        alpha_values = GERGM_Object@weights,
+                        MCMC_Output = GERGM_Object@MCMC_output)
+    return(return_list)
+  } else {
+    return(GERGM_Object)
+  }
+
 }
