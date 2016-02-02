@@ -95,6 +95,13 @@ simulate_networks <- function(formula,
   ...
 ){
 
+  # hard coded possible stats
+  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
+  possible_structural_terms_undirected <- c("twostars", "ttriads")
+  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
+  possible_network_terms <- "netcov"
+  # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
     simulate_correlation_network <- FALSE
@@ -109,13 +116,6 @@ simulate_networks <- function(formula,
     }
 
     # This is the main function to estimate a GERGM model
-
-    # hard coded possible stats
-    possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
-    possible_structural_terms_undirected <- c("twostars", "ttriads")
-    possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
-    possible_network_terms <- "netcov"
-    # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
     #check for an edges statistic
     form <- as.formula(formula)
