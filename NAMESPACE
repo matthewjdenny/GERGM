@@ -3,6 +3,7 @@
 export(Estimate_Plot)
 export(GOF)
 export(Trace_Plot)
+export(find_example_simulated_network)
 export(gergm)
 export(hysteresis)
 export(hysteresis_plot)
