@@ -19,6 +19,9 @@
 #' nodes. Defualts to NULL.
 #' @param comparison_names An optional string vector of length two providing
 #' titles for each of the two networks to be compared. Defaults to NULL.
+#' @param seed Optional argument to set the seed for the network layout
+#' algorithm so that plots look the same across multiple runs. Defaults to NULL
+#' but can be a positive integer (eg. 12345).
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)
@@ -31,8 +34,13 @@ plot_network <- function(sociomatrix,
                          pdf_name = "Test.pdf",
                          output_directory = "./",
                          comparison_network = NULL,
-                         comparison_names = NULL
+                         comparison_names = NULL,
+                         seed = NULL
                          ){
+
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
 
   # check input
   if (class(sociomatrix) != "matrix" & class(sociomatrix) != "data.frame") {

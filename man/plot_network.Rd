@@ -6,7 +6,7 @@
 \usage{
 plot_network(sociomatrix, threshold = 0.5, save_pdf = FALSE,
   pdf_name = "Test.pdf", output_directory = "./",
-  comparison_network = NULL, comparison_names = NULL)
+  comparison_network = NULL, comparison_names = NULL, seed = NULL)
 }
 \arguments{
 \item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges
@@ -33,6 +33,10 @@ nodes. Defualts to NULL.}
 
 \item{comparison_names}{An optional string vector of length two providing
 titles for each of the two networks to be compared. Defaults to NULL.}
+
+\item{seed}{Optional argument to set the seed for the network layout
+algorithm so that plots look the same across multiple runs. Defaults to NULL
+but can be a positive integer (eg. 12345).}
 }
 \description{
 Generates a visualization of a value-edged network.
