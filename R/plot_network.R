@@ -12,6 +12,13 @@
 #' include a ".pdf" extension.
 #' @param output_directory The directory where the user would like to output the
 #' PDF if save_pdf == TRUE.
+#' @param comparison_network An optional argument providing a second square
+#' numeric matrix (socimatrix) with real valued edges '(no NA's) to be visually
+#' compared to sociomatrix. The second network will be Procrustes transformed so
+#' that it appears most similar without chaning hte relativel positions of
+#' nodes. Defualts to NULL.
+#' @param comparison_names An optional string vector of length two providing
+#' titles for each of the two networks to be compared. Defaults to NULL.
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)
@@ -22,16 +29,94 @@ plot_network <- function(sociomatrix,
                          threshold = 0.5,
                          save_pdf = FALSE,
                          pdf_name = "Test.pdf",
-                         output_directory = "./"
+                         output_directory = "./",
+                         comparison_network = NULL,
+                         comparison_names = NULL
                          ){
 
   # check input
-  if(class(sociomatrix) != "matrix" & class(sociomatrix) != "data.frame"){
+  if (class(sociomatrix) != "matrix" & class(sociomatrix) != "data.frame") {
     stop("You must provide the network as a numeric matrix.")
   }
 
-  if(nrow(sociomatrix) != ncol(sociomatrix)){
+  if (nrow(sociomatrix) != ncol(sociomatrix)) {
     stop("You must provide a square matrix.")
+  }
+
+  # check to see if we provided a comparison network, and if so, deal with it.
+  COMPARISON <- FALSE
+  if (!is.null(comparison_network)) {
+
+    if (is.null(comparison_names)) {
+      comparison_names <- c("","")
+    } else {
+      if(length(comparison_names) != 2) {
+        stop("You must provide a comparison_names object as a vector containing two strings.")
+      }
+    }
+
+    # check optional input
+    if (class(comparison_network) != "matrix" &
+       class(comparison_network) != "data.frame") {
+      stop("You must provide the network as a numeric matrix.")
+    }
+
+    if (nrow(comparison_network) != ncol(comparison_network)) {
+      stop("You must provide a square matrix.")
+    }
+
+    if (nrow(comparison_network) != nrow(sociomatrix)) {
+      stop("You must provide two matrices with the same dimensions.")
+    }
+    COMPARISON <- TRUE
+
+    # get the network ready for plotting
+
+    diag(comparison_network) <- 0
+
+    # create temporary matrices that can be altered
+    temp <- temp2 <- matrix(comparison_network[,],
+                            nrow(comparison_network),
+                            ncol(comparison_network))
+
+    # determine the threshold for removing edges
+    cutoff <- max(abs(temp))*threshold
+
+    # remove edges
+    temp[which(abs(temp ) < cutoff)] <- 0
+
+    # create a network object using adjacency matrix with edges removed
+    net3 <- igraph::graph.adjacency(temp ,mode="directed",
+                                   weighted=TRUE,diag=FALSE)
+
+    #create layout with Fuchterman Reingold
+    layout_c <- igraph::layout_with_fr(net3, weights = igraph::E(net3)$weight)
+
+    # create a second network object with the un-truncated network
+    net4 <- igraph::graph.adjacency(temp2,mode="directed",
+                                    weighted=TRUE,diag=FALSE)
+
+    # get an edgelist
+    edgelist_c <- igraph::get.edgelist(net4)
+    # get the edge weights
+    weights_c <- igraph::E(net4)$weight
+
+    # order edgeweights from smallest absolute value to largest
+    ordering <- order(abs(weights_c), decreasing = F)
+    edgelist_c <- edgelist_c[ordering,]
+    weights_c <- weights_c[ordering]
+
+    # generate edge colors
+    negcolors <- colorRampPalette(c('red','black'))
+    poscolors <- colorRampPalette(c('black','blue'))
+    negcolors <- negcolors(25)
+    poscolors <- poscolors(25)
+
+    # generate edge widths
+    negbreaks_c <- seq(min(weights_c), 0, length.out = 26)
+    posbreaks_c <- seq(0, max(weights_c), length.out = 26)
+    widbreaks_c <- seq(0,max(abs(weights_c)),length.out = 50)
+    widths_c <- seq(0,5,length.out = 50)
   }
 
   diag(sociomatrix) <- 0
@@ -78,128 +163,371 @@ plot_network <- function(sociomatrix,
   widbreaks <- seq(0,max(abs(weights)),length.out = 50)
   widths <- seq(0,5,length.out = 50)
 
+  if (COMPARISON) {
+    layout_c <- vegan::procrustes(layout, layout_c, scale=F)$Yrot
+  }
 
   ##### If we are saving a PDF
-  if(save_pdf){
+  if(save_pdf) {
     #get current working directory
     cur_directory <- getwd()
     setwd(output_directory)
 
-    pdf(file = pdf_name, width = 12, height = 12)
-    #start plot
-    par(bg = "black", mar = c(2,2,2,2),xpd=TRUE)
-    plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
-         xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-         ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+    # if we are making a comparison, two plots next to eachother
+    if (COMPARISON) {
+      pdf(file = pdf_name, width = 24, height = 12)
+      #start plot
+      par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+      plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+           xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
+           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
 
-    # add in edges
-    for(i in 1:length(weights)){
-      cur1 <- layout[edgelist[i,1],]
-      cur2 <- layout[edgelist[i,2],]
-      curweight <- weights[i]
+      # add in edges
+      for(i in 1:length(weights)){
+        cur1 <- layout[edgelist[i,1],]
+        cur2 <- layout[edgelist[i,2],]
+        curweight <- weights[i]
 
-      # find edge color
-      nf <- TRUE
-      counter <- 1
-      bin <- 1
-      while(nf){
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
+        }
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks[counter] >= abs(curweight)){
+            wid <- counter
+            nf <- FALSE
+          }
+          counter <- counter +1
+        }
         if(curweight > 0){
-          if(posbreaks[counter] >= curweight){
-            bin <- counter
-            nf <- FALSE
-          }
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths[wid])
         }else{
-          if(negbreaks[counter] >= curweight){
-            bin <- counter
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths[wid])
+        }
+      }
+      text(layout,labels = rownames(sociomatrix), col = "white")
+      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+
+      # now for the comparison network
+
+
+      plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
+           xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
+           xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+           ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+
+      # add in edges
+      for(i in 1:length(weights_c)){
+        cur1 <- layout_c[edgelist_c[i,1],]
+        cur2 <- layout_c[edgelist_c[i,2],]
+        curweight <- weights_c[i]
+
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks_c[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks_c[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
+        }
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks_c[counter] >= abs(curweight)){
+            wid <- counter
             nf <- FALSE
           }
+          counter <- counter +1
         }
-        counter <- counter +1
-      }
-
-      # find edge width
-      nf <- TRUE
-      counter <- 1
-      wid <- 1
-      while(nf){
-        if(widbreaks[counter] >= abs(curweight)){
-          wid <- counter
-          nf <- FALSE
+        if(curweight > 0){
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths_c[wid])
+        }else{
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths_c[wid])
         }
-        counter <- counter +1
       }
-      if(curweight > 0){
-        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-              col = poscolors[bin], lwd = widths[wid])
-      }else{
-        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-              col = negcolors[bin], lwd = widths[wid])
+      text(layout_c,labels = rownames(comparison_network), col = "white")
+      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+             legend = c(round(min(comparison_network),2),
+                        round(max(comparison_network),2)),
+             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+
+      dev.off()
+    } else {
+      # for only a single plot
+      pdf(file = pdf_name, width = 12, height = 12)
+      #start plot
+      par(bg = "black", mar = c(2,2,2,2),xpd=TRUE)
+      plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
+           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+
+      # add in edges
+      for(i in 1:length(weights)){
+        cur1 <- layout[edgelist[i,1],]
+        cur2 <- layout[edgelist[i,2],]
+        curweight <- weights[i]
+
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
+        }
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks[counter] >= abs(curweight)){
+            wid <- counter
+            nf <- FALSE
+          }
+          counter <- counter +1
+        }
+        if(curweight > 0){
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths[wid])
+        }else{
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths[wid])
+        }
       }
-    }
-    text(layout,labels = rownames(sociomatrix), col = "white")
-    legend("bottom", inset=0, title = "Edge Values",title.col = "white",
-           legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-           fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
-    dev.off()
+      text(layout,labels = rownames(sociomatrix), col = "white")
+      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      dev.off()
 
-
+    } # end of comparison or not conditional else statement
     #reset working directory
     setwd(cur_directory)
-  }else{
-    #start plot
-    par(bg = "black", mar = c(2,2,2,2),xpd=TRUE)
-    plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
-         xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-         ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+  } else {
 
-    # add in edges
-    for(i in 1:length(weights)){
-      cur1 <- layout[edgelist[i,1],]
-      cur2 <- layout[edgelist[i,2],]
-      curweight <- weights[i]
 
-      # find edge color
-      nf <- TRUE
-      counter <- 1
-      bin <- 1
-      while(nf){
+    # if we are making a comparison, two plots next to eachother
+    if (COMPARISON) {
+      #start plot
+      par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+      plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+           xlab = "", ylab = "",main= comparison_names[1],col.main = "white",
+           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+
+      # add in edges
+      for(i in 1:length(weights)){
+        cur1 <- layout[edgelist[i,1],]
+        cur2 <- layout[edgelist[i,2],]
+        curweight <- weights[i]
+
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
+        }
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks[counter] >= abs(curweight)){
+            wid <- counter
+            nf <- FALSE
+          }
+          counter <- counter +1
+        }
         if(curweight > 0){
-          if(posbreaks[counter] >= curweight){
-            bin <- counter
-            nf <- FALSE
-          }
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths[wid])
         }else{
-          if(negbreaks[counter] >= curweight){
-            bin <- counter
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths[wid])
+        }
+      }
+      text(layout,labels = rownames(sociomatrix), col = "white")
+      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+
+      # now for the comparison network
+
+
+      plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
+           xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
+           xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+           ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+
+      # add in edges
+      for(i in 1:length(weights_c)){
+        cur1 <- layout_c[edgelist_c[i,1],]
+        cur2 <- layout_c[edgelist_c[i,2],]
+        curweight <- weights_c[i]
+
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks_c[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks_c[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
+        }
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks_c[counter] >= abs(curweight)){
+            wid <- counter
             nf <- FALSE
           }
+          counter <- counter +1
         }
-        counter <- counter +1
+        if(curweight > 0){
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths_c[wid])
+        }else{
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths_c[wid])
+        }
       }
+      text(layout_c,labels = rownames(comparison_network), col = "white")
+      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+             legend = c(round(min(comparison_network),2),
+                        round(max(comparison_network),2)),
+             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
 
-      # find edge width
-      nf <- TRUE
-      counter <- 1
-      wid <- 1
-      while(nf){
-        if(widbreaks[counter] >= abs(curweight)){
-          wid <- counter
-          nf <- FALSE
+    } else {
+      #start plot
+      par(bg = "black", mar = c(2,2,2,2),xpd = TRUE)
+      plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
+           xlim = c((min(layout[,1])-2), (max(layout[,1]) + 2)),
+           ylim = c((min(layout[,2])-2), (max(layout[,2]) + 2)))
+
+      # add in edges
+      for (i in 1:length(weights)) {
+        cur1 <- layout[edgelist[i,1],]
+        cur2 <- layout[edgelist[i,2],]
+        curweight <- weights[i]
+
+        # find edge color
+        nf <- TRUE
+        counter <- 1
+        bin <- 1
+        while(nf){
+          if(curweight > 0){
+            if(posbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }else{
+            if(negbreaks[counter] >= curweight){
+              bin <- counter
+              nf <- FALSE
+            }
+          }
+          counter <- counter +1
         }
-        counter <- counter +1
+
+        # find edge width
+        nf <- TRUE
+        counter <- 1
+        wid <- 1
+        while(nf){
+          if(widbreaks[counter] >= abs(curweight)){
+            wid <- counter
+            nf <- FALSE
+          }
+          counter <- counter +1
+        }
+        if(curweight > 0){
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = poscolors[bin], lwd = widths[wid])
+        }else{
+          lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
+                col = negcolors[bin], lwd = widths[wid])
+        }
       }
-      if(curweight > 0){
-        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-              col = poscolors[bin], lwd = widths[wid])
-      }else{
-        lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-              col = negcolors[bin], lwd = widths[wid])
-      }
+      text(layout,labels = rownames(sociomatrix), col = "white")
+      legend("bottom", inset=0, title = "Edge Values",title.col = "white",
+             legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+             fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
     }
-    text(layout,labels = rownames(sociomatrix), col = "white")
-    legend("bottom", inset=0, title = "Edge Values",title.col = "white",
-           legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-           fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
   }
 
   par(bg = "white")

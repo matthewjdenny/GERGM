@@ -5,7 +5,8 @@
 \title{Plots of value-edged networks.}
 \usage{
 plot_network(sociomatrix, threshold = 0.5, save_pdf = FALSE,
-  pdf_name = "Test.pdf", output_directory = "./")
+  pdf_name = "Test.pdf", output_directory = "./",
+  comparison_network = NULL, comparison_names = NULL)
 }
 \arguments{
 \item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges
@@ -23,6 +24,15 @@ include a ".pdf" extension.}
 
 \item{output_directory}{The directory where the user would like to output the
 PDF if save_pdf == TRUE.}
+
+\item{comparison_network}{An optional argument providing a second square
+numeric matrix (socimatrix) with real valued edges '(no NA's) to be visually
+compared to sociomatrix. The second network will be Procrustes transformed so
+that it appears most similar without chaning hte relativel positions of
+nodes. Defualts to NULL.}
+
+\item{comparison_names}{An optional string vector of length two providing
+titles for each of the two networks to be compared. Defaults to NULL.}
 }
 \description{
 Generates a visualization of a value-edged network.
