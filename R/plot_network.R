@@ -22,6 +22,8 @@
 #' @param seed Optional argument to set the seed for the network layout
 #' algorithm so that plots look the same across multiple runs. Defaults to NULL
 #' but can be a positive integer (eg. 12345).
+#' @param white_background Defaults to FALSE. If TRUE, then network is plotted
+#' on a white background with black lettering.
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)
@@ -35,7 +37,8 @@ plot_network <- function(sociomatrix,
                          output_directory = "./",
                          comparison_network = NULL,
                          comparison_names = NULL,
-                         seed = NULL
+                         seed = NULL,
+                         white_background = FALSE
                          ){
 
   if (!is.null(seed)) {
@@ -49,6 +52,20 @@ plot_network <- function(sociomatrix,
 
   if (nrow(sociomatrix) != ncol(sociomatrix)) {
     stop("You must provide a square matrix.")
+  }
+
+  if (white_background) {
+    # generate edge colors
+    negcolors <- colorRampPalette(c('red','white'))
+    poscolors <- colorRampPalette(c('white','blue'))
+    negcolors <- negcolors(25)
+    poscolors <- poscolors(25)
+  } else {
+    # generate edge colors
+    negcolors <- colorRampPalette(c('red','black'))
+    poscolors <- colorRampPalette(c('black','blue'))
+    negcolors <- negcolors(25)
+    poscolors <- poscolors(25)
   }
 
   # check to see if we provided a comparison network, and if so, deal with it.
@@ -114,12 +131,6 @@ plot_network <- function(sociomatrix,
     edgelist_c <- edgelist_c[ordering,]
     weights_c <- weights_c[ordering]
 
-    # generate edge colors
-    negcolors <- colorRampPalette(c('red','black'))
-    poscolors <- colorRampPalette(c('black','blue'))
-    negcolors <- negcolors(25)
-    poscolors <- poscolors(25)
-
     # generate edge widths
     negbreaks_c <- seq(min(weights_c), 0, length.out = 26)
     posbreaks_c <- seq(0, max(weights_c), length.out = 26)
@@ -159,12 +170,6 @@ plot_network <- function(sociomatrix,
   edgelist <- edgelist[ordering,]
   weights <- weights[ordering]
 
-  # generate edge colors
-  negcolors <- colorRampPalette(c('red','black'))
-  poscolors <- colorRampPalette(c('black','blue'))
-  negcolors <- negcolors(25)
-  poscolors <- poscolors(25)
-
   # generate edge widths
   negbreaks <- seq(min(weights), 0, length.out = 26)
   posbreaks <- seq(0, max(weights), length.out = 26)
@@ -185,11 +190,19 @@ plot_network <- function(sociomatrix,
     if (COMPARISON) {
       pdf(file = pdf_name, width = 24, height = 12)
       #start plot
-      par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
-      plot(layout,pch = 20, cex = 1, col = "black", axes = F,
-           xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
-           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      if (white_background) {
+        par(bg = "white", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        plot(layout,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "", main = comparison_names[1],col.main = "black",
+             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      } else {
+        par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
+             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      }
 
       # add in edges
       for(i in 1:length(weights)){
@@ -235,18 +248,33 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths[wid])
         }
       }
-      text(layout,labels = rownames(sociomatrix), col = "white")
-      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      if (white_background) {
+        text(layout,labels = rownames(sociomatrix), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout,labels = rownames(sociomatrix), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
+
 
       # now for the comparison network
 
-
-      plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
-           xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
-           xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-           ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      if (white_background) {
+        plot(layout_c ,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "", main = comparison_names[2],col.main = "black",
+             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      } else {
+        plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
+             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      }
 
       # add in edges
       for(i in 1:length(weights_c)){
@@ -292,21 +320,39 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths_c[wid])
         }
       }
-      text(layout_c,labels = rownames(comparison_network), col = "white")
-      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-             legend = c(round(min(comparison_network),2),
-                        round(max(comparison_network),2)),
-             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      if (white_background) {
+        text(layout_c,labels = rownames(comparison_network), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(comparison_network),2),
+                          round(max(comparison_network),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout_c,labels = rownames(comparison_network), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(comparison_network),2),
+                          round(max(comparison_network),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
 
       dev.off()
     } else {
       # for only a single plot
       pdf(file = pdf_name, width = 12, height = 12)
       #start plot
-      par(bg = "black", mar = c(2,2,2,2),xpd=TRUE)
-      plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
-           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      if (white_background) {
+        par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
+        plot(layout,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "",
+             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
+             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+      } else {
+        par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
+        plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "",
+             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
+             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+      }
 
       # add in edges
       for(i in 1:length(weights)){
@@ -352,10 +398,18 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths[wid])
         }
       }
-      text(layout,labels = rownames(sociomatrix), col = "white")
-      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      if (white_background) {
+        text(layout,labels = rownames(sociomatrix), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout,labels = rownames(sociomatrix), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
       dev.off()
 
     } # end of comparison or not conditional else statement
@@ -367,11 +421,19 @@ plot_network <- function(sociomatrix,
     # if we are making a comparison, two plots next to eachother
     if (COMPARISON) {
       #start plot
-      par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
-      plot(layout,pch = 20, cex = 1, col = "black", axes = F,
-           xlab = "", ylab = "",main= comparison_names[1],col.main = "white",
-           xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-           ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      if (white_background) {
+        par(bg = "white", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        plot(layout,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "", main = comparison_names[1],col.main = "black",
+             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      } else {
+        par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
+             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
+             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+      }
 
       # add in edges
       for(i in 1:length(weights)){
@@ -417,18 +479,32 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths[wid])
         }
       }
-      text(layout,labels = rownames(sociomatrix), col = "white")
-      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-             legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      if (white_background) {
+        text(layout,labels = rownames(sociomatrix), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout,labels = rownames(sociomatrix), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
 
       # now for the comparison network
 
-
-      plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
-           xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
-           xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-           ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      if (white_background) {
+        plot(layout_c ,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "", main = comparison_names[2],col.main = "black",
+             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      } else {
+        plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
+             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
+             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+      }
 
       # add in edges
       for(i in 1:length(weights_c)){
@@ -474,18 +550,37 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths_c[wid])
         }
       }
-      text(layout_c,labels = rownames(comparison_network), col = "white")
-      legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-             legend = c(round(min(comparison_network),2),
-                        round(max(comparison_network),2)),
-             fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+
+      if (white_background) {
+        text(layout_c,labels = rownames(comparison_network), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(comparison_network),2),
+                          round(max(comparison_network),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout_c,labels = rownames(comparison_network), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(comparison_network),2),
+                          round(max(comparison_network),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
 
     } else {
       #start plot
-      par(bg = "black", mar = c(2,2,2,2),xpd = TRUE)
-      plot(layout,pch = 20, cex = 1, col = "black", axes = F, xlab = "", ylab = "",
-           xlim = c((min(layout[,1])-2), (max(layout[,1]) + 2)),
-           ylim = c((min(layout[,2])-2), (max(layout[,2]) + 2)))
+      if (white_background) {
+        par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
+        plot(layout,pch = 20, cex = 1, col = "white", axes = F,
+             xlab = "", ylab = "",
+             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
+             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+      } else {
+        par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
+        plot(layout,pch = 20, cex = 1, col = "black", axes = F,
+             xlab = "", ylab = "",
+             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
+             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+      }
 
       # add in edges
       for (i in 1:length(weights)) {
@@ -531,10 +626,18 @@ plot_network <- function(sociomatrix,
                 col = negcolors[bin], lwd = widths[wid])
         }
       }
-      text(layout,labels = rownames(sociomatrix), col = "white")
-      legend("bottom", inset=0, title = "Edge Values",title.col = "white",
-             legend =c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-             fill=c("red","blue"), horiz=T, bg = "black",text.col = "white")
+      if (white_background) {
+        text(layout,labels = rownames(sociomatrix), col = "black")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               box.col = "white")
+      } else {
+        text(layout,labels = rownames(sociomatrix), col = "white")
+        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+      }
     }
   }
 
