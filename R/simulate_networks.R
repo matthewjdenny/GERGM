@@ -231,6 +231,7 @@ simulate_networks <- function(formula,
     GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
     GERGM_Object@thin <- thin
     GERGM_Object@burnin <- MCMC_burnin
+    network_is_directed <- GERGM_Object@directed_network
   }
 
 
