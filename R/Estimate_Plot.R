@@ -90,7 +90,7 @@ Estimate_Plot <- function(
     }
     cat("Replacing:\n")
     print(data$Variable)
-    with("With..\n")
+    cat("With..\n")
     print(coefficient_names)
     data$Variable <- coefficient_names
   }
