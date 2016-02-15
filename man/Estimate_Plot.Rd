@@ -5,7 +5,8 @@
 \title{Generate parameter estimate plot with 95 percent CI's from a GERGM object.}
 \usage{
 Estimate_Plot(GERGM_Object, normalize_coefficients = FALSE,
-  coefficients_to_plot = c("both", "covariate", "structural"))
+  coefficients_to_plot = c("both", "covariate", "structural"),
+  coefficient_names = NULL, leave_out_coefficients = NULL)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
@@ -21,6 +22,16 @@ and sign easier.}
 parameters to plot. Can be one of "both","covariate", or "structural". Useful
 for creating separate parameter plots for covariates and structural
 parameters when these parameters are on very different scales.}
+
+\item{coefficient_names}{Defualts to NULL. Can be a string vector of names
+for coefficients to be used in making publication quality plots.}
+
+\item{leave_out_coefficients}{Defaults to NULL. Can be a string vector of
+coefficient names as they appear in the plot. These coefficients will be
+removed from the final plot. Useful if the intercept term is much larger in
+magnitude than other estimates, and the user wishes to clarify the other
+parameter estimates without normalizing.
+given}
 }
 \value{
 A parameter estimate plot.

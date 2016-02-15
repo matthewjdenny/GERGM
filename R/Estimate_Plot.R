@@ -11,12 +11,22 @@
 #' parameters to plot. Can be one of "both","covariate", or "structural". Useful
 #' for creating separate parameter plots for covariates and structural
 #' parameters when these parameters are on very different scales.
+#' @param coefficient_names Defualts to NULL. Can be a string vector of names
+#' for coefficients to be used in making publication quality plots.
+#' @param leave_out_coefficients Defaults to NULL. Can be a string vector of
+#' coefficient names as they appear in the plot. These coefficients will be
+#' removed from the final plot. Useful if the intercept term is much larger in
+#' magnitude than other estimates, and the user wishes to clarify the other
+#' parameter estimates without normalizing.
+#' given
 #' @return A parameter estimate plot.
 #' @export
 Estimate_Plot <- function(
   GERGM_Object,
   normalize_coefficients = FALSE,
-  coefficients_to_plot = c("both","covariate","structural")
+  coefficients_to_plot = c("both","covariate","structural"),
+  coefficient_names = NULL,
+  leave_out_coefficients = NULL
   ){
 
   coefficients_to_plot <- coefficients_to_plot[1]
@@ -72,6 +82,31 @@ Estimate_Plot <- function(
     )
     data <- data.frame(modelFrame)
   }
+
+  # rename coefficients if necessary
+  if (!is.null(coefficient_names)) {
+    if (length(coefficient_names) != nrow(data)) {
+      stop("coefficient_names must be the same length as the number of covariates in the plot. Try setting coefficient_names = NULL and counting the number of coefficients to check that you have provided the right number.")
+    }
+    data$Variable <- coefficient_names
+  }
+
+  #remove variables
+  if (!is.null(leave_out_coefficients)) {
+    for (j in 1:length(leave_out_coefficients)) {
+      remove <- which(data$Variable == leave_out_coefficients[j])
+      if (length(remove) == 1) {
+        data <- data[-remove,]
+        cat("Removing variable",leave_out_coefficients[j],"\n")
+      } else if (length(remove) > 1) {
+        cat("Your argument matches more than one variable. Please respecify.\n")
+      } else {
+        cat ("There is no variable",leave_out_coefficients[j],
+             ".Please respecify.\n")
+      }
+    }
+  }
+
 
   # standardize coefficients
   if (normalize_coefficients) {
