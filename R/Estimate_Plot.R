@@ -61,8 +61,7 @@ Estimate_Plot <- function(
                                 SE = temp2,
                                 Model = "Lambda Estimates"
       )
-      data2 <- data.frame(modelFrame2)
-      data <- rbind(data,data2)
+      data <- data.frame(modelFrame2)
     }
   } else if (coefficients_to_plot == "structural") {
     # make sure that we use rows as estimates and se are in a two row matrix
