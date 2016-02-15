@@ -88,6 +88,10 @@ Estimate_Plot <- function(
     if (length(coefficient_names) != nrow(data)) {
       stop("coefficient_names must be the same length as the number of covariates in the plot. Try setting coefficient_names = NULL and counting the number of coefficients to check that you have provided the right number.")
     }
+    cat("Replacing:\n")
+    print(data$Variable)
+    with("With..\n")
+    print(coefficient_names)
     data$Variable <- coefficient_names
   }
 
