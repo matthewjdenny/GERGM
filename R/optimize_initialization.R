@@ -14,7 +14,7 @@ optimize_initialization <- function(GERGM_Object,
   statistics <- MPLE_Results$statistics
 
   # now we do a grid search
-  num_thetas <- length(theta)
+  num_thetas <- length(theta$par)
 
   grid_steps  <- GERGM_Object@theta_grid_optimization_list$grid_steps
   step_size <- GERGM_Object@theta_grid_optimization_list$step_size
@@ -30,8 +30,8 @@ optimize_initialization <- function(GERGM_Object,
   # generate the parameter sweep grid
   parameter_list <- vector(mode = "list", length = num_thetas)
   for (i in 1:num_thetas) {
-    min_bnd <- theta[i] - grid_steps * step_size * abs(theta[i])
-    max_bnd <- theta[i] + grid_steps * step_size * abs(theta[i])
+    min_bnd <- theta$par[i] - grid_steps * step_size * abs(theta$par[i])
+    max_bnd <- theta$par[i] + grid_steps * step_size * abs(theta$par[i])
     parameter_list[[i]] <- seq(from = min_bnd,
                                to = max_bnd,
                                length.out = total_steps)
