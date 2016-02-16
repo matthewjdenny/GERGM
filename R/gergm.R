@@ -336,7 +336,11 @@ gergm <- function(formula,
   GERGM_Object@transformation_type <- transformation_type
   GERGM_Object@downweight_statistics_together <- downweight_statistics_together
   GERGM_Object@directed_network <- network_is_directed
-  GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
+  # only add in list if not NULL
+  if(class(theta_grid_optimization_list) == "list") {
+    GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
+  }
+
 
 
   if (!is.null(data_transformation)) {
