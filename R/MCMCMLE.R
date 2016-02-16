@@ -18,6 +18,17 @@ MCMCMLE <- function(mc.num.iterations,
   statistics <- MPLE_Results$statistics
   init.statistics <- MPLE_Results$init.statistics
 
+  # if we are using the experimental optimization feature.
+  if (GERGM_Object@hyperparameter_optimization) {
+    if (!is.null(GERGM_Object@theta_grid_optimization_list)) {
+      cat("Optimizing thetas, this may take days...\n")
+      theta$par <- optimize_initialization(GERGM_Object,
+                              verbose,
+                              seed2,
+                              possible.stats)
+    }
+  }
+
   ##########################################################################
   ## Simulate new networks
   FIX_DEGENERACY <- FALSE
