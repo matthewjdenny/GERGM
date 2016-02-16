@@ -44,7 +44,8 @@ setClass(Class = "gergm",
            MPLE_gain_factor = "numeric",
            simulated_statistics_for_GOF = "data.frame",
            hessians = "list",
-           standard_errors = "list"
+           standard_errors = "list",
+           theta_grid_optimization_list = "list"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
