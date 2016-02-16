@@ -128,6 +128,26 @@
 #' output!
 #' @param target_accept_rate The target Metropolis Hastings acceptance rate.
 #' Defaults to 0.25
+#' @param theta_grid_optimization_list Defaults to NULL. This highly
+#' experimental feature may allow the user to address model degeneracy arising
+#' from a suboptimal theta initialization. It performs a grid search around the
+#' theta values calculated via MPLE to select a potentially improved
+#' initialization. The runtime complexity of this feature grows exponentially in
+#' the size of the grid and number of parameters -- use with great care. This
+#' feature may only be used if hyperparameter_optimization = TRUE, and if a list
+#' object of the following form is provided: list(grid_steps = 2,
+#' step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
+#' the number of steps out the grid search will perform, step_size indicates the
+#' fraction of the MPLE theta estimate that each grid search step will change by,
+#' cores indicates the number of cores to be used for parallel optimization, and
+#' iteration_fraction indcates the fraction of the nubmer of MCMC iterations
+#' that will be used for each grid point (should be set less than 1 to speed up
+#' optimization). In general grid_steps should be smaller the more structural
+#' parameters the user wishes to specify. For example, with 5 structural
+#' paramters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+#' = 16807 parameter grid search. Again this feature is highly experimental and
+#' should only be used as a last resort (after playing with exponential
+#' downweighting and the MPLE_gain_factor).
 #' @param ... Optional arguments, currently unsupported.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -180,6 +200,7 @@ gergm <- function(formula,
                   omit_intercept_term = FALSE,
                   hyperparameter_optimization = FALSE,
                   target_accept_rate = 0.25,
+                  theta_grid_optimization_list = NULL,
                   ...
                   ){
 
@@ -315,6 +336,7 @@ gergm <- function(formula,
   GERGM_Object@transformation_type <- transformation_type
   GERGM_Object@downweight_statistics_together <- downweight_statistics_together
   GERGM_Object@directed_network <- network_is_directed
+  GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
 
 
   if (!is.null(data_transformation)) {
