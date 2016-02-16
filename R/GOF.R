@@ -31,33 +31,46 @@ GOF <- function(GERGM_Object,
 
       #now we are only dealing with ttriads and twostars since this is an undirected network
       temp <- temp[,c(2,5,6)]
-      colnames(temp)[1] <- "twostars"
+      colnames(temp) <- c("Two\nStars",
+                          "Transitive\nTriads",
+                          "Network\nDensity")
 
       boxplot(temp, medcol = UMASS_RED,
-              xlab = "Network Statistic",
+              xlab = "",
               ylab = "Normalized Statistic Values",
-              main = "Blue = Observed Statistic, Red = Simulated Mean")
+              main = "Blue = Observed Statistic, Red = Simulated Mean",
+              xaxt = "n",
+              las = 1)
       zero_line <- rep(0,length(GERGM_Object@stats[2, ]))
       zero_line <- zero_line[c(2,5,6)]
       zero_plot <- rbind(zero_line,zero_line)
-      boxplot(zero_plot, add = T, medcol = UMASS_BLUE, names = F)
+      axis(side = 1,at = 1:3,colnames(temp),tick = FALSE, line = 1)
+      boxplot(zero_plot, add = T, medcol = UMASS_BLUE, names = F, axes = F)
     } else {
       #input is the GERGM_Object, we are going to normalize all statistics
       temp <- GERGM_Object@simulated_statistics_for_GOF
+      colnames(temp) <- c("Out\n2-Stars",
+                          "In\n2-Stars",
+                          "Cyclic\nTriads",
+                          "Mutual\nDyads",
+                          "Transitive\nTriads",
+                          "Network\nDensity")
 
       temp2 <- apply(GERGM_Object@simulated_statistics_for_GOF,2,sd)
       for(i in 1:ncol(temp)){
         temp[,i] <- temp[,i] - GERGM_Object@stats[2,i]
         temp[,i] <- temp[,i]/temp2[i]
       }
-
       boxplot(temp, medcol = UMASS_RED,
-              xlab = "Network Statistic",
+              xlab = "",
               ylab = "Normalized Statistic Values",
-              main = "Blue = Observed Statistic, Red = Simulated Mean")
+              main = "Blue = Observed Statistic, Red = Simulated Mean",
+              xaxt = "n",
+              las = 1)
+      axis(side = 1,at = 1:6,colnames(temp),tick = FALSE, line = 1)
       zero_line <- rep(0,length(GERGM_Object@stats[2, ]))
       zero_plot <- rbind(zero_line,zero_line)
-      boxplot(zero_plot, add = T, medcol = UMASS_BLUE, names = F)
+      boxplot(zero_plot, add = T, medcol = UMASS_BLUE, names = F, axes = F)
     }
   }
 }
