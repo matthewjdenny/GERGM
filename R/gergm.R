@@ -337,7 +337,9 @@ gergm <- function(formula,
   GERGM_Object@downweight_statistics_together <- downweight_statistics_together
   GERGM_Object@directed_network <- network_is_directed
   # only add in list if not NULL
+  GERGM_Object@using_grid_optimization <- FALSE
   if(class(theta_grid_optimization_list) == "list") {
+    GERGM_Object@using_grid_optimization <- TRUE
     GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
   }
 

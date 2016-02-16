@@ -20,7 +20,7 @@ MCMCMLE <- function(mc.num.iterations,
 
   # if we are using the experimental optimization feature.
   if (GERGM_Object@hyperparameter_optimization) {
-    if (!is.null(GERGM_Object@theta_grid_optimization_list)) {
+    if (GERGM_Object@using_grid_optimization) {
       cat("Optimizing thetas, this may take days...\n")
       theta$par <- optimize_initialization(GERGM_Object,
                               verbose,
