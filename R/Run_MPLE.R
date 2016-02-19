@@ -89,15 +89,21 @@ run_mple <- function(GERGM_Object,
     #cat("z.bar", "\n", z.bar, "\n")
     Cov.est <- 0
     for(i in 1:dim(hsn)[1]){
-      Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*% t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
+      Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*%
+        t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
     }
-    Cov.est <- (Cov.est / 20) - z.bar%*%t(z.bar)
+    Cov.est <- (Cov.est / 20) - z.bar %*% t(z.bar)
     #cat("Cov.est", "\n", Cov.est)
-    D.inv <- solve(Cov.est)
-    #calculate
-    theta <- list()
-    theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
-      D.inv %*% (z.bar - obs.stats)
+
+    # try to update but if we get a zero percent accept rate then
+    # do not udpate.
+    try({
+      D.inv <- solve(Cov.est)
+      #calculate
+      theta <- list()
+      theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
+        D.inv %*% (z.bar - obs.stats)
+    })
     if(verbose){
       cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
     }
