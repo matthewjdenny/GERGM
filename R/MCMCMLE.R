@@ -184,25 +184,25 @@ MCMCMLE <- function(mc.num.iterations,
         # If we are using Metropolis Hastings, then try reducing weights and
         # upping the gain factor
         if (GERGM_Object@estimation_method == "Metropolis") {
-          GERGM_Object@weights <- 0.9 * GERGM_Object@weights
-          cat("Reducing exponential weights by 10 percent to:",
+          GERGM_Object@weights <- GERGM_Object@weights - 0.1
+          cat("Reducing exponential weights by 0.1 to:",
               GERGM_Object@weights,
               "in an attempt to address degeneracy issue...\n")
           GERGM_Object <- store_console_output(GERGM_Object,paste(
-            "Reducing exponential weights by 10 percent to:",
+            "Reducing exponential weights by 0.1 to:",
             GERGM_Object@weights,
             "in an attempt to address degeneracy issue..."))
 
           if (GERGM_Object@MPLE_gain_factor == 0) {
             GERGM_Object@MPLE_gain_factor <- 0.05
           } else {
-            GERGM_Object@MPLE_gain_factor <- 1.05 * GERGM_Object@MPLE_gain_factor
+            GERGM_Object@MPLE_gain_factor <-  GERGM_Object@MPLE_gain_factor + 0.05
           }
-          cat("Increasing MPLE gain factor by 5 percent percent to:",
+          cat("Increasing MPLE gain factor by 0.05 to:",
               GERGM_Object@MPLE_gain_factor,
               "as exponential weights have decreased...\n")
           GERGM_Object <- store_console_output(GERGM_Object,paste(
-            "Increasing MPLE gain factor by 5 percent percent to:",
+            "Increasing MPLE gain factor by 0.05 to:",
             GERGM_Object@MPLE_gain_factor,
             "as exponential weights have decreased..."))
           # re-estimate thetas with more downweighting
