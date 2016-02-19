@@ -10,7 +10,8 @@ Create_GERGM_Object_From_Formula <- function(object,
                                              lambda.coef = NULL,
                                              transformation_type,
                                              is_correlation_network = FALSE,
-                                             is_directed = TRUE
+                                             is_directed = TRUE,
+                                             beta_correlation_model = FALSE
                                              ){
 
   res1 <- Parse_Formula_Object(object,
@@ -27,18 +28,22 @@ Create_GERGM_Object_From_Formula <- function(object,
   thresholds <- res1$thresholds
 
   # for now we are not going to allow any covariates
-  if(is_correlation_network){
-    if(!is.null(lambda.coef)){
+  if (is_correlation_network) {
+    if (!is.null(lambda.coef)) {
       stop("Covariate effects are currently not supported for correlation networks. Please respecify without covariates.")
     }
-  }
-
-  # create the network based on the transform family
-  # if there are no lambda.coefficients, we assume there is no transformation
-  # if there is a transformation specified, transform the observed network
-  if (!is.null(lambda.coef) == TRUE){
-    if(transformation_type == "logcauchy" | transformation_type == "lognormal"){
-      if(min(network) <= 0){
+  } else if (beta_correlation_model) {
+    cat("Using Beta model for correlation network data...\n")
+    # if we are using the beta correlation model
+    diag(network) <- 1
+    bounded.network <- correlations.to.partials(network)
+  } else if (!is.null(lambda.coef)) {
+    cat("Covariates Provided...\n")
+    # create the network based on the transform family
+    # if there are no lambda.coefficients, we assume there is no transformation
+    # if there is a transformation specified, transform the observed network
+    if (transformation_type == "logcauchy" | transformation_type == "lognormal") {
+      if (min(network) <= 0) {
         stop(paste("You have selected either a log-Cauchy or log-normal transformation but you have provided a network with values that are less than or equal to zero. Please ensure that the minimum value of the network you provide is greater than zero, or select a cauchy or normal transformation. The minimum value of the network provided is:",min(network)))
       }
       network <- log(network)
@@ -46,33 +51,35 @@ Create_GERGM_Object_From_Formula <- function(object,
     beta <- lambda.coef[1:(length(lambda.coef) - 1)]
     sig <- 0.01 + exp(lambda.coef[length(lambda.coef)])
     BZ <- 0
-    if(is.na(dim(transform.data)[3]) == TRUE){
+    if (is.na(dim(transform.data)[3])) {
       BZ = BZ + beta * transform.data
     }
-    if(!is.na(dim(transform.data)[3]) == TRUE){
+    if (!is.na(dim(transform.data)[3])) {
       for (j in 1:(dim(transform.data)[3])) {
         BZ <- BZ + beta[j] * transform.data[, , j]
       }
     }
-    if(transformation_type == "logcauchy" | transformation_type == "cauchy"){
+    if (transformation_type == "logcauchy" | transformation_type == "cauchy") {
       bounded.network <- pst(network, BZ, sig, 1)
     }
-    if(transformation_type == "lognormal" | transformation_type == "gaussian"){
+    if (transformation_type == "lognormal" | transformation_type == "gaussian") {
       bounded.network <- pst(network, BZ, sig, Inf)
     }
 
-  }
-  if (is.null(lambda.coef) == TRUE) {
+  } # end of lambda conditional
+
+  if (is.null(lambda.coef)) {
     bounded.network <- network
     lambda.coef <- as.data.frame(0)
   }
-  if (is.null(lambda.coef) != TRUE){
+
+  if (!is.null(lambda.coef)) {
     lambda.coef <- as.data.frame(rbind(lambda.coef,NA))
     rownames(lambda.coef) <- c("est", "se")
   }
 
   # if we are providing a correlation network, transform it
-  if(is_correlation_network){
+  if (is_correlation_network) {
     diag(network) <- 1
     print(round(network,2))
     bounded.network <- transform.correlations(network)
