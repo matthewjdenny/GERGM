@@ -317,7 +317,8 @@ gergm <- function(formula,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
      is_correlation_network = using_correlation_network,
-     is_directed = network_is_directed)
+     is_directed = network_is_directed,
+     beta_correlation_model = beta_correlation_model)
 
   data_transformation <- NULL
   if (!is.null(Transformed_Data$transformed_covariates)) {
@@ -339,8 +340,8 @@ gergm <- function(formula,
      lambda.coef = NULL,
      transformation_type = transformation_type,
      is_correlation_network = using_correlation_network,
-     is_directed = network_is_directed
-     )
+     is_directed = network_is_directed,
+     beta_correlation_model = beta_correlation_model)
 
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
