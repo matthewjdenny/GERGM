@@ -47,7 +47,9 @@ setClass(Class = "gergm",
            hessians = "list",
            standard_errors = "list",
            theta_grid_optimization_list = "list",
-           using_grid_optimization = "logical"
+           using_grid_optimization = "logical",
+           mu = "numeric",
+           phi = "numeric"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
