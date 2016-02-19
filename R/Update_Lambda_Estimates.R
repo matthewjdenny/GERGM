@@ -81,8 +81,8 @@ Update_Lambda_Estimates <- function(i,
     GERGM_Object <- temp$GERGM_Object
 
     # store mu and phi for later use in reverse transformation
-    GERGM_Object@BZ <- mu
-    GERGM_Object@BZstdev <- phi
+    GERGM_Object@mu <- mu
+    GERGM_Object@phi <- phi
 
   }  else {
     #do our normal t regression

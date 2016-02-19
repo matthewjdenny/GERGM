@@ -26,7 +26,7 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
 
         # note that we stored these in the Update_Lambda_Estimates() function
         # using BZ and BZstdev as containers for mu and phi respectively.
-        P <- 2*qbt(symnet, GERGM_Object@BZ , GERGM_Object@BZstdev) - 1
+        P <- 2*qbt(symnet, GERGM_Object@mu , GERGM_Object@phi) - 1
 
         # Transform P to a correlation matrix R
         R <- partials.to.correlations(P)
