@@ -100,17 +100,77 @@ mple <- function(net, statistics, directed, verbose = TRUE) {
   xy <- net2xy(net, statistics, directed = directed)
   x <- xy$x
   y <- xy$y
+  # why do we select this initialization
   est <- coef(lm(y ~ x - 1))
   ests <- NULL
-  if(verbose){
-    ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
-                  hessian = TRUE,control = list(fnscale = -1, trace = 6))
-  }else{
-    ests <- optim(par = est, pl, y = y, x = x, method = "BFGS",
-                  hessian = TRUE,control = list(fnscale = -1, trace = 0))
+  if (verbose) {
+    ests <- optim(par = est,
+                  pl,
+                  y = y,
+                  x = x,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 6))
+  } else {
+    ests <- optim(par = est,
+                  pl,
+                  y = y,
+                  x = x,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 0))
   }
   return(ests)
 }
+
+# Log likelihood function calculations
+
+# pseudolikelihood given theta#
+pl <- function(theta, y, x) {
+  return(sum(log(dtexp(y, x %*% theta))))
+}
+
+# The conditional density of each weight from a sample
+dtexp <- function(x, lambda) {
+  den <- numeric(length(x))
+  den[which(lambda != 0)] <- exp(x[which(lambda != 0)] *
+                                   lambda[which(lambda != 0)]) /
+    (1 / lambda[which(lambda != 0)] * (exp(lambda[which(lambda != 0)]) - 1))
+  den[which(lambda == 0)] <- 1
+  return(den)
+}
+
+# Convert an observed network to edge weight vectors x and y
+net2xy <- function(net, statistics, directed) {
+  y <- NULL
+  x <- NULL
+  nodes <- nrow(net)
+  if (directed == TRUE) {
+    for (i in 1:nodes) {
+      for (j in (1:nodes)[-i]) {
+        y <- c(y, net[i, j])
+        x <- rbind(x, dh(net, statistics, i, j))
+      }
+    }
+  }
+  if (directed == FALSE) {
+    for (i in 1:nodes) {
+      for (j in (1:nodes)[-i]) {
+        y <- c(y, net[i, j])
+        x <- rbind(x, dh(net, statistics, i, j))
+      }
+    }
+  }
+  return(list(y = y, x = x))
+}
+
+# why did we stop doing this in the undirected case?
+#     for (i in 2:nodes) {
+#       for (j in (1:(i - 1))) {
+#         y <- c(y, net[i, j])
+#         x <- rbind(x, dh(net, statistics, i, j))
+#       }
+#     }
 
 # ------------------------------------------------------------
 ## Functions for correlation matrices

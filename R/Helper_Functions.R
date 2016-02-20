@@ -56,9 +56,13 @@ dtriads <- function(i, j, net){
 # dh function weight w_{i,j} will be conditioned upon
 # Calculate the marginal change in the network
 dh <- function(net, statistics, i, j) {
-  temp <- c(dout2star(i, j, net), din2star(i, j, net), dctriads(i, j, net),
-            drecip(i, j, net), dttriads(i, j, net), dedgeweight(i, j))
-  if(length(temp) != length(statistics)){
+  temp <- c(dout2star(i, j, net),
+            din2star(i, j, net),
+            dctriads(i, j, net),
+            drecip(i, j, net),
+            dttriads(i, j, net),
+            dedgeweight(i, j))
+  if (length(temp) != length(statistics)) {
     stop("Development ERROR! Please email mdenny@psu.edu! The dh() internal function in Helper_Functions.R has been supplied an incorrect number of statistics.")
   }
   value <- temp[statistics > 0]
@@ -119,36 +123,6 @@ outdeg <- function(net) {
   return(od)
 }
 
-# Convert an observed network to edge weight vectors x and y
-
-net2xy <- function(net, statistics, directed) {
-  y <- NULL
-  x <- NULL
-  nodes <- nrow(net)
-  if (directed == TRUE) {
-    for (i in 1:nodes) {
-      for (j in (1:nodes)[-i]) {
-        y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j))
-      }
-    }
-  }
-  if (directed == FALSE) {
-    for (i in 1:nodes) {
-      for (j in (1:nodes)[-i]) {
-        y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j))
-      }
-    }
-#     for (i in 2:nodes) {
-#       for (j in (1:(i - 1))) {
-#         y <- c(y, net[i, j])
-#         x <- rbind(x, dh(net, statistics, i, j))
-#       }
-#     }
-  }
-  return(list(y = y, x = x))
-}
 
 # Draw a random value either uniform or according to density
 rtexp <- function(n, lambda) {
@@ -162,27 +136,11 @@ rtexp <- function(n, lambda) {
   } else u
 }
 
-# The conditional density of each weight from a sample
-dtexp <- function(x, lambda) {
-  den <- numeric(length(x))
-  den[which(lambda != 0)] <- exp(x[which(lambda != 0)] *
-                                   lambda[which(lambda != 0)]) /
-    (1 / lambda[which(lambda != 0)] * (exp(lambda[which(lambda != 0)]) - 1))
-  den[which(lambda == 0)] <- 1
-  return(den)
-}
-
 # Function to generate dispersed unit interval
 rdisp <- function(n) {
   pnorm(abs(rnorm(n) * 6))
 }
 
-# Log likelihood function calculations
-
-# pseudolikelihood given theta#
-pl <- function(theta, y, x) {
-  return(sum(log(dtexp(y, x %*% theta))))
-}
 
 # add to console output field in GERGM_Object
 #GERGM_Object <- store_console_output(GERGM_Object,addition)
