@@ -96,8 +96,8 @@ llg <- function(par,
 }
 
 # maximum pseudo-likelihood estimates
-mple <- function(net, statistics, directed, verbose = TRUE) {
-  xy <- net2xy(net, statistics, directed = directed)
+mple <- function(net, statistics, directed, alphas, together, verbose = TRUE) {
+  xy <- net2xy(net, statistics, directed, alphas, together)
   x <- xy$x
   y <- xy$y
   # why do we select this initialization
@@ -133,15 +133,15 @@ pl <- function(theta, y, x) {
 # The conditional density of each weight from a sample
 dtexp <- function(x, lambda) {
   den <- numeric(length(x))
-  den[which(lambda != 0)] <- exp(x[which(lambda != 0)] *
-                                   lambda[which(lambda != 0)]) /
-    (1 / lambda[which(lambda != 0)] * (exp(lambda[which(lambda != 0)]) - 1))
+  inds <- which(lambda != 0)
+  den[inds] <- exp(x[inds] * lambda[inds]) /
+    (1 / lambda[inds] * (exp(lambda[inds]) - 1))
   den[which(lambda == 0)] <- 1
   return(den)
 }
 
 # Convert an observed network to edge weight vectors x and y
-net2xy <- function(net, statistics, directed) {
+net2xy <- function(net, statistics, directed, alphas, together) {
   y <- NULL
   x <- NULL
   nodes <- nrow(net)
@@ -149,7 +149,7 @@ net2xy <- function(net, statistics, directed) {
     for (i in 1:nodes) {
       for (j in (1:nodes)[-i]) {
         y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j))
+        x <- rbind(x, dh(net, statistics, i, j, alphas, together))
       }
     }
   }
@@ -157,7 +157,7 @@ net2xy <- function(net, statistics, directed) {
     for (i in 1:nodes) {
       for (j in (1:nodes)[-i]) {
         y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j))
+        x <- rbind(x, dh(net, statistics, i, j, alphas, together))
       }
     }
   }
