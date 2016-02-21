@@ -365,8 +365,6 @@ gergm <- function(formula,
     GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
   }
 
-
-
   if (!is.null(data_transformation)) {
     GERGM_Object@data_transformation <- data_transformation
   }

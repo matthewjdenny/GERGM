@@ -4,24 +4,35 @@
 din2star <- function(i, j, net, alpha, together) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
-  sum(net[cbind(others, j)])
+  if (together == 0) {
+    val <- sum(net[cbind(others, j)] ^ alpha)
+  } else {
+    val <- sum(net[cbind(others, j)]) ^ alpha
+  }
+  return(val)
+
 }
 
 # dout2star
 dout2star <- function(i, j, net, alpha, together) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
-  sum(net[cbind(i, others)])
+  if (together == 0) {
+    val <- sum((net[cbind(i, others)]) ^ alpha)
+  } else {
+    val <- sum(net[cbind(i, others)]) ^ alpha
+  }
+  return(val)
 }
 
 # dedgeweight
 dedgeweight = function(i, j, alpha, together) {
-  1
+  1 ^ alpha
 }
 
 # drecip
 drecip <- function(i, j, net, alpha, together) {
-  net[j, i]
+  net[j, i] ^ alpha
 }
 
 # dctriads
@@ -29,7 +40,13 @@ dctriads <- function(i, j, net, alpha, together) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   triples <- cbind(i, j, others)
-  sum(net[triples[, c(2, 3)]] * net[triples[, c(3, 1)]])
+  if (together == 0) {
+    val <- sum((net[triples[, c(2, 3)]] ^ alpha) *
+                 (net[triples[, c(3, 1)]] ^ alpha))
+  } else {
+    val <- sum(net[triples[, c(2, 3)]] * net[triples[, c(3, 1)]]) ^ alpha
+  }
+  return(val)
 }
 
 # dttriads
@@ -40,11 +57,15 @@ dttriads <- function(i, j, net, alpha, together) {
   t2 <- sum(net[triples[, c(2, 3)]] * net[triples[, c(1, 3)]])
   t3 <- sum(net[triples[, c(3, 2)]] * net[triples[, c(3, 1)]])
   t4 <- sum(net[triples[, c(3, 2)]] * net[triples[, c(1, 3)]])
-  return(t2 + t3 + t4)
+  if (together == 0) {
+    return(t2 ^ alpha + t3 ^ alpha + t4 ^ alpha)
+  } else {
+    return((t2 + t3 + t4) ^ alpha)
+  }
 }
 
 # dtriads (undirected)
-dtriads <- function(i, j, net, alpha, together){
+dtriads <- function(i, j, net){
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   triples <- cbind(i, j, others)
