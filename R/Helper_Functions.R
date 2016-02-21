@@ -1,31 +1,31 @@
 # Directional derivative statistics next These are needed for the Gibbs sampler
 
 # din2star
-din2star <- function(i, j, net) {
+din2star <- function(i, j, net, alpha = 1, together = 1) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   sum(net[cbind(others, j)])
 }
 
 # dout2star
-dout2star <- function(i, j, net) {
+dout2star <- function(i, j, net, alpha = 1, together = 1) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   sum(net[cbind(i, others)])
 }
 
 # dedgeweight
-dedgeweight = function(i, j) {
+dedgeweight = function(i, j, alpha = 1, together = 1) {
   1
 }
 
 # drecip
-drecip <- function(i, j, net) {
+drecip <- function(i, j, net, alpha = 1, together = 1) {
   net[j, i]
 }
 
 # dctriads
-dctriads <- function(i, j, net) {
+dctriads <- function(i, j, net, alpha = 1, together = 1) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   triples <- cbind(i, j, others)
@@ -33,7 +33,7 @@ dctriads <- function(i, j, net) {
 }
 
 # dttriads
-dttriads <- function(i, j, net) {
+dttriads <- function(i, j, net, alpha = 1, together = 1) {
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   triples <- cbind(i, j, others)
@@ -44,7 +44,7 @@ dttriads <- function(i, j, net) {
 }
 
 # dtriads (undirected)
-dtriads <- function(i, j, net){
+dtriads <- function(i, j, net, alpha = 1, together = 1){
   nodes <- nrow(net)
   others <- (1:nodes)[-c(i, j)]
   triples <- cbind(i, j, others)
@@ -55,13 +55,13 @@ dtriads <- function(i, j, net){
 
 # dh function weight w_{i,j} will be conditioned upon
 # Calculate the marginal change in the network
-dh <- function(net, statistics, i, j) {
-  temp <- c(dout2star(i, j, net),
-            din2star(i, j, net),
-            dctriads(i, j, net),
-            drecip(i, j, net),
-            dttriads(i, j, net),
-            dedgeweight(i, j))
+dh <- function(net, statistics, i, j, alpha = 1, together = 1) {
+  temp <- c(dout2star(i, j, net, alpha = alpha, together = together),
+            din2star(i, j, net, alpha = alpha, together = together),
+            dctriads(i, j, net, alpha = alpha, together = together),
+            drecip(i, j, net, alpha = alpha, together = together),
+            dttriads(i, j, net, alpha = alpha, together = together),
+            dedgeweight(i, j, alpha = alpha, together = together))
   if (length(temp) != length(statistics)) {
     stop("Development ERROR! Please email mdenny@psu.edu! The dh() internal function in Helper_Functions.R has been supplied an incorrect number of statistics.")
   }
