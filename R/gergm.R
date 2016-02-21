@@ -207,6 +207,7 @@ gergm <- function(formula,
   # pass in experimental features through elipsis
   using_correlation_network <- FALSE
   beta_correlation_model <- FALSE
+  weighted_MPLE <- FALSE
   object <- as.list(substitute(list(...)))[-1L]
   if (length(object) > 0) {
     if (!is.null(object$using_correlation_network)) {
@@ -219,6 +220,12 @@ gergm <- function(formula,
       if (object$beta_correlation_model) {
         beta_correlation_model <- TRUE
         cat("Using experimental beta model for correlation networks...\n")
+      }
+    }
+    if (!is.null(object$weighted_MPLE)) {
+      if (object$weighted_MPLE) {
+        weighted_MPLE <- TRUE
+        cat("Using experimental weighted_MPLE...\n")
       }
     }
   }
@@ -353,7 +360,7 @@ gergm <- function(formula,
   GERGM_Object@directed_network <- network_is_directed
   # only add in list if not NULL
   GERGM_Object@using_grid_optimization <- FALSE
-  if(class(theta_grid_optimization_list) == "list") {
+  if (class(theta_grid_optimization_list) == "list") {
     GERGM_Object@using_grid_optimization <- TRUE
     GERGM_Object@theta_grid_optimization_list <- theta_grid_optimization_list
   }
@@ -373,6 +380,7 @@ gergm <- function(formula,
   # if we are using a correlation network then set field to TRUE.
   GERGM_Object@is_correlation_network <- using_correlation_network
   GERGM_Object@beta_correlation_model <- beta_correlation_model
+  GERGM_Object@weighted_MPLE <- weighted_MPLE
 
   # set adaptive metropolis parameters
   GERGM_Object@hyperparameter_optimization <- hyperparameter_optimization
