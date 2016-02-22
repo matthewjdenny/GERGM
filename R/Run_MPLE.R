@@ -89,7 +89,7 @@ run_mple <- function(GERGM_Object,
   theta <- theta.init
 
   # if we are going to do a fisher update to MPLE thetas
-  if (GERGM_Object@MPLE_gain_factor > 0 & !GERGM_Object@weighted_MPLE) {
+  if (GERGM_Object@MPLE_gain_factor > 0) {
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                    seed1 = seed2,
                                    possible.stats = possible.stats,
