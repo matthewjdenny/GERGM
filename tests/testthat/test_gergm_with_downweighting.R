@@ -2,7 +2,6 @@ test_that("That experimental models work", {
   skip_on_cran()
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
-  skip("Skipping test as it can only be run in the global environment.")
 
   set.seed(12345)
   net <- matrix(rnorm(100,0,20),10,10)
@@ -18,16 +17,16 @@ test_that("That experimental models work", {
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
-                thin = 1/10,
+                thin = 1/40,
                 proposal_variance = 0.5,
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.01,
+                convergence_tolerance = 0.5,
                 MPLE_gain_factor = 0.05,
-                force_x_theta_updates = 4)
+                force_x_theta_updates = 1)
 
-  check_against <- c(2.519, -0.325)
+  check_against <- c(2.364, -0.322)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
@@ -41,15 +40,17 @@ test_that("That experimental models work", {
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
-                thin = 1/10,
+                thin = 1/40,
                 proposal_variance = 0.5,
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.01,
+                convergence_tolerance = 0.5,
                 MPLE_gain_factor = 0.08,
-                force_x_theta_updates = 4)
+                force_x_theta_updates = 1)
 
+  check_against <- c(-0.451,  0.170)
+  expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   set.seed(12345)
   net <- matrix(runif(100,0,1),10,10)
@@ -68,17 +69,19 @@ test_that("That experimental models work", {
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
-                thin = 1/10,
-                proposal_variance = 0.5,
+                thin = 1/100,
+                proposal_variance = 0.1,
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
+                convergence_tolerance = 0.5,
                 MPLE_gain_factor = 0.05,
-                force_x_theta_updates = 2)
+                force_x_theta_updates = 1)
 
-#   check_against <- c(1.118, -0.138, -0.021, -0.044, -0.040,  3.639, 0.102, -1.880)
-#   check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
-#   expect_equal(check, check_against)
+    check_against <- c(0.919, -0.091, -0.016, -0.025, -0.024, -0.056,
+                      -0.056, -0.035,  0.002, -0.040, -0.050,  3.067,
+                       0.128, -1.932)
+    check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
+    expect_equal(check, check_against)
 
 })
