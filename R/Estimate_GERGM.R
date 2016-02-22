@@ -72,18 +72,16 @@ Estimate_GERGM <- function(formula_object,
         triples <- t(combn(1:num.nodes, 3))
         pairs <- t(combn(1:num.nodes, 2))
 
-        if(GERGM_Object@is_correlation_network){
-          theta.new <- mple.corr(GERGM_Object@network,
-                                  GERGM_Object@bounded.network,
-                                  statistics = GERGM_Object@stats_to_use,
-                                  directed = GERGM_Object@directed_network,
-                                  verbose = verbose)
-        }else{
-          theta.new <- mple(GERGM_Object@bounded.network,
-                             statistics = GERGM_Object@stats_to_use,
-                             directed = GERGM_Object@directed_network,
-                             verbose = verbose)
-        }
+        # get MPLE thetas
+        MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
+                                 verbose = verbose,
+                                 seed2 = seed,
+                                 possible.stats = possible.stats)
+
+        GERGM_Object <- MPLE_Results$GERGM_Object
+        theta.new <- MPLE_Results$theta
+        statistics <- MPLE_Results$statistics
+        init.statistics <- MPLE_Results$init.statistics
 
         if (verbose) {
           cat("theta.new", theta.new$par, "\n")
@@ -286,17 +284,16 @@ Estimate_GERGM <- function(formula_object,
         cat("Estimating Theta via MPLE... \n")
       }
       GERGM_Object <- store_console_output(GERGM_Object, "Estimating Theta via MPLE... \n")
-      if (GERGM_Object@is_correlation_network) {
-        theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
-                                statistics = GERGM_Object@stats_to_use,
-                                directed = GERGM_Object@directed_network,
-                                verbose = verbose)
-      } else {
-        theta.init <- mple(GERGM_Object@bounded.network,
-                           statistics = GERGM_Object@stats_to_use,
-                           directed = GERGM_Object@directed_network,
-                           verbose = verbose)
-      }
+      # get MPLE thetas
+      MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
+                               verbose = verbose,
+                               seed2 = seed,
+                               possible.stats = possible.stats)
+
+      GERGM_Object <- MPLE_Results$GERGM_Object
+      theta.init <- MPLE_Results$theta
+      statistics <- MPLE_Results$statistics
+      init.statistics <- MPLE_Results$init.statistics
 
       #print(theta.init)
       GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
