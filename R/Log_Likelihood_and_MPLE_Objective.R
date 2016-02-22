@@ -179,7 +179,8 @@ integrand <- function(edge_weight, hG){
 integrator <- function(hG){
   result <- stats::integrate(f = integrand,
                              lower = 0,
-                             upper = 1)
+                             upper = 1,
+                             hG = hG)$value
   return(result)
 }
 
@@ -187,8 +188,10 @@ integrator <- function(hG){
 dtexp_weighted <- function(x, lambda) {
   den <- numeric(length(x))
   inds <- which(lambda != 0)
-  den[inds] <- exp(x[inds] * lambda[inds]) /
-    sapply(integrator,lambda)
+  for (i in 1:length(inds)) {
+    temp <- integrator(lambda[inds[i]])
+    den[inds[i]] <- exp(x[inds[i]] * lambda[inds[i]]) / temp
+  }
   den[which(lambda == 0)] <- 1
   return(den)
 }
