@@ -96,7 +96,13 @@ llg <- function(par,
 }
 
 # maximum pseudo-likelihood estimates
-mple <- function(net, statistics, directed, alphas, together, verbose = TRUE) {
+mple <- function(net,
+                 statistics,
+                 directed,
+                 alphas,
+                 together,
+                 weighted_MPLE,
+                 verbose = TRUE) {
   xy <- net2xy(net, statistics, directed, alphas, together)
   x <- xy$x
   y <- xy$y
@@ -104,21 +110,42 @@ mple <- function(net, statistics, directed, alphas, together, verbose = TRUE) {
   est <- coef(lm(y ~ x - 1))
   ests <- NULL
   if (verbose) {
-    ests <- optim(par = est,
-                  pl,
-                  y = y,
-                  x = x,
-                  method = "BFGS",
-                  hessian = TRUE,
-                  control = list(fnscale = -1, trace = 6))
+    if (weighted_MPLE) {
+      ests <- optim(par = est,
+                    pl_weighted,
+                    y = y,
+                    x = x,
+                    method = "BFGS",
+                    hessian = TRUE,
+                    control = list(fnscale = -1, trace = 6))
+    } else {
+      ests <- optim(par = est,
+                    pl,
+                    y = y,
+                    x = x,
+                    method = "BFGS",
+                    hessian = TRUE,
+                    control = list(fnscale = -1, trace = 6))
+    }
+
   } else {
-    ests <- optim(par = est,
-                  pl,
-                  y = y,
-                  x = x,
-                  method = "BFGS",
-                  hessian = TRUE,
-                  control = list(fnscale = -1, trace = 0))
+    if (weighted_MPLE) {
+      ests <- optim(par = est,
+                    pl_weighted,
+                    y = y,
+                    x = x,
+                    method = "BFGS",
+                    hessian = TRUE,
+                    control = list(fnscale = -1, trace = 0))
+    } else {
+      ests <- optim(par = est,
+                    pl,
+                    y = y,
+                    x = x,
+                    method = "BFGS",
+                    hessian = TRUE,
+                    control = list(fnscale = -1, trace = 0))
+    }
   }
   return(ests)
 }
@@ -139,6 +166,38 @@ dtexp <- function(x, lambda) {
   den[which(lambda == 0)] <- 1
   return(den)
 }
+
+# The conditional density of each weight from a sample but incorporating alpha
+# downweighting. In this version we have to numerically integrate over [0,1] for
+# the edge weights.
+
+integrand <- function(edge_weight, hG){
+  return(exp(edge_weight * hG))
+}
+
+# performs the integration
+integrator <- function(hG){
+  result <- stats::integrate(f = integrand,
+                             lower = 0,
+                             upper = 1)
+  return(result)
+}
+
+# the dtexp function but for alpha weighting
+dtexp_weighted <- function(x, lambda) {
+  den <- numeric(length(x))
+  inds <- which(lambda != 0)
+  den[inds] <- exp(x[inds] * lambda[inds]) /
+    sapply(integrator,lambda)
+  den[which(lambda == 0)] <- 1
+  return(den)
+}
+
+# pseudolikelihood given theta#
+pl_weighted <- function(theta, y, x) {
+  return(sum(log(dtexp_weighted(y, x %*% theta))))
+}
+
 
 # Convert an observed network to edge weight vectors x and y
 net2xy <- function(net, statistics, directed, alphas, together) {

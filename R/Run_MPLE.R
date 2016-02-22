@@ -29,14 +29,18 @@ run_mple <- function(GERGM_Object,
                        statistics = GERGM_Object@stats_to_use,
                        directed = GERGM_Object@directed_network,
                        alphas = alphas,
-                       together = together)
+                       together = together,
+                       weighted_MPLE = TRUE,
+                       verbose = verbose)
 
   } else {
     theta.init <- mple(GERGM_Object@bounded.network,
                        statistics = GERGM_Object@stats_to_use,
                        directed = GERGM_Object@directed_network,
                        alphas = rep(1, length(possible.stats)),
-                       together = 1)
+                       together = 1,
+                       weighted_MPLE = FALSE,
+                       verbose = verbose)
   }
   if (verbose) {
     cat("\nMPLE Thetas: ", theta.init$par, "\n")
@@ -58,7 +62,7 @@ run_mple <- function(GERGM_Object,
                     statistics = GERGM_Object@stats_to_use,
                     alphas = alphas,
                     together = GERGM_Object@downweight_statistics_together)
-  }else{
+  } else {
     # initialize the network with the observed network
     initial_network <- GERGM_Object@bounded.network
     # calculate the statistics of the original network
@@ -85,7 +89,7 @@ run_mple <- function(GERGM_Object,
   theta <- theta.init
 
   # if we are going to do a fisher update to MPLE thetas
-  if(GERGM_Object@MPLE_gain_factor > 0){
+  if (GERGM_Object@MPLE_gain_factor > 0) {
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                    seed1 = seed2,
                                    possible.stats = possible.stats,
@@ -95,16 +99,16 @@ run_mple <- function(GERGM_Object,
 
     #Calculate covariance estimate (to scale initial guess theta.init)
     z.bar <- NULL
-    if(class(hsn) == "numeric"){
-      hsn <- matrix(hsn,ncol =1,nrow = length(hsn))
+    if (class(hsn) == "numeric") {
+      hsn <- matrix(hsn,ncol = 1,nrow = length(hsn))
       z.bar <- sum(hsn) / 20
-    }else{
+    } else {
       z.bar <- colSums(hsn) / 20
     }
 
     #cat("z.bar", "\n", z.bar, "\n")
     Cov.est <- 0
-    for(i in 1:dim(hsn)[1]){
+    for (i in 1:dim(hsn)[1]) {
       Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*%
         t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
     }
@@ -119,7 +123,7 @@ run_mple <- function(GERGM_Object,
       theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
         D.inv %*% (z.bar - obs.stats)
     })
-    if(verbose){
+    if (verbose) {
       cat("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n")
     }
     GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
