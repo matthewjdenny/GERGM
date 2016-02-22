@@ -34,13 +34,13 @@ NULL
 #' @importFrom grDevices dev.off gray pdf rgb colorRampPalette
 NULL
 
-#' @importFrom graphics boxplot legend lines par plot text
+#' @importFrom graphics boxplot legend lines par plot text axis
 NULL
 
 #' @import plyr
 NULL
 
-#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test cor
+#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test cor dbeta pbeta qbeta
 NULL
 
 #' @importFrom utils combn write.table
