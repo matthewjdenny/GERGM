@@ -19,7 +19,9 @@ run_mple <- function(GERGM_Object,
   if (GERGM_Object@is_correlation_network) {
     theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
                             statistics = GERGM_Object@stats_to_use,
-                            directed = GERGM_Object@directed_network )
+                            directed = GERGM_Object@directed_network,
+                            alphas = rep(1, length(possible.stats)),
+                            together = 1)
   } else if (GERGM_Object@weighted_MPLE) {
     # if we are using weighted MPLE with integration over edge weights then
     # allow exponential weighting in MPLE objective

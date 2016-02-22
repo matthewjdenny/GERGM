@@ -198,21 +198,43 @@ pl.corr <- function(theta, y, x, Jacobian){
 mple.corr <- function(net,
                       bounded.net,
                       statistics,
+                      alphas,
+                      together,
                       directed = FALSE,
                       verbose = TRUE){
-  xy.full <- net2xy(net, statistics, directed = directed)
+  xy.full <- net2xy(net,
+                    statistics,
+                    directed,
+                    alphas,
+                    together)
   x <- xy.full$x #x's are the change statistics associated with the unbounded network
-  xy.bounded <- net2xy(bounded.net, statistics, directed = directed)
+  xy.bounded <- net2xy(bounded.net,
+                       statistics,
+                       directed,
+                       alphas,
+                       together)
   y <- xy.bounded$y #y's are the edge weights from the bounded [0,1] network
   J <- jacobian(bounded.net)
   est <- coef(lm(y ~ x - 1))
   ests <- NULL
   if(verbose){
-    ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
-                  hessian = TRUE, control = list(fnscale = -1, trace = 6))
+    ests <- optim(par = est,
+                  pl.corr,
+                  y = y,
+                  x = x,
+                  Jacobian = J,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 6))
   }else{
-    ests <- optim(par = est, pl.corr, y = y, x = x, Jacobian = J, method = "BFGS",
-                  hessian = TRUE, control = list(fnscale = -1, trace = 0))
+    ests <- optim(par = est,
+                  pl.corr,
+                  y = y,
+                  x = x,
+                  Jacobian = J,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 0))
   }
   return(ests)
 }
