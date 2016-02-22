@@ -105,12 +105,26 @@ simulate_networks <- function(formula,
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
     simulate_correlation_network <- FALSE
+    beta_correlation_model <- FALSE
+    weighted_MPLE <- FALSE
     object <- as.list(substitute(list(...)))[-1L]
     if (length(object) > 0) {
       if (!is.null(object$simulate_correlation_network)) {
         if (object$simulate_correlation_network) {
           simulate_correlation_network <- TRUE
           cat("Using experimental correlation network feature...\n")
+        }
+      }
+      if (!is.null(object$beta_correlation_model)) {
+        if (object$beta_correlation_model) {
+          beta_correlation_model <- TRUE
+          cat("Using experimental beta model for correlation networks...\n")
+        }
+      }
+      if (!is.null(object$weighted_MPLE)) {
+        if (object$weighted_MPLE) {
+          weighted_MPLE <- TRUE
+          cat("Using experimental weighted_MPLE...\n")
         }
       }
     }
@@ -148,8 +162,15 @@ simulate_networks <- function(formula,
       formula <- add_intercept_term(formula)
     }
 
+    if (simulate_correlation_network & beta_correlation_model) {
+      stop("You may only specify one of: simulate_correlation_network (Harry-Joe) or beta_correlation_model.")
+    }
+
     # if we are using a correlation network, then the network must be undirected.
-    if (simulate_correlation_network) {
+    if (simulate_correlation_network | beta_correlation_model) {
+      if (network_is_directed) {
+        cat("Setting network_is_directed to FALSE for correlation network...\n")
+      }
       network_is_directed <- FALSE
     }
     #make sure proposal variance is greater than zero
@@ -223,6 +244,8 @@ simulate_networks <- function(formula,
     GERGM_Object@thin <- thin
     GERGM_Object@burnin <- MCMC_burnin
     GERGM_Object@downweight_statistics_together <- downweight_statistics_together
+    GERGM_Object@beta_correlation_model <- beta_correlation_model
+    GERGM_Object@weighted_MPLE <- weighted_MPLE
   } else {
     # a GERGM_Object was provided
     if (!is.null(proposal_variance)) {
