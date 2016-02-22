@@ -96,11 +96,12 @@ Estimate_GERGM <- function(formula_object,
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", GERGM_Object@stats_to_use, "\n"))
 
-        temp <- calculate_standard_errors(hessian = theta.new$hessian,
+        temp <- calculate_standard_errors(hessian = MPLE_Results$hessian,
                                           GERGM_Object = GERGM_Object)
         theta.std.errors <- temp$std_errors
         GERGM_Object <- temp$GERGM_Object
         # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
+        print(theta.new$par)
         GERGM_Object@theta.par <- theta.new$par
 
         if (i > 1) {
@@ -300,7 +301,7 @@ Estimate_GERGM <- function(formula_object,
       theta <- theta.init
       lambda <- as.data.frame(0)
 
-      temp <- calculate_standard_errors(hessian = theta.init$hessian,
+      temp <- calculate_standard_errors(hessian = MPLE_Results$hessian,
                                         GERGM_Object = GERGM_Object)
       theta.std.errors <- temp$std_errors
       GERGM_Object <- temp$GERGM_Object

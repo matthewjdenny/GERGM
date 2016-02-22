@@ -45,7 +45,8 @@ run_mple <- function(GERGM_Object,
   if (verbose) {
     cat("\nMPLE Thetas: ", theta.init$par, "\n")
   }
-  GERGM_Object <- store_console_output(GERGM_Object, paste("\nMPLE Thetas: ", theta.init$par, "\n"))
+  GERGM_Object <- store_console_output(GERGM_Object,
+    paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
   if (GERGM_Object@is_correlation_network) {
@@ -83,10 +84,11 @@ run_mple <- function(GERGM_Object,
   ####################################################################
   alps <- alphas[which(statistics == 1)]
   GERGM_Object@reduced_weights <- alps
-  GERGM_Object@theta.par <- theta.init$par
+  GERGM_Object@theta.par <- as.numeric(theta.init$par)
 
   # if we are not doing a fisher update
-  theta <- theta.init
+  theta <- list()
+  theta$par <- as.numeric(theta.init$par)
 
   # if we are going to do a fisher update to MPLE thetas
   if (GERGM_Object@MPLE_gain_factor > 0) {
@@ -138,7 +140,7 @@ run_mple <- function(GERGM_Object,
     try({
       D.inv <- solve(Cov.est)
       #calculate
-      theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
+      theta$par <- as.numeric(theta.init$par) - GERGM_Object@MPLE_gain_factor *
         D.inv %*% (z.bar - obs.stats)
     })
     if (verbose) {
@@ -147,8 +149,10 @@ run_mple <- function(GERGM_Object,
     GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
   }
 
+  theta$par <- as.numeric(theta$par)
   return(list(GERGM_Object = GERGM_Object,
               theta = theta,
               statistics = statistics,
-              init.statistics = init.statistics))
+              init.statistics = init.statistics,
+              hessian = theta.init$hessian))
 }
