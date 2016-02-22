@@ -78,9 +78,8 @@ test_that("That experimental models work", {
                 MPLE_gain_factor = 0.05,
                 force_x_theta_updates = 1)
 
-    check_against <- c(0.919, -0.091, -0.016, -0.025, -0.024, -0.056,
-                      -0.056, -0.035,  0.002, -0.040, -0.050,  3.067,
-                       0.128, -1.932)
+    check_against <- c(0.919, -0.091, -0.016, -0.025, -0.024, -0.056, -0.056,
+                       -0.035,  0.002, -0.040, -0.050,  3.067, 0.128, -1.932)
     check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
     expect_equal(check, check_against)
 
