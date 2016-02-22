@@ -7,27 +7,42 @@ run_mple <- function(GERGM_Object,
 
   statistics <- GERGM_Object@stats_to_use
   alphas <- GERGM_Object@weights
-  if(verbose){
+  together <- 1
+  if (!GERGM_Object@downweight_statistics_together) {
+    together <- 0
+  }
+  if (verbose) {
     cat("Estimating Initial Values for Theta via MPLE... \n")
   }
   GERGM_Object <- store_console_output(GERGM_Object,"Estimating Initial Values for Theta via MPLE... \n")
 
-  if(GERGM_Object@is_correlation_network){
+  if (GERGM_Object@is_correlation_network) {
     theta.init <- mple.corr(GERGM_Object@network, GERGM_Object@bounded.network,
                             statistics = GERGM_Object@stats_to_use,
                             directed = GERGM_Object@directed_network )
-  }else{
+  } else if (GERGM_Object@weighted_MPLE) {
+    # if we are using weighted MPLE with integration over edge weights then
+    # allow exponential weighting in MPLE objective
     theta.init <- mple(GERGM_Object@bounded.network,
                        statistics = GERGM_Object@stats_to_use,
-                       directed = GERGM_Object@directed_network )
+                       directed = GERGM_Object@directed_network,
+                       alphas = alphas,
+                       together = together)
+
+  } else {
+    theta.init <- mple(GERGM_Object@bounded.network,
+                       statistics = GERGM_Object@stats_to_use,
+                       directed = GERGM_Object@directed_network,
+                       alphas = rep(1, length(possible.stats)),
+                       together = 1)
   }
-  if(verbose){
+  if (verbose) {
     cat("\nMPLE Thetas: ", theta.init$par, "\n")
   }
   GERGM_Object <- store_console_output(GERGM_Object, paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
-  if(GERGM_Object@is_correlation_network){
+  if (GERGM_Object@is_correlation_network) {
     # initialize the network with the observed network
     initial_network <- GERGM_Object@network
     # calculate the statistics of the original network
@@ -65,8 +80,7 @@ run_mple <- function(GERGM_Object,
   GERGM_Object@theta.par <- theta.init$par
 
   # if we are not doing a fisher update
-  theta <- list()
-  theta$par <- theta.init$par
+  theta <- theta.init
 
   # if we are going to do a fisher update to MPLE thetas
   if(GERGM_Object@MPLE_gain_factor > 0){
@@ -100,7 +114,6 @@ run_mple <- function(GERGM_Object,
     try({
       D.inv <- solve(Cov.est)
       #calculate
-      theta <- list()
       theta$par <- theta.init$par - GERGM_Object@MPLE_gain_factor *
         D.inv %*% (z.bar - obs.stats)
     })
