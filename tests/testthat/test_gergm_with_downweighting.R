@@ -1,4 +1,4 @@
-test_that("Simple model with no covariates runs", {
+test_that("That experimental models work", {
   skip_on_cran()
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
