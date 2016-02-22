@@ -90,6 +90,24 @@ run_mple <- function(GERGM_Object,
 
   # if we are going to do a fisher update to MPLE thetas
   if (GERGM_Object@MPLE_gain_factor > 0) {
+    cat("Updating MPLE estimates via a one step Fisher update...\n")
+
+    # now optimize the proposal variance if we are using Metropolis Hasings
+    if (GERGM_Object@hyperparameter_optimization){
+      if (GERGM_Object@estimation_method == "Metropolis") {
+        GERGM_Object@proposal_variance <- Optimize_Proposal_Variance(
+          GERGM_Object = GERGM_Object,
+          seed2 = seed2,
+          possible.stats = possible.stats,
+          verbose = verbose)
+        cat("Proposal variance optimization complete! Proposal variance is:",
+            GERGM_Object@proposal_variance,"\n",
+            "--------- END HYPERPARAMETER OPTIMIZATION ---------",
+            "\n\n")
+      }
+    }
+
+
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                    seed1 = seed2,
                                    possible.stats = possible.stats,
@@ -101,9 +119,9 @@ run_mple <- function(GERGM_Object,
     z.bar <- NULL
     if (class(hsn) == "numeric") {
       hsn <- matrix(hsn,ncol = 1,nrow = length(hsn))
-      z.bar <- sum(hsn) / 20
+      z.bar <- sum(hsn)
     } else {
-      z.bar <- colSums(hsn) / 20
+      z.bar <- colSums(hsn)
     }
 
     #cat("z.bar", "\n", z.bar, "\n")
@@ -112,7 +130,7 @@ run_mple <- function(GERGM_Object,
       Cov.est <- matrix(as.numeric(hsn[i,]), ncol = 1) %*%
         t(matrix(as.numeric(hsn[i,]), ncol = 1)) + Cov.est
     }
-    Cov.est <- (Cov.est / 20) - z.bar %*% t(z.bar)
+    Cov.est <- (Cov.est) - z.bar %*% t(z.bar)
     #cat("Cov.est", "\n", Cov.est)
 
     # try to update but if we get a zero percent accept rate then

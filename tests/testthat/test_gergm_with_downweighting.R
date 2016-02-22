@@ -26,7 +26,7 @@ test_that("That gergm with exponential downweighting works", {
                 MPLE_gain_factor = 0.05,
                 force_x_theta_updates = 1)
 
-  check_against <- c(2.364, -0.322)
+  check_against <- c(2.272, -0.312)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
@@ -49,7 +49,7 @@ test_that("That gergm with exponential downweighting works", {
                 MPLE_gain_factor = 0.08,
                 force_x_theta_updates = 1)
 
-  check_against <- c(-0.451,  0.170)
+  check_against <- c(-0.565,  0.266)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   set.seed(12345)
@@ -78,8 +78,8 @@ test_that("That gergm with exponential downweighting works", {
                 MPLE_gain_factor = 0.05,
                 force_x_theta_updates = 1)
 
-    check_against <- c(0.919, -0.091, -0.016, -0.025, -0.024, -0.056, -0.056,
-                       -0.035,  0.002, -0.040, -0.050,  3.067, 0.128, -1.932)
+    check_against <- c(1.007, -0.102, -0.016, -0.025, -0.024, -0.056, -0.056,
+                       -0.035, 0.002, -0.040, -0.050,  3.068, 0.129, -1.931)
     check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
     expect_equal(check, check_against)
 
