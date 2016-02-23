@@ -26,9 +26,20 @@ run_mple <- function(GERGM_Object,
   } else if (GERGM_Object@weighted_MPLE) {
     # if we are using weighted MPLE with integration over edge weights then
     # allow exponential weighting in MPLE objective
+
+    theta.init <- mple(GERGM_Object@bounded.network,
+                       statistics = GERGM_Object@stats_to_use,
+                       directed = GERGM_Object@directed_network,
+                       alphas = rep(1, length(possible.stats)),
+                       together = 1,
+                       weighted_MPLE = FALSE,
+                       verbose = verbose)
+
     theta.init <- mple_weighted(GERGM_Object = GERGM_Object,
                        statistics = GERGM_Object@stats_to_use,
-                       verbose = verbose)
+                       possible.stats = possible.stats,
+                       verbose = verbose,
+                       prev_ests = as.numeric(theta.init$par))
 
   } else {
     theta.init <- mple(GERGM_Object@bounded.network,
