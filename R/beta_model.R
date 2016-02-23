@@ -164,8 +164,9 @@ logistic <- function(beta, z){
   #OUTPUT:
   # mu - a n choose 2 vector of edge means
   BZ <- 0
+
   for (i in 1 : (dim(z)[3])) {
-    BZ <- BZ + beta[i] * z[, , i]
+    BZ <- BZ + beta[i]  * z[, , i]
   }
 
   BZ <- BZ[lower.tri(BZ)]

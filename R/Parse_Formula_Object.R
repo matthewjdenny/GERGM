@@ -71,7 +71,6 @@ Parse_Formula_Object <- function(formula,
     if (is.null(theta) == TRUE) {
       theta <- rep(0, length(rhs_term_names))
     }
-
     # check that theta and the number of statistics are equal
     if (length(rhs_term_names) != length(theta)) {
       stop("'theta' must be the same length as the number of statistics")

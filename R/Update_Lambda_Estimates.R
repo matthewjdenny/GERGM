@@ -57,8 +57,11 @@ Update_Lambda_Estimates <- function(i,
     phi <- gpar.new$par[length(gpar.new$par)]
     shape1 <- mu * phi
     shape2 <- (1 - mu) * phi
-    X <- pbeta(lower.tri((GERGM_Object@bounded.network + 1)/2),
+    X <- pbeta((GERGM_Object@bounded.network + 1)/2,
                shape1 = shape1, shape2 = shape2)
+    # buggy code
+    # X <- pbeta(lower.tri((GERGM_Object@bounded.network + 1)/2),
+    #            shape1 = shape1, shape2 = shape2)
 
     # store our new bounded network
     GERGM_Object@bounded.network <- X
