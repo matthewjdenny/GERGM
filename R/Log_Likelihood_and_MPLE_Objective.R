@@ -153,11 +153,26 @@ dtexp <- function(x, lambda) {
 
 mple_weighted <- function(GERGM_Object,
                  statistics,
-                 verbose = TRUE) {
+                 possible.stats,
+                 verbose = TRUE,
+                 prev_ests = NULL) {
   net <- GERGM_Object@network
   num_nodes <- nrow(net)
   triples = t(combn(1:num_nodes, 3))
-  est <- rep(0,length(which(statistics > 0)))
+  if (is.null(prev_ests)) {
+    xy <- net2xy(net,
+                 statistics,
+                 directed = GERGM_Object@directed_network,
+                 alphas = rep(1, length(possible.stats)),
+                 together = 1)
+    x <- xy$x
+    y <- xy$y
+    # why do we select this initialization
+    est <- coef(lm(y ~ x - 1))
+  } else {
+    est <- prev_ests
+  }
+
   ests <- NULL
   if (verbose) {
     ests <- optim(par = est,
@@ -181,16 +196,19 @@ mple_weighted <- function(GERGM_Object,
 
 integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
   # change the one edge weight
-  net <- GERGM_Object@network
-  net[i,j] <- edge_weight
-  h_statistics <- h2(
-    net,
-    triples = triples,
-    statistics = GERGM_Object@stats_to_use,
-    alphas = GERGM_Object@weights,
-    together = GERGM_Object@downweight_statistics_together)
-
-  return(exp(thetas %*% h_statistics))
+  net <- GERGM_Object@bounded.network
+  vals <- rep(0,length(edge_weight))
+  for(k in 1:length(edge_weight)) {
+    net[i,j] <- edge_weight[k]
+    h_statistics <- h2(
+      net,
+      triples = triples,
+      statistics = GERGM_Object@stats_to_use,
+      alphas = GERGM_Object@weights,
+      together = GERGM_Object@downweight_statistics_together)
+    vals[k] <- as.numeric(thetas %*% h_statistics)
+  }
+  return(vals)
 }
 
 # performs the integration
@@ -208,18 +226,30 @@ integrator <- function(i, j, thetas, triples, GERGM_Object){
 
 # pseudolikelihood given theta#
 pl_weighted <- function(theta, triples, GERGM_Object) {
-  net <- GERGM_Object@network
+  cat("Calculating weighted pseudo-likelihood objective. Theta = ",theta,"\n")
+  net <- GERGM_Object@bounded.network
   num_nodes <- nrow(net)
   sum_term <- 0
+
+  printseq <- round(seq(1,num_nodes*(num_nodes - 1), length.out = 11)[2:11],0)
+  printcounter <- 1
+  count <- 1
   for (i in 1:num_nodes) {
     for (j in 1:num_nodes) {
       if (i != j) {
+        if (count == printseq[printcounter]) {
+          cat(".")
+          printcounter <- printcounter + 1
+        }
+        # cat("Currently working on edge",i,",",j,"\n")
         temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
         temp2 <- integrator(i, j, theta, triples, GERGM_Object)
-        sum_term <- sum_term + log(temp1) - log(temp2)
+        sum_term <- sum_term + temp1 - temp2
+        count <- count + 1
       }
     }
   }
+  cat("\nCalculation complete, objective is:",sum_term,"\n")
   return(sum_term)
 }
 
