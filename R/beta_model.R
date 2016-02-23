@@ -119,7 +119,8 @@ pbt <- function(correlations, mu, phi){
   #transform to bounded network now
   probs <- pbeta(P[lower.tri(P, diag = FALSE)],
                  shape1 = shape1, shape2 = shape2)
-  X[lower.tri(X)] <- probs
+  X[lower.tri(X, diag = FALSE)] <- probs
+  X[upper.tri(X, diag = FALSE)] <- probs
   #make symmetric
   X <- X + t(X)
   diag(X) <- 0
@@ -148,7 +149,8 @@ qbt <- function(X, mu, phi){
   shape2 <- (1 - mu) * phi
   quants <- qbeta(X[lower.tri(X, diag = FALSE)],
                   shape1 = shape1, shape2 = shape2)
-  P[lower.tri(P)] <- quants
+  P[lower.tri(P, diag = FALSE)] <- quants
+  P[upper.tri(P, diag = FALSE)] <- quants
   #make symmetric
   P <- P + t(P)
   diag(P) <- 1
@@ -210,7 +212,7 @@ llg.beta <- function(par,
        statistics = statistics,
        alphas = alphas,
        together = together) +
-    2*sum(log(dbt((net[upper.tri(net)]+1)/2, mu, phi)))
+    2*sum(log(dbt((net[upper.tri(net)] + 1)/2, mu, phi)))
 
   return(as.numeric(log.li))
 }
