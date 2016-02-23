@@ -199,20 +199,20 @@ Estimate_GERGM <- function(formula_object,
 
         # Stop if lambda and theta estimates converge.
         # Convergence criterion is based on individual z-tests for each estimate
-        p.value1 <- rep(0,length(theta$par))
-        count1 <- rep(0, length(theta$par))
+        # p.value1 <- rep(0,length(theta$par))
+        # count1 <- rep(0, length(theta$par))
         p.value2 <- rep(0, length(gpar$par))
         count2 <- rep(0, length(gpar$par))
-        for (i in 1:length(theta$par)) {
-          #two sided z test
-          p.value1[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
-          #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
-          #if we reject any of the tests then convergence has not been reached!
-          # break if we have hit model degeneracy
-          if (GERGM_Object@theta_estimation_converged) {
-            if (p.value1[i] < tolerance) {count1[i] = 1}
-          }
-        }
+        # for (i in 1:length(theta$par)) {
+        #   #two sided z test
+        #   p.value1[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
+        #   #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
+        #   #if we reject any of the tests then convergence has not been reached!
+        #   # break if we have hit model degeneracy
+        #   if (GERGM_Object@theta_estimation_converged) {
+        #     if (p.value1[i] < tolerance) {count1[i] = 1}
+        #   }
+        # }
         for (i in 1:length(gpar$par)) {
           #two sided z test
           p.value2[i] <- 2*pnorm(-abs((gpar.new$par[i] - gpar$par[i])/gpar.std.errors[i]))
@@ -220,16 +220,16 @@ Estimate_GERGM <- function(formula_object,
           #if we reject any of the tests then convergence has not been reached!
           if (p.value2[i] < tolerance) {count2[i] = 1}
         }
-        if (verbose) {
-          cat("Theta p.values", "\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,
-                                             paste("Theta p.values", "\n"))
-        if (verbose) {
-          cat(p.value1, "\n")
-        }
-        GERGM_Object <- store_console_output(GERGM_Object,
-                                             paste0(p.value1,collapse = " "))
+        # if (verbose) {
+        #   cat("Theta p.values", "\n")
+        # }
+        # GERGM_Object <- store_console_output(GERGM_Object,
+        #                                      paste("Theta p.values", "\n"))
+        # if (verbose) {
+        #   cat(p.value1, "\n")
+        # }
+        # GERGM_Object <- store_console_output(GERGM_Object,
+        #                                      paste0(p.value1,collapse = " "))
         if (verbose) {
           cat("Lambda p.values", "\n")
         }
@@ -241,10 +241,11 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,
                                              paste0(p.value2,collapse = " "))
 
-        if (sum(count1) + sum(count2) == 0) {
-          message("Theta parameter estimates have converged...")
+        # if (sum(count1) + sum(count2) == 0) {
+        if (sum(count2) == 0) {
+          message("Lambda parameter estimates have converged...")
           if (force_x_lambda_updates > i) {
-            cat("Forcing",force_x_lambda_updates,"lambda updates...\n")
+            message("Forcing",force_x_lambda_updates,"lambda updates...\n")
           } else {
             GERGM_Object <- store_console_output(GERGM_Object,
                               "Parameter estimates have converged")
