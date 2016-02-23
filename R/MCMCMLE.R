@@ -272,10 +272,10 @@ MCMCMLE <- function(mc.num.iterations,
         #conditional to check and see if we are requiring more updates
         if(i >= force_x_theta_updates){
           if(verbose){
-            message("Parameter estimates have converged")
+            message("Theta parameter estimates have converged...")
           }
           GERGM_Object <- store_console_output(GERGM_Object,
-                            "Parameter estimates have converged")
+                            "Theta parameter estimates have converged...")
           GERGM_Object@theta_estimation_converged <- TRUE
           return(list(theta.new,GERGM_Object))
         }else{
