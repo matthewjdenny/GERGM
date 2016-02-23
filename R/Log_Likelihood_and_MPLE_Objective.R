@@ -110,15 +110,6 @@ mple <- function(net,
   est <- coef(lm(y ~ x - 1))
   ests <- NULL
   if (verbose) {
-    if (weighted_MPLE) {
-      ests <- optim(par = est,
-                    pl_weighted,
-                    y = y,
-                    x = x,
-                    method = "BFGS",
-                    hessian = TRUE,
-                    control = list(fnscale = -1, trace = 6))
-    } else {
       ests <- optim(par = est,
                     pl,
                     y = y,
@@ -126,18 +117,7 @@ mple <- function(net,
                     method = "BFGS",
                     hessian = TRUE,
                     control = list(fnscale = -1, trace = 6))
-    }
-
   } else {
-    if (weighted_MPLE) {
-      ests <- optim(par = est,
-                    pl_weighted,
-                    y = y,
-                    x = x,
-                    method = "BFGS",
-                    hessian = TRUE,
-                    control = list(fnscale = -1, trace = 0))
-    } else {
       ests <- optim(par = est,
                     pl,
                     y = y,
@@ -145,7 +125,6 @@ mple <- function(net,
                     method = "BFGS",
                     hessian = TRUE,
                     control = list(fnscale = -1, trace = 0))
-    }
   }
   return(ests)
 }
@@ -171,34 +150,77 @@ dtexp <- function(x, lambda) {
 # downweighting. In this version we have to numerically integrate over [0,1] for
 # the edge weights.
 
-integrand <- function(edge_weight, hG){
-  return(exp(edge_weight * hG))
+
+mple_weighted <- function(GERGM_Object,
+                 statistics,
+                 verbose = TRUE) {
+  net <- GERGM_Object@network
+  num_nodes <- nrow(net)
+  triples = t(combn(1:num_nodes, 3))
+  est <- rep(0,length(which(statistics > 0)))
+  ests <- NULL
+  if (verbose) {
+    ests <- optim(par = est,
+                  pl_weighted,
+                  triples = triples,
+                  GERGM_Object = GERGM_Object,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 6))
+  } else {
+    ests <- optim(par = est,
+                  pl_weighted,
+                  triples = triples,
+                  GERGM_Object = GERGM_Object,
+                  method = "BFGS",
+                  hessian = TRUE,
+                  control = list(fnscale = -1, trace = 0))
+  }
+  return(ests)
+}
+
+integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
+  # change the one edge weight
+  net <- GERGM_Object@network
+  net[i,j] <- edge_weight
+  h_statistics <- h2(
+    net,
+    triples = triples,
+    statistics = GERGM_Object@stats_to_use,
+    alphas = GERGM_Object@weights,
+    together = GERGM_Object@downweight_statistics_together)
+
+  return(exp(thetas %*% h_statistics))
 }
 
 # performs the integration
-integrator <- function(hG){
+integrator <- function(i, j, thetas, triples, GERGM_Object){
   result <- stats::integrate(f = integrand,
                              lower = 0,
                              upper = 1,
-                             hG = hG)$value
+                             i = i,
+                             j = j,
+                             thetas = thetas,
+                             triples = triples,
+                             GERGM_Object = GERGM_Object)$value
   return(result)
 }
 
-# the dtexp function but for alpha weighting
-dtexp_weighted <- function(x, lambda) {
-  den <- numeric(length(x))
-  inds <- which(lambda != 0)
-  for (i in 1:length(inds)) {
-    temp <- integrator(lambda[inds[i]])
-    den[inds[i]] <- exp(x[inds[i]] * lambda[inds[i]]) / temp
-  }
-  den[which(lambda == 0)] <- 1
-  return(den)
-}
-
 # pseudolikelihood given theta#
-pl_weighted <- function(theta, y, x) {
-  return(sum(log(dtexp_weighted(y, x %*% theta))))
+pl_weighted <- function(theta, triples, GERGM_Object) {
+  net <- GERGM_Object@network
+  num_nodes <- nrow(net)
+  sum_term <- 0
+  for (i in 1:num_nodes) {
+    for (j in 1:num_nodes) {
+      if (i != j) {
+        temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
+        temp2 <- integrator(i, j, theta, triples, GERGM_Object)
+        sum_term <- sum_term + log(temp1) - log(temp2)
+      }
+    }
+  }
+  return(sum_term)
 }
 
 
