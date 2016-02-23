@@ -107,6 +107,8 @@ simulate_networks <- function(formula,
     simulate_correlation_network <- FALSE
     beta_correlation_model <- FALSE
     weighted_MPLE <- FALSE
+    covariate_data <- NULL
+    lambdas <- 0
     object <- as.list(substitute(list(...)))[-1L]
     if (length(object) > 0) {
       if (!is.null(object$simulate_correlation_network)) {
@@ -127,7 +129,18 @@ simulate_networks <- function(formula,
           cat("Using experimental weighted_MPLE...\n")
         }
       }
+      if (!is.null(object$covariate_data)) {
+        covariate_data <- object$covariate_data
+      }
+      if (!is.null(object$lambdas)) {
+        lambdas <- object$lambdas
+        if (class(lambdas) == "symbol" | class(lambdas) == "name") {
+          lambdas <- dynGet(as.character(lambdas),
+                             ifnotfound = get(as.character(lambdas)))
+        }
+      }
     }
+    lambdas <- as.numeric(lambdas)
 
     # This is the main function to estimate a GERGM model
 
@@ -161,7 +174,6 @@ simulate_networks <- function(formula,
     if (!omit_intercept_term) {
       formula <- add_intercept_term(formula)
     }
-
     if (simulate_correlation_network & beta_correlation_model) {
       stop("You may only specify one of: simulate_correlation_network (Harry-Joe) or beta_correlation_model.")
     }
@@ -189,10 +201,16 @@ simulate_networks <- function(formula,
       possible_structural_terms,
       possible_covariate_terms,
       possible_network_terms,
-      covariate_data = NULL,
+      covariate_data = covariate_data,
       normalization_type = normalization_type,
       is_correlation_network = simulate_correlation_network,
-      is_directed = network_is_directed)
+      is_directed = network_is_directed,
+      beta_correlation_model = beta_correlation_model)
+
+    data_transformation <- NULL
+    if (!is.null(Transformed_Data$transformed_covariates)) {
+      data_transformation <- Transformed_Data$transformed_covariates
+    }
 
     # create theta coefficients
     theta_coeficients = NULL
@@ -213,7 +231,6 @@ simulate_networks <- function(formula,
     }
 
     #1. Create GERGM object from network
-
     GERGM_Object <- Create_GERGM_Object_From_Formula(
       formula,
       theta.coef = theta_coeficients,
@@ -222,12 +239,15 @@ simulate_networks <- function(formula,
       possible_network_terms,
       raw_network = Transformed_Data$network,
       together = 1,
-      transform.data = NULL,
-      lambda.coef = NULL,
+      transform.data = data_transformation,
+      lambda.coef = lambdas,
       transformation_type = transformation_type,
       is_correlation_network = simulate_correlation_network,
-      is_directed = network_is_directed
-    )
+      is_directed = network_is_directed,
+      beta_correlation_model = beta_correlation_model)
+    if (!is.null(data_transformation)) {
+      GERGM_Object@data_transformation <- data_transformation
+    }
 
     GERGM_Object@theta_estimation_converged <- TRUE
     GERGM_Object@lambda_estimation_converged <- TRUE
@@ -257,8 +277,25 @@ simulate_networks <- function(formula,
     network_is_directed <- GERGM_Object@directed_network
   }
 
+  # allow the user to specify mu and phi
+  if (GERGM_Object@beta_correlation_model) {
+    inds <- 1:(length(lambdas) - 1)
+    #Transform to bounded network X via beta cdf
+    beta <- as.numeric(lambdas[inds])
 
+    mu <- logistic(beta, GERGM_Object@data_transformation)
+    phi <- lambdas[length(lambdas)]
+    shape1 <- mu * phi
+    shape2 <- (1 - mu) * phi
+    temp <- (GERGM_Object@bounded.network + 1)/2
+    X <- pbeta(temp,shape1 = shape1, shape2 = shape2)
+    # store our new bounded network
+    GERGM_Object@bounded.network <- X
 
+    # store mu and phi for later use in reverse transformation
+    GERGM_Object@mu <- mu
+    GERGM_Object@phi <- phi
+  }
 
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
