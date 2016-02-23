@@ -70,6 +70,7 @@
 #'  proposal_variance = 0.5,
 #'  downweight_statistics_together = TRUE,
 #'  MCMC_burnin = 1000,
+#'  omit_intercept_term = TRUE,
 #'  seed = 456)
 #' @return A list object containing simulated networks and parameters used to
 #' specify the simulation. See the $MCMC_Output field for simulated networks. If
@@ -108,7 +109,7 @@ simulate_networks <- function(formula,
     beta_correlation_model <- FALSE
     weighted_MPLE <- FALSE
     covariate_data <- NULL
-    lambdas <- 0
+    lambdas <- NULL
     object <- as.list(substitute(list(...)))[-1L]
     if (length(object) > 0) {
       if (!is.null(object$simulate_correlation_network)) {
@@ -140,7 +141,6 @@ simulate_networks <- function(formula,
         }
       }
     }
-    lambdas <- as.numeric(lambdas)
 
     # This is the main function to estimate a GERGM model
 
@@ -208,7 +208,8 @@ simulate_networks <- function(formula,
       beta_correlation_model = beta_correlation_model)
 
     data_transformation <- NULL
-    if (!is.null(Transformed_Data$transformed_covariates)) {
+    if (!is.null(Transformed_Data$transformed_covariates) &
+        !omit_intercept_term) {
       data_transformation <- Transformed_Data$transformed_covariates
     }
 
@@ -248,7 +249,7 @@ simulate_networks <- function(formula,
     if (!is.null(data_transformation)) {
       GERGM_Object@data_transformation <- data_transformation
     }
-
+    GERGM_Object@transformation_type <- transformation_type
     GERGM_Object@theta_estimation_converged <- TRUE
     GERGM_Object@lambda_estimation_converged <- TRUE
     GERGM_Object@observed_network  <- GERGM_Object@network
@@ -295,6 +296,17 @@ simulate_networks <- function(formula,
     # store mu and phi for later use in reverse transformation
     GERGM_Object@mu <- mu
     GERGM_Object@phi <- phi
+  } else if (!omit_intercept_term) {
+    beta <- lambdas[1:(length(lambdas) - 1)]
+    sig <- 0.01 + exp(lambdas[length(lambdas)])
+    BZ <- 0
+    for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
+      BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
+    }
+
+    #store so we can transform back
+    GERGM_Object@BZ <- BZ
+    GERGM_Object@BZstdev <- sig
   }
 
   #now simulate from last update of theta parameters
@@ -342,7 +354,7 @@ simulate_networks <- function(formula,
     Trace_Plot(GERGM_Object)
   })
 
-
+  print(GERGM_Object@transformation_type)
   cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
   GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
 

@@ -108,6 +108,7 @@ test <- simulate_networks(formula,
  proposal_variance = 0.5,
  downweight_statistics_together = TRUE,
  MCMC_burnin = 1000,
+ omit_intercept_term = TRUE,
  seed = 456)
 }
 
