@@ -17,7 +17,6 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
   FOUND_ACCEPTABLE_PROP_VAR <- FALSE
   Acceptable_Proposal_Variance <- GERGM_Object@proposal_variance
   dampening_counter <- 1
-  previous_ar <- 0
   # find the optimal proposal variance
   while (!FOUND_ACCEPTABLE_PROP_VAR) {
     cat("--------- START HYPERPARAMETER OPTIMIZATION ---------",
@@ -32,44 +31,20 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
     lb <- GERGM_Object@target_accept_rate - 0.05
     ub <- GERGM_Object@target_accept_rate + 0.05
 
-    # if we are on our first iteration, proceed naively (just up or down)
-    if (dampening_counter == 1) {
-      if (lb > ar) {
-        change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
-        Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
-      } else if (ub < ar) {
+    if (lb > ar) {
+      change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
+      Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
+    } else if (ub < ar) {
+      if (Opt_Prop_Var@proposal_variance > 0.25) {
         change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
-        Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
       } else {
-        Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
-        FOUND_ACCEPTABLE_PROP_VAR <- TRUE
+        change <- (1/(1 + dampening_counter)) * (0.37 - Opt_Prop_Var@proposal_variance)
       }
-      previous_ar <- ar
+      Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
     } else {
-      if (lb > ar) {
-        # if we actually got worse, then jump the other way.
-        if (previous_ar > ar) {
-          change <- Opt_Prop_Var@proposal_variance
-          Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
-        } else {
-          change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
-          Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
-        }
-      } else if (ub < ar) {
-        if (previous_ar < ar) {
-          change <- Opt_Prop_Var@proposal_variance/2
-          Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
-        } else {
-          change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
-          Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
-        }
-      } else {
-        Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
-        FOUND_ACCEPTABLE_PROP_VAR <- TRUE
-      }
-      previous_ar <- ar
+      Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
+      FOUND_ACCEPTABLE_PROP_VAR <- TRUE
     }
-
 
     dampening_counter <-  dampening_counter + 1
     if (dampening_counter > 10) {
