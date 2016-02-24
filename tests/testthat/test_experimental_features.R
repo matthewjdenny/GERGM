@@ -30,7 +30,7 @@ test_that("Hyperparameter optimization works", {
                 hyperparameter_optimization = TRUE
                 )
 
-  check_against <- c(1.288, -0.075, -0.017, -0.025,  3.127, 0.132, -1.837)
+  check_against <- c(1.533, -0.095, -0.017, -0.025,  3.129,  0.131, -1.837)
   check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
   expect_equal(check, check_against)
 
