@@ -267,6 +267,38 @@ simulate_networks <- function(formula,
     GERGM_Object@downweight_statistics_together <- downweight_statistics_together
     GERGM_Object@beta_correlation_model <- beta_correlation_model
     GERGM_Object@weighted_MPLE <- weighted_MPLE
+
+    # allow the user to specify mu and phi
+    if (GERGM_Object@beta_correlation_model) {
+      inds <- 1:(length(lambdas) - 1)
+      #Transform to bounded network X via beta cdf
+      beta <- as.numeric(lambdas[inds])
+
+      mu <- logistic(beta, GERGM_Object@data_transformation)
+      phi <- lambdas[length(lambdas)]
+      shape1 <- mu * phi
+      shape2 <- (1 - mu) * phi
+      temp <- (GERGM_Object@bounded.network + 1)/2
+      X <- pbeta(temp,shape1 = shape1, shape2 = shape2)
+      # store our new bounded network
+      GERGM_Object@bounded.network <- X
+
+      # store mu and phi for later use in reverse transformation
+      GERGM_Object@mu <- mu
+      GERGM_Object@phi <- phi
+    } else if (!omit_intercept_term) {
+      beta <- lambdas[1:(length(lambdas) - 1)]
+      sig <- 0.01 + exp(lambdas[length(lambdas)])
+      BZ <- 0
+      for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
+        BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
+      }
+
+      #store so we can transform back
+      GERGM_Object@BZ <- BZ
+      GERGM_Object@BZstdev <- sig
+    }
+
   } else {
     # a GERGM_Object was provided
     if (!is.null(proposal_variance)) {
@@ -278,36 +310,7 @@ simulate_networks <- function(formula,
     network_is_directed <- GERGM_Object@directed_network
   }
 
-  # allow the user to specify mu and phi
-  if (GERGM_Object@beta_correlation_model) {
-    inds <- 1:(length(lambdas) - 1)
-    #Transform to bounded network X via beta cdf
-    beta <- as.numeric(lambdas[inds])
 
-    mu <- logistic(beta, GERGM_Object@data_transformation)
-    phi <- lambdas[length(lambdas)]
-    shape1 <- mu * phi
-    shape2 <- (1 - mu) * phi
-    temp <- (GERGM_Object@bounded.network + 1)/2
-    X <- pbeta(temp,shape1 = shape1, shape2 = shape2)
-    # store our new bounded network
-    GERGM_Object@bounded.network <- X
-
-    # store mu and phi for later use in reverse transformation
-    GERGM_Object@mu <- mu
-    GERGM_Object@phi <- phi
-  } else if (!omit_intercept_term) {
-    beta <- lambdas[1:(length(lambdas) - 1)]
-    sig <- 0.01 + exp(lambdas[length(lambdas)])
-    BZ <- 0
-    for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
-      BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
-    }
-
-    #store so we can transform back
-    GERGM_Object@BZ <- BZ
-    GERGM_Object@BZstdev <- sig
-  }
 
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
