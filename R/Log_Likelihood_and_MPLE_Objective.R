@@ -253,7 +253,7 @@ pl_weighted <- function(theta, triples, GERGM_Object) {
         # cat("Currently working on edge",i,",",j,"\n")
         temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
         temp2 <- integrator(net[i,j], i, j, theta, triples, GERGM_Object)
-        sum_term <- sum_term + temp1 - temp2
+        sum_term <- sum_term + temp1/temp2
         count <- count + 1
       }
     }
