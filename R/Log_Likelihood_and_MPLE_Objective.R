@@ -206,7 +206,7 @@ integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
       statistics = GERGM_Object@stats_to_use,
       alphas = GERGM_Object@weights,
       together = GERGM_Object@downweight_statistics_together)
-    vals[k] <- as.numeric(thetas %*% h_statistics)
+    vals[k] <- as.numeric(exp(thetas %*% h_statistics))
   }
   return(vals)
 }
@@ -253,7 +253,7 @@ pl_weighted <- function(theta, triples, GERGM_Object) {
         # cat("Currently working on edge",i,",",j,"\n")
         temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
         temp2 <- integrator(net[i,j], i, j, theta, triples, GERGM_Object)
-        sum_term <- sum_term + temp1/temp2
+        sum_term <- sum_term + log(temp1) - log(temp2)
         count <- count + 1
       }
     }
