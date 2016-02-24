@@ -212,16 +212,25 @@ integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
 }
 
 # performs the integration
-integrator <- function(i, j, thetas, triples, GERGM_Object){
+integrator <- function(edge_value ,i, j, thetas, triples, GERGM_Object){
   result <- stats::integrate(f = integrand,
                              lower = 0,
+                             upper = edge_value,
+                             i = i,
+                             j = j,
+                             thetas = thetas,
+                             triples = triples,
+                             GERGM_Object = GERGM_Object)$value
+
+  result2 <- stats::integrate(f = integrand,
+                             lower = edge_value,
                              upper = 1,
                              i = i,
                              j = j,
                              thetas = thetas,
                              triples = triples,
                              GERGM_Object = GERGM_Object)$value
-  return(result)
+  return(result + result2)
 }
 
 # pseudolikelihood given theta#
@@ -243,7 +252,7 @@ pl_weighted <- function(theta, triples, GERGM_Object) {
         }
         # cat("Currently working on edge",i,",",j,"\n")
         temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
-        temp2 <- integrator(i, j, theta, triples, GERGM_Object)
+        temp2 <- integrator(net[i,j], i, j, theta, triples, GERGM_Object)
         sum_term <- sum_term + temp1 - temp2
         count <- count + 1
       }
