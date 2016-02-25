@@ -61,10 +61,10 @@ Estimate_Plot <- function(
     if (length(GERGM_Object@lambda.coef[,1]) > 0 &
         (coefficients_to_plot == "covariate" |
          coefficients_to_plot == "both")) {
-      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
+      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
         ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
     } else {
-      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
+      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
         ggplot2::scale_color_manual(values = UMASS_BLUE)
     }
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0,
@@ -112,16 +112,12 @@ Estimate_Plot <- function(
 
     data <- rbind(data1, data2)
 
+    print(data)
     # Plot
-    if (length(GERGM_Object@lambda.coef[,1]) > 0 &
-        (coefficients_to_plot == "covariate" |
-         coefficients_to_plot == "both")) {
-      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
+
+    zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
         ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
-    } else {
-      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
-        ggplot2::scale_color_manual(values = UMASS_BLUE)
-    }
+
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0,
                                      colour = gray(1/2),
                                      lty = 2)
