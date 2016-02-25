@@ -206,32 +206,69 @@ integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
       statistics = GERGM_Object@stats_to_use,
       alphas = GERGM_Object@weights,
       together = GERGM_Object@downweight_statistics_together)
-    vals[k] <- as.numeric(exp(thetas %*% h_statistics))
+    vals[k] <- as.numeric(thetas %*% h_statistics)
   }
   return(vals)
 }
 
-# performs the integration
-integrator <- function(edge_value ,i, j, thetas, triples, GERGM_Object){
-  result <- stats::integrate(f = integrand,
-                             lower = 0,
-                             upper = edge_value,
-                             i = i,
-                             j = j,
-                             thetas = thetas,
-                             triples = triples,
-                             GERGM_Object = GERGM_Object)$value
+log_sum_exp_integrator <- function(i,
+                                   j,
+                                   thetas,
+                                   triples,
+                                   GERGM_Object,
+                                   lower,
+                                   upper,
+                                   tollerance = 0.001) {
+  steps <- 150
+  converged <- FALSE
+  # current_value <- 0
+  while (!converged) {
+    # get the points at which we are evaluating the function
+    points <- seq(from = lower, to = upper, length.out = steps)
+    evaluations <- rep(0, steps)
+    # evaluate at each point
+    for (k in 1:steps) {
+      evaluations[k] <- integrand(points[k], i, j, thetas, triples, GERGM_Object)
+    }
 
-  result2 <- stats::integrate(f = integrand,
-                             lower = edge_value,
-                             upper = 1,
-                             i = i,
-                             j = j,
-                             thetas = thetas,
-                             triples = triples,
-                             GERGM_Object = GERGM_Object)$value
-  return(result + result2)
+    # now do low-sum-exp trick
+    max_val <- max(evaluations)
+    evaluations <- evaluations - max_val
+    new_value <- max_val + log(sum(exp(evaluations))/steps)
+
+    # for now , 150 steps should be good enough
+    return(new_value)
+    # if (abs(new_value - current_value) < tollerance) {
+    #   return(new_value)
+    # } else {
+    #   current_value <- new_value
+    #   steps <- steps + 20
+    # }
+  }
+
 }
+
+# performs the integration
+# integrator <- function(edge_value ,i, j, thetas, triples, GERGM_Object){
+#   result <- stats::integrate(f = integrand,
+#                              lower = 0,
+#                              upper = edge_value,
+#                              i = i,
+#                              j = j,
+#                              thetas = thetas,
+#                              triples = triples,
+#                              GERGM_Object = GERGM_Object)$value
+#
+#   result2 <- stats::integrate(f = integrand,
+#                              lower = edge_value,
+#                              upper = 1,
+#                              i = i,
+#                              j = j,
+#                              thetas = thetas,
+#                              triples = triples,
+#                              GERGM_Object = GERGM_Object)$value
+#   return(result + result2)
+# }
 
 # pseudolikelihood given theta#
 pl_weighted <- function(theta, triples, GERGM_Object) {
@@ -252,8 +289,9 @@ pl_weighted <- function(theta, triples, GERGM_Object) {
         }
         # cat("Currently working on edge",i,",",j,"\n")
         temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
-        temp2 <- integrator(net[i,j], i, j, theta, triples, GERGM_Object)
-        sum_term <- sum_term + log(temp1) - log(temp2)
+        temp2 <- log_sum_exp_integrator(i = i,j = j,thetas = theta,
+          triples = triples, GERGM_Object = GERGM_Object,lower = 0,upper = 1)
+        sum_term <- sum_term + temp1 - temp2
         count <- count + 1
       }
     }
