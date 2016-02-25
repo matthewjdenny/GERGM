@@ -6,7 +6,8 @@
 \usage{
 Estimate_Plot(GERGM_Object, normalize_coefficients = FALSE,
   coefficients_to_plot = c("both", "covariate", "structural"),
-  coefficient_names = NULL, leave_out_coefficients = NULL)
+  coefficient_names = NULL, leave_out_coefficients = NULL,
+  comparison_model = NULL, model_names = NULL)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
@@ -32,6 +33,13 @@ removed from the final plot. Useful if the intercept term is much larger in
 magnitude than other estimates, and the user wishes to clarify the other
 parameter estimates without normalizing.
 given}
+
+\item{comparison_model}{A GERGM_Object produced by an alternative model whose
+parameter estimates are to be compared to the existing model. Defaults to
+NULL.}
+
+\item{model_names}{If a comparison_model is provided, then each model must be
+given a name via the model_names parameter. Defaults to NULL}
 }
 \value{
 A parameter estimate plot.
