@@ -311,6 +311,7 @@ fast_pl_weighted <- function(theta,
                              upper = 1,
                              steps = 150){
 
+  cat("Weighted MPLE Theta = ",theta,"\n")
   current_network <- GERGM_Object@bounded.network
   number_of_nodes <- nrow(current_network)
   stat.indx <- which(GERGM_Object@stats_to_use > 0)
@@ -334,7 +335,7 @@ fast_pl_weighted <- function(theta,
                             GERGM_Object@weights,
                             dw,
                             integration_interval)
-
+  cat("Calculation complete, objective is:",objective,"\n\n")
   return(objective)
 }
 
