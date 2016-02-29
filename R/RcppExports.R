@@ -9,3 +9,7 @@ Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, n
     .Call('GERGM_Metropolis_Hastings_Sampler', PACKAGE = 'GERGM', number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network)
 }
 
+weighted_mple_objective <- function(number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval) {
+    .Call('GERGM_weighted_mple_objective', PACKAGE = 'GERGM', number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval)
+}
+

@@ -43,3 +43,22 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// weighted_mple_objective
+double weighted_mple_objective(int number_of_nodes, arma::vec statistics_to_use, arma::mat current_network, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, arma::vec integration_interval);
+RcppExport SEXP GERGM_weighted_mple_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type number_of_nodes(number_of_nodesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type statistics_to_use(statistics_to_useSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type current_network(current_networkSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type triples(triplesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type integration_interval(integration_intervalSEXP);
+    __result = Rcpp::wrap(weighted_mple_objective(number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval));
+    return __result;
+END_RCPP
+}
