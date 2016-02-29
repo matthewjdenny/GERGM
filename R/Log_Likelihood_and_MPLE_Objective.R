@@ -159,6 +159,7 @@ mple_weighted <- function(GERGM_Object,
   net <- GERGM_Object@network
   num_nodes <- nrow(net)
   triples = t(combn(1:num_nodes, 3))
+  pairs <- t(combn(1:num_nodes, 2))
   if (is.null(prev_ests)) {
     xy <- net2xy(net,
                  statistics,
@@ -176,16 +177,18 @@ mple_weighted <- function(GERGM_Object,
   ests <- NULL
   if (verbose) {
     ests <- optim(par = est,
-                  pl_weighted,
+                  fast_pl_weighted,
                   triples = triples,
+                  pairs = pairs,
                   GERGM_Object = GERGM_Object,
                   method = "BFGS",
                   hessian = TRUE,
                   control = list(fnscale = -1, trace = 6))
   } else {
     ests <- optim(par = est,
-                  pl_weighted,
+                  fast_pl_weighted,
                   triples = triples,
+                  pairs = pairs,
                   GERGM_Object = GERGM_Object,
                   method = "BFGS",
                   hessian = TRUE,
@@ -298,6 +301,41 @@ pl_weighted <- function(theta, triples, GERGM_Object) {
   }
   cat("\nCalculation complete, objective is:",sum_term,"\n")
   return(sum_term)
+}
+
+fast_pl_weighted <- function(theta,
+                             triples,
+                             pairs,
+                             GERGM_Object,
+                             lower = 0,
+                             upper = 1,
+                             steps = 150){
+
+  current_network <- GERGM_Object@bounded.network
+  number_of_nodes <- nrow(current_network)
+  stat.indx <- which(GERGM_Object@stats_to_use > 0)
+  #cat("stat.idx",stat.indx,"\n" )
+  full_thetas <- rep(0, length(GERGM_Object@stats_to_use))
+  for (i in 1:length(theta)) {
+    full_thetas[stat.indx[i]] <- theta[i]
+  }
+  dw <- as.numeric(GERGM_Object@downweight_statistics_together)
+
+  integration_interval <- seq(from = lower,
+                              to = upper,
+                              length.out = steps)
+
+  objective <- weighted_mple_objective(number_of_nodes,
+                            GERGM_Object@stats_to_use,
+                            current_network,
+                            full_thetas,
+                            triples,
+                            pairs,
+                            GERGM_Object@weights,
+                            dw,
+                            integration_interval)
+
+  return(objective)
 }
 
 
