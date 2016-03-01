@@ -103,19 +103,19 @@ run_mple <- function(GERGM_Object,
     cat("Updating MPLE estimates via a one step Fisher update...\n")
 
     # now optimize the proposal variance if we are using Metropolis Hasings
-    if (GERGM_Object@hyperparameter_optimization){
-      if (GERGM_Object@estimation_method == "Metropolis") {
-        GERGM_Object@proposal_variance <- Optimize_Proposal_Variance(
-          GERGM_Object = GERGM_Object,
-          seed2 = seed2,
-          possible.stats = possible.stats,
-          verbose = verbose)
-        cat("Proposal variance optimization complete! Proposal variance is:",
-            GERGM_Object@proposal_variance,"\n",
-            "--------- END HYPERPARAMETER OPTIMIZATION ---------",
-            "\n\n")
-      }
-    }
+    # if (GERGM_Object@hyperparameter_optimization){
+    #   if (GERGM_Object@estimation_method == "Metropolis") {
+    #     GERGM_Object@proposal_variance <- Optimize_Proposal_Variance(
+    #       GERGM_Object = GERGM_Object,
+    #       seed2 = seed2,
+    #       possible.stats = possible.stats,
+    #       verbose = verbose)
+    #     cat("Proposal variance optimization complete! Proposal variance is:",
+    #         GERGM_Object@proposal_variance,"\n",
+    #         "--------- END HYPERPARAMETER OPTIMIZATION ---------",
+    #         "\n\n")
+    #   }
+    # }
 
 
     GERGM_Object <- Simulate_GERGM(GERGM_Object,
