@@ -284,20 +284,27 @@ double Out2Star(arma::mat net,
   double st2 = 0;
   double st3 = 0;
 
-  for (int i = 0; i < number_of_triples; ++i) {
-    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 0),
-               triples(i, 2));
-    st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-               triples(i, 2));
-    st3 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 2),
-               triples(i, 1));
-  }
-
   double to_return = 0;
   if (together == 1) {
-    to_return = pow((st1 + st2 + st3), alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 0),
+                     triples(i, 2));
+          st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+                     triples(i, 2));
+          st3 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 2),
+                     triples(i, 1));
+      }
+      to_return = pow((st1 + st2 + st3), alpha);
   } else {
-    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += pow(net(triples(i, 0), triples(i, 1)), alpha) *
+              pow(net(triples(i, 0), triples(i, 2)), alpha);
+          st2 += pow(net(triples(i, 1), triples(i, 0)), alpha) *
+              pow(net(triples(i, 1), triples(i, 2)), alpha);
+          st3 += pow(net(triples(i, 2), triples(i, 0)), alpha) *
+              pow(net(triples(i, 2),triples(i, 1)), alpha);
+      }
+      to_return = st1 + st2 + st3;
   }
   return to_return;
 };
@@ -313,20 +320,27 @@ double In2Star(arma::mat net,
   double st2 = 0;
   double st3 = 0;
 
-  for (int i = 0; i < number_of_triples; ++i) {
-    st1 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 1),
-               triples(i, 0));
-    st2 += net(triples(i, 2), triples(i, 1)) * net(triples(i, 0),
-               triples(i, 1));
-    st3 += net(triples(i, 0), triples(i, 2)) * net(triples(i, 1),
-               triples(i, 2));
-  }
-
   double to_return = 0;
   if (together == 1) {
-    to_return = pow((st1 + st2 + st3), alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += net(triples(i, 2), triples(i, 0)) * net(triples(i, 1),
+                     triples(i, 0));
+          st2 += net(triples(i, 2), triples(i, 1)) * net(triples(i, 0),
+                     triples(i, 1));
+          st3 += net(triples(i, 0), triples(i, 2)) * net(triples(i, 1),
+                     triples(i, 2));
+      }
+      to_return = pow((st1 + st2 + st3), alpha);
   } else {
-    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += pow(net(triples(i, 2), triples(i, 0)), alpha) *
+              pow(net(triples(i, 1), triples(i, 0)), alpha);
+          st2 += pow(net(triples(i, 2), triples(i, 1)), alpha) *
+              pow(net(triples(i, 0), triples(i, 1)), alpha);
+          st3 += pow(net(triples(i, 0), triples(i, 2)), alpha) *
+              pow(net(triples(i, 1),triples(i, 2)), alpha);
+      }
+      to_return = st1 + st2 + st3;
   }
   return to_return;
 };
@@ -345,27 +359,45 @@ double TTriads(arma::mat net,
   double st5 = 0;
   double st6 = 0;
 
-  for (int i = 0; i < number_of_triples; ++i) {
-    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
-               triples(i, 2)) * net(triples(i, 0), triples(i, 2));
-    st2 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
-               triples(i, 1)) * net(triples(i, 2), triples(i, 0));
-    st3 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
-               triples(i, 1)) * net(triples(i, 0), triples(i, 2));
-    st4 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-               triples(i, 2)) * net(triples(i, 2), triples(i, 0));
-    st5 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
-               triples(i, 2)) * net(triples(i, 0), triples(i, 2));
-    st6 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
-               triples(i, 1)) * net(triples(i, 2), triples(i, 0));
-  }
-
   double to_return = 0;
   if (together == 1) {
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
+                     triples(i, 2)) * net(triples(i, 0), triples(i, 2));
+          st2 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
+                     triples(i, 1)) * net(triples(i, 2), triples(i, 0));
+          st3 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 2),
+                     triples(i, 1)) * net(triples(i, 0), triples(i, 2));
+          st4 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+                     triples(i, 2)) * net(triples(i, 2), triples(i, 0));
+          st5 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 1),
+                     triples(i, 2)) * net(triples(i, 0), triples(i, 2));
+          st6 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
+                     triples(i, 1)) * net(triples(i, 2), triples(i, 0));
+      }
     to_return = pow((st1 + st2 + st3 + st4 + st5 + st6), alpha);
   } else {
-    to_return = pow(st1, alpha) + pow(st2, alpha) + pow(st3, alpha)
-    + pow(st4, alpha) + pow(st5, alpha) + pow(st6, alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += pow(net(triples(i, 0), triples(i, 1)), alpha) *
+              pow(net(triples(i, 1), triples(i, 2)), alpha) *
+              pow(net(triples(i, 0), triples(i, 2)), alpha);
+          st2 += pow(net(triples(i, 0), triples(i, 1)), alpha) *
+              pow(net(triples(i, 2), triples(i, 1)), alpha) *
+              pow(net(triples(i, 2), triples(i, 0)), alpha);
+          st3 += pow(net(triples(i, 0), triples(i, 1)), alpha) *
+              pow(net(triples(i, 2),triples(i, 1)), alpha) *
+              pow(net(triples(i, 0), triples(i, 2)), alpha);
+          st4 += pow(net(triples(i, 1), triples(i, 0)), alpha) *
+              pow(net(triples(i, 1), triples(i, 2)), alpha) *
+              pow(net(triples(i, 2), triples(i, 0)), alpha);
+          st5 += pow(net(triples(i, 1), triples(i, 0)), alpha) *
+              pow(net(triples(i, 1), triples(i, 2)), alpha) *
+              pow(net(triples(i, 0), triples(i, 2)), alpha);
+          st6 += pow(net(triples(i, 1), triples(i, 0)), alpha) *
+              pow(net(triples(i, 2), triples(i, 1)), alpha) *
+              pow(net(triples(i, 2), triples(i, 0)), alpha);
+      }
+    to_return = st1 + st2 + st3 + st4 + st5 + st6;
   }
   return to_return;
 };
@@ -380,18 +412,25 @@ double CTriads(arma::mat net,
   double st1 = 0;
   double st2 = 0;
 
-  for (int i = 0; i < number_of_triples; ++i) {
-    st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
-               triples(i, 2)) * net(triples(i, 2), triples(i, 0));
-    st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
-               triples(i,1)) * net(triples(i, 0), triples(i, 2));
-  }
-
   double to_return = 0;
   if (together == 1) {
-    to_return = pow((st1 + st2), alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += net(triples(i, 0), triples(i, 1)) * net(triples(i, 1),
+                     triples(i, 2)) * net(triples(i, 2), triples(i, 0));
+          st2 += net(triples(i, 1), triples(i, 0)) * net(triples(i, 2),
+                     triples(i,1)) * net(triples(i, 0), triples(i, 2));
+      }
+      to_return = pow((st1 + st2), alpha);
   } else {
-    to_return = pow(st1, alpha) + pow(st2, alpha);
+      for (int i = 0; i < number_of_triples; ++i) {
+          st1 += pow(net(triples(i, 0), triples(i, 1)), alpha) *
+              pow(net(triples(i, 1), triples(i, 2)), alpha) *
+              pow(net(triples(i, 2), triples(i, 0)), alpha);
+          st2 += pow(net(triples(i, 1), triples(i, 0)), alpha) *
+              pow(net(triples(i, 2), triples(i,1)), alpha) *
+              pow(net(triples(i, 0), triples(i, 2)), alpha);
+      }
+      to_return = st1 + st2;
   }
   return to_return;
 };
@@ -404,11 +443,22 @@ double Recip(arma::mat net,
 
   int number_of_pairs = pairs.n_rows;
   double st1 = 0;
-  for (int i = 0; i < number_of_pairs; ++i) {
-    st1 += net(pairs(i, 0), pairs(i, 1)) * net(pairs(i, 1), pairs(i, 0));
+
+  double to_return = 0;
+  if(together == 1) {
+      for (int i = 0; i < number_of_pairs; ++i) {
+          st1 += net(pairs(i, 0), pairs(i, 1)) * net(pairs(i, 1), pairs(i, 0));
+      }
+      to_return = pow(st1, alpha);
+  } else {
+      for (int i = 0; i < number_of_pairs; ++i) {
+          st1 += pow(net(pairs(i, 0), pairs(i, 1)), alpha) *
+              pow(net(pairs(i, 1), pairs(i, 0)), alpha);
+      }
+      to_return = st1;
   }
 
-  double to_return = pow(st1, alpha);
+
   return to_return;
 };
 
