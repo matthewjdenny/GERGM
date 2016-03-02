@@ -55,12 +55,12 @@ optimize_initialization <- function(GERGM_Object,
   differences <- as.numeric(unlist(results))
 
   # find the minimum difference
-  min_diff <- which(differences == min(differences))
+  min_diff <- which(differences == min(differences))[1]
 
-  optimal_thetas <- parameter_grid[min_diff,]
+  optimal_thetas <- as.numeric(parameter_grid[min_diff,])
 
   cat("The minimum aggregate absolute difference was",min(differences),
-      "for theta values",optimal_thetas,
-      ". If this value is very large, a wider grid search may be necessary.\n")
+      "for theta values:\n")
+  print(optimal_thetas)
   return(optimal_thetas)
 } # end of function call
