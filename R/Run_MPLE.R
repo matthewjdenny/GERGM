@@ -157,6 +157,21 @@ run_mple <- function(GERGM_Object,
     GERGM_Object <- store_console_output(GERGM_Object,paste("Adjusted Initial Thetas After Fisher Update:",theta$par, "\n\n"))
   }
 
+
+  # if we are using the experimental optimization feature.
+  if (GERGM_Object@hyperparameter_optimization) {
+    if (GERGM_Object@using_grid_optimization) {
+      cat("Optimizing thetas, this may take days...\n")
+      theta$par <- optimize_initialization(GERGM_Object,
+                                           verbose,
+                                           seed2,
+                                           possible.stats,
+                                           theta,
+                                           statistics)
+      cat("Updated thetas after grid search:",theta$par,"\n\n")
+    }
+  }
+
   theta$par <- as.numeric(theta$par)
   return(list(GERGM_Object = GERGM_Object,
               theta = theta,
