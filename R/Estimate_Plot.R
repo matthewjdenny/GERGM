@@ -46,7 +46,7 @@ Estimate_Plot <- function(
   #define colors
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
-  Model <- Variable <- Coefficient <- SE <- NULL
+  Model <- Variable <- Coefficient <- SE <- Coefficient_Type <- NULL
 
   # if we are only using the one model, proceed as normal.
   if (!using_comparsion_model) {
