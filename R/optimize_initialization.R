@@ -1,17 +1,9 @@
 optimize_initialization <- function(GERGM_Object,
                                     verbose,
                                     seed2,
-                                    possible.stats){
-
-  # get MPLE thetas
-  MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
-                           verbose = verbose,
-                           seed2 = seed2,
-                           possible.stats = possible.stats)
-
-  GERGM_Object <- MPLE_Results$GERGM_Object
-  theta <- MPLE_Results$theta
-  statistics <- MPLE_Results$statistics
+                                    possible.stats,
+                                    theta,
+                                    statistics){
 
   # now we do a grid search
   num_thetas <- length(theta$par)
