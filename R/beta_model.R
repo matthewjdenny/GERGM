@@ -101,7 +101,7 @@ partials.to.correlations <- function(partials){
     }
   }
   return(correlations)
-  }
+}
 
 #-----------------------------------------------------
 #Function to transform a correlation network to a bounded network
@@ -120,7 +120,6 @@ pbt <- function(correlations, mu, phi){
   probs <- pbeta(P[lower.tri(P, diag = FALSE)],
                  shape1 = shape1, shape2 = shape2)
   X[lower.tri(X, diag = FALSE)] <- probs
-  X[upper.tri(X, diag = FALSE)] <- probs
   #make symmetric
   X <- X + t(X)
   diag(X) <- 0
@@ -150,7 +149,6 @@ qbt <- function(X, mu, phi){
   quants <- qbeta(X[lower.tri(X, diag = FALSE)],
                   shape1 = shape1, shape2 = shape2)
   P[lower.tri(P, diag = FALSE)] <- quants
-  P[upper.tri(P, diag = FALSE)] <- quants
   #make symmetric
   P <- P + t(P)
   diag(P) <- 1
