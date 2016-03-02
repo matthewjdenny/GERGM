@@ -4,7 +4,10 @@
 #' @param formula A formula object that specifies which statistics the user would
 #' like to include while simulating the network, and the network the user is
 #' providing as the initial network. Currently, the following statistics can be
-#' specified: c("out2stars", "in2stars", 	"ctriads", "mutual", "ttriads").
+#' specified: c("edges", "out2stars", "in2stars", 	"ctriads", "mutual",
+#' "ttriads").
+#' @param edges The theta value provided for the reciprocity parameter, defaults
+#' to 0. Only statistics for structural terms included in formula will be used.
 #' @param mutual The theta value provided for the reciprocity parameter, defaults
 #' to 0. Only statistics for structural terms included in formula will be used.
 #' @param ttriads The theta value provided for the transitive triads parameter,
@@ -42,7 +45,11 @@
 #' will be discarded before drawing the samples used for estimation. Default is
 #' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
-#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.
+#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user
+#' wishes to omit the model intercept term which is automatically included as
+#' a covariate effect (lambda parameter). If the user wishes to specify an
+#' edges term, then they must set omit_intercept_term = TRUE so that only one
+#' intercept term is included in the model.
 #' @param GERGM_Object Optional argument allowing the user to supply a GERGM
 #' object output by the gergm() estimation function in order to simualt further
 #' networks. Defaults to NULL. If a GERGM object is provided, any user specified
@@ -52,6 +59,10 @@
 #' MCMC_burnin. proposal_variance may also be specified, or if set equal to NULL,
 #' then the proposal variance from parameter estimation will be used instead (
 #' this option is likely preferred in most situations).
+#' @param return_constrained_networks Logical argument indicating whether
+#' simulated networks should be transformed back to observed scale or whether
+#' constrained [0,1] networks should be returned. Defaults to FALSE, in which
+#' case networks are returned on observed scale.
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' set.seed(12345)
@@ -77,6 +88,7 @@
 #' GERGM_Object is provded, then a GERGM object will be returned instead.
 #' @export
 simulate_networks <- function(formula,
+  edges = 0,
   mutual = 0,
   ttriads = 0,
   ctriads = 0,
@@ -93,6 +105,7 @@ simulate_networks <- function(formula,
   seed = 123,
   omit_intercept_term = FALSE,
   GERGM_Object = NULL,
+  return_constrained_networks = FALSE,
   ...
 ){
 
@@ -150,8 +163,8 @@ simulate_networks <- function(formula,
     if (length(parsed) > 1) {
       parsed <- paste0(parsed, collapse = " ")
     }
-    if (grepl("edges",parsed)) {
-      stop("You may not specify an edges statistic.")
+    if (grepl("edges",parsed) & !omit_intercept_term) {
+      stop("You may not specify an edges statistic if omit_intercept_term == FALSE as this will result in the inclusion of two intercept terms.")
     }
 
     # set logical values for whether we are using MPLE only, whether the network
@@ -229,6 +242,9 @@ simulate_networks <- function(formula,
     }
     if (ttriads != 0) {
       theta_coeficients <- c(theta_coeficients, ttriads)
+    }
+    if (edges != 0) {
+      theta_coeficients <- c(theta_coeficients, edges)
     }
 
     #1. Create GERGM object from network
@@ -357,9 +373,12 @@ simulate_networks <- function(formula,
     Trace_Plot(GERGM_Object)
   })
 
-  print(GERGM_Object@transformation_type)
-  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
-  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
+  if (!return_constrained_networks) {
+    cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
+    GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
+  } else {
+    cat("Returning constrained [0,1] simulated networks...\n")
+  }
 
   if (is.null(GERGM_Object)) {
     return_list <- list(formula = GERGM_Object@formula,

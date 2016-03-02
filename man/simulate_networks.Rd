@@ -4,19 +4,24 @@
 \alias{simulate_networks}
 \title{A Function to simulate networks from a GERGM with given theta parameters.}
 \usage{
-simulate_networks(formula, mutual = 0, ttriads = 0, ctriads = 0,
-  in2stars = 0, out2stars = 0, twostars = 0,
+simulate_networks(formula, edges = 0, mutual = 0, ttriads = 0,
+  ctriads = 0, in2stars = 0, out2stars = 0, twostars = 0,
   simulation_method = c("Metropolis", "Gibbs"),
   network_is_directed = c(TRUE, FALSE),
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  omit_intercept_term = FALSE, GERGM_Object = NULL, ...)
+  omit_intercept_term = FALSE, GERGM_Object = NULL,
+  return_constrained_networks = FALSE, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
 like to include while simulating the network, and the network the user is
 providing as the initial network. Currently, the following statistics can be
-specified: c("out2stars", "in2stars",     "ctriads", "mutual", "ttriads").}
+specified: c("edges", "out2stars", "in2stars",     "ctriads", "mutual",
+"ttriads").}
+
+\item{edges}{The theta value provided for the reciprocity parameter, defaults
+to 0. Only statistics for structural terms included in formula will be used.}
 
 \item{mutual}{The theta value provided for the reciprocity parameter, defaults
 to 0. Only statistics for structural terms included in formula will be used.}
@@ -69,7 +74,11 @@ will be discarded before drawing the samples used for estimation. Default is
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
 
-\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user wishes to omit the model intercept term.}
+\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user
+wishes to omit the model intercept term which is automatically included as
+a covariate effect (lambda parameter). If the user wishes to specify an
+edges term, then they must set omit_intercept_term = TRUE so that only one
+intercept term is included in the model.}
 
 \item{GERGM_Object}{Optional argument allowing the user to supply a GERGM
 object output by the gergm() estimation function in order to simualt further
@@ -80,6 +89,11 @@ terms must still be specified: number_of_networks_to_simulate, thin, and
 MCMC_burnin. proposal_variance may also be specified, or if set equal to NULL,
 then the proposal variance from parameter estimation will be used instead (
 this option is likely preferred in most situations).}
+
+\item{return_constrained_networks}{Logical argument indicating whether
+simulated networks should be transformed back to observed scale or whether
+constrained [0,1] networks should be returned. Defaults to FALSE, in which
+case networks are returned on observed scale.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }
