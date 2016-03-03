@@ -118,6 +118,20 @@ Simulate_GERGM <- function(GERGM_Object,
             GERGM_Object@target_accept_rate,"):",
             acceptance.rate, "\n", sep = ""))
 
+    P_Ratios = samples[[6]]
+    Q_Ratios = samples[[7]]
+    Proposed_Density = samples[[8]]
+    Current_Density = samples[[9]]
+    if (verbose) {
+      cat("Average Q-Ratio:",mean(Q_Ratios),"Average P-Ratio:",mean(P_Ratios),
+          "\nMean difference between proposed and current network densities:",
+          mean(Proposed_Density - Current_Density ),"\n")
+    }
+    GERGM_Object <- store_console_output(GERGM_Object,
+     paste("Average Q-Ratio:",mean(Q_Ratios),"Average P-Ratio:",mean(P_Ratios),
+           "\nMean difference between proposed and current network densities:",
+           mean(Proposed_Density - Current_Density ),"\n", sep = ""))
+
   }
   h.statistics = data.frame(out2stars = h.statistics[, 1],
                             in2stars = h.statistics[, 2],
@@ -126,8 +140,19 @@ Simulate_GERGM <- function(GERGM_Object,
                             ttriads = h.statistics[, 5],
                             edges = h.statistics[, 6])
 
-  GERGM_Object@MCMC_output = list(Networks = nets,
-                            Statistics = h.statistics,
-                            Acceptance.rate = acceptance.rate)
+  # if we are using MH, then return more diagnostics
+  if (GERGM_Object@estimation_method == "Metropolis") {
+    GERGM_Object@MCMC_output = list(Networks = nets,
+                                    Statistics = h.statistics,
+                                    Acceptance.rate = acceptance.rate,
+                                    P_Ratios = samples[[6]],
+                                    Q_Ratios = samples[[7]],
+                                    Proposed_Density = samples[[8]],
+                                    Current_Density = samples[[9]])
+  } else {
+    GERGM_Object@MCMC_output = list(Networks = nets,
+                                    Statistics = h.statistics,
+                                    Acceptance.rate = acceptance.rate)
+  }
   return(GERGM_Object)
 }
