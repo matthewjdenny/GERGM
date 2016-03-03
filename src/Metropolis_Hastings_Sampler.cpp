@@ -566,13 +566,17 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
 
   // Allocate variables and data structures
   double variance = shape_parameter;
-  int list_length = 5;
+  int list_length = 9;
   List to_return(list_length);
   int number_of_thetas = statistics_to_use.n_elem;
   int MH_Counter = 0;
   int Storage_Counter = 0;
   arma::vec Accept_or_Reject = arma::zeros (number_of_iterations);
   arma::vec Log_Prob_Accept = arma::zeros (number_of_iterations);
+  arma::vec P_Ratios = arma::zeros (number_of_iterations);
+  arma::vec Q_Ratios = arma::zeros (number_of_iterations);
+  arma::vec Proposed_Density = arma::zeros (number_of_iterations);
+  arma::vec Current_Density = arma::zeros (number_of_iterations);
   arma::cube Network_Samples = arma::zeros (number_of_nodes, number_of_nodes,
       number_of_samples_to_store);
   arma::vec Mean_Edge_Weights = arma::zeros (number_of_samples_to_store);
@@ -618,12 +622,12 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
                 in_zero_one = 1;
               }
             }
-            if (new_edge_value > 0.999) {
-              new_edge_value = 0.999;
-            }
-            if (new_edge_value < 0.001) {
-              new_edge_value= 0.001;
-            }
+            // if (new_edge_value > 0.999) {
+            //   new_edge_value = 0.999;
+            // }
+            // if (new_edge_value < 0.001) {
+            //   new_edge_value= 0.001;
+            // }
             // calculate the probability of the new edge under current beta dist
             double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
             double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
@@ -668,12 +672,6 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
               if(new_edge_value > 0 & new_edge_value < 1){
                 in_zero_one = 1;
               }
-            }
-            if (new_edge_value > 0.999) {
-              new_edge_value = 0.999;
-            }
-            if (new_edge_value < 0.001) {
-              new_edge_value= 0.001;
             }
 
             // calculate the probability of the new edge under current beta dist
@@ -736,6 +734,16 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
         current_edge_weights, statistics_to_use, thetas, triples, pairs,
         alphas, together);
     }
+
+    // store some additional diagnostics
+    P_Ratios[n] = (proposed_addition - current_addition);
+    Q_Ratios[n] = log_prob_accept;
+
+    double total_edges = double(number_of_nodes * (number_of_nodes - 1));
+    double temp1 = arma::accu(proposed_edge_weights);
+    Proposed_Density[n] = temp1/total_edges;
+    double temp2 = arma::accu(current_edge_weights);
+    Current_Density[n] = temp2/total_edges;
 
     log_prob_accept += (proposed_addition - current_addition);
 
@@ -826,5 +834,9 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   to_return[2] = Save_H_Statistics;
   to_return[3] = Mean_Edge_Weights;
   to_return[4] = Log_Prob_Accept;
+  to_return[5] = P_Ratios;
+  to_return[6] = Q_Ratios;
+  to_return[7] = Proposed_Density;
+  to_return[8] = Current_Density;
   return to_return;
 }
