@@ -198,12 +198,10 @@ simulate_networks <- function(formula,
       }
       network_is_directed <- FALSE
     }
+
     #make sure proposal variance is greater than zero
-    #make sure proposal variance is greater than zero
-    if (proposal_variance <= 0.001) {
-      proposal_variance <- 0.001
-      cat("You supplied a proposal variance that was less than or equal to zero.
-          It has been reset to 0.001, considder respecifying...\n")
+    if (proposal_variance <= 0) {
+      stop("You supplied a proposal variance that was less than or equal to zero.")
     }
 
     formula <- as.formula(formula)

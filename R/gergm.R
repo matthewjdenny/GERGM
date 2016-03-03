@@ -253,6 +253,7 @@ gergm <- function(formula,
                                 "gaussian",
                                 "lognormal")
 
+
   if (using_correlation_network & beta_correlation_model) {
     stop("You may only specify one of: using_correlation_network (Harry-Joe) or beta_correlation_model.")
   }
@@ -308,9 +309,8 @@ gergm <- function(formula,
   }
 
   #make sure proposal variance is greater than zero
-  if (proposal_variance <= 0.001) {
-    proposal_variance <- 0.001
-    cat("You supplied a proposal variance that was less than or equal to zero. It has been reset to 0.001, considder respecifying...\n")
+  if (proposal_variance <= 0) {
+    stop("You supplied a proposal variance that was less than or equal to zero.")
   }
 
   formula <- as.formula(formula)
