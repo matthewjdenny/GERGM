@@ -11,7 +11,8 @@ simulate_networks(formula, edges = 0, mutual = 0, ttriads = 0,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
   omit_intercept_term = FALSE, GERGM_Object = NULL,
-  return_constrained_networks = FALSE, ...)
+  return_constrained_networks = FALSE, optimize_proposal_variance = FALSE,
+  target_accept_rate = 0.25, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
@@ -94,6 +95,13 @@ this option is likely preferred in most situations).}
 simulated networks should be transformed back to observed scale or whether
 constrained [0,1] networks should be returned. Defaults to FALSE, in which
 case networks are returned on observed scale.}
+
+\item{optimize_proposal_variance}{Logical indicating whether proposal
+variance should be optimized if using Metropolis Hastings for simulation.
+Defaults to FALSE.}
+
+\item{target_accept_rate}{Defaults to 0.25, can be used to optimize
+Metropolis Hastings simulations.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }

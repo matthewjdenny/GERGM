@@ -63,6 +63,11 @@
 #' simulated networks should be transformed back to observed scale or whether
 #' constrained [0,1] networks should be returned. Defaults to FALSE, in which
 #' case networks are returned on observed scale.
+#' @param optimize_proposal_variance Logical indicating whether proposal
+#' variance should be optimized if using Metropolis Hastings for simulation.
+#' Defaults to FALSE.
+#' @param target_accept_rate Defaults to 0.25, can be used to optimize
+#' Metropolis Hastings simulations.
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' set.seed(12345)
@@ -106,6 +111,8 @@ simulate_networks <- function(formula,
   omit_intercept_term = FALSE,
   GERGM_Object = NULL,
   return_constrained_networks = FALSE,
+  optimize_proposal_variance = FALSE,
+  target_accept_rate = 0.25,
   ...
 ){
 
@@ -274,13 +281,14 @@ simulate_networks <- function(formula,
     GERGM_Object@is_correlation_network <- simulate_correlation_network
     GERGM_Object@proposal_variance <- proposal_variance
     GERGM_Object@estimation_method <- simulation_method
-    GERGM_Object@target_accept_rate <- 0.25
+    GERGM_Object@target_accept_rate <- target_accept_rate
     GERGM_Object@number_of_simulations <- number_of_networks_to_simulate
     GERGM_Object@thin <- thin
     GERGM_Object@burnin <- MCMC_burnin
     GERGM_Object@downweight_statistics_together <- downweight_statistics_together
     GERGM_Object@beta_correlation_model <- beta_correlation_model
     GERGM_Object@weighted_MPLE <- weighted_MPLE
+    GERGM_Object@hyperparameter_optimization <- optimize_proposal_variance
 
     # allow the user to specify mu and phi
     if (GERGM_Object@beta_correlation_model) {
@@ -324,6 +332,21 @@ simulate_networks <- function(formula,
     network_is_directed <- GERGM_Object@directed_network
   }
 
+
+  if (GERGM_Object@hyperparameter_optimization){
+    if (GERGM_Object@estimation_method == "Metropolis") {
+      GERGM_Object@proposal_variance <- Optimize_Proposal_Variance(
+        GERGM_Object = GERGM_Object,
+        seed2 = seed,
+        possible.stats = possible_structural_terms,
+        verbose = TRUE,
+        max_updates = 50)
+      cat("Proposal variance optimization complete! Proposal variance is:",
+          GERGM_Object@proposal_variance,"\n",
+          "--------- END HYPERPARAMETER OPTIMIZATION ---------",
+          "\n\n")
+    }
+  }
 
 
   #now simulate from last update of theta parameters
