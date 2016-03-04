@@ -47,7 +47,7 @@ test_that("Simple model with no covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 4)
 
-  check_against <- c(2.061, -0.253)
+  check_against <- c(2.075, -0.253)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # five parameter model
@@ -68,7 +68,7 @@ test_that("Simple model with no covariates runs", {
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
-check_against <- c(-0.606,  2.483,  0.131)
+check_against <- c(-0.492,  2.445,  0.053)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 #check that code works for undirected network
@@ -90,7 +90,7 @@ test <- gergm(formula,
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
-check_against <- c(-0.222,  0.079)
+check_against <- c(-0.244,  0.096)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 #check that code works with MPLE only
