@@ -147,7 +147,8 @@ test_that("Model with covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 2)
 
-  check_against <- c(0.798, -0.070, -0.016, -0.025, -0.024, -0.056, -0.056, -0.035,  0.002, -0.040, -0.050,  3.072,  0.128, -1.932)
+  check_against <- c(0.824, -0.072, -0.016, -0.026, -0.024, -0.056, -0.055,
+                     -0.035,  0.002, -0.040, -0.050,  3.061, 0.129, -1.931)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
   formula <- net ~ mutual + ttriads + sender("Age") +
@@ -168,7 +169,7 @@ test_that("Model with covariates runs", {
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 2)
 
-  check_against <- c(1.438, -0.083, -0.017, -0.024,  3.103,  0.132, -1.837)
+  check_against <- c(1.434, -0.083, -0.017, -0.025,  3.117, 0.132, -1.837)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
