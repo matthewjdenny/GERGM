@@ -340,7 +340,8 @@ simulate_networks <- function(formula,
         seed2 = seed,
         possible.stats = possible_structural_terms,
         verbose = TRUE,
-        max_updates = 50)
+        max_updates = 50,
+        fine_grained_optimization = TRUE)
       cat("Proposal variance optimization complete! Proposal variance is:",
           GERGM_Object@proposal_variance,"\n",
           "--------- END HYPERPARAMETER OPTIMIZATION ---------",

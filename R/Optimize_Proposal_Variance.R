@@ -37,10 +37,16 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
       change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
       Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
     } else if (ub < ar) {
-      if (Opt_Prop_Var@proposal_variance > 0.25) {
-        change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
+      if (fine_grained_optimization) {
+        # if we want to do fine grained optimization, then increase prop var by a
+        # small increment
+        change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
       } else {
-        change <- (1/(1 + dampening_counter)) * (0.37 - Opt_Prop_Var@proposal_variance)
+        if (Opt_Prop_Var@proposal_variance > 0.25) {
+          change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
+        } else {
+          change <- (1/(1 + dampening_counter)) * (0.37 - Opt_Prop_Var@proposal_variance)
+        }
       }
       Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
     } else {
