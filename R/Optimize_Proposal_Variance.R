@@ -1,7 +1,9 @@
 Optimize_Proposal_Variance <- function(GERGM_Object,
                                        seed2,
                                        possible.stats,
-                                       verbose){
+                                       verbose,
+                                       max_updates = 10,
+                                       fine_grained_optimization = FALSE){
 
   # create a temporary GERGM object to use in proposal variance
   # optimization
@@ -47,7 +49,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
     }
 
     dampening_counter <-  dampening_counter + 1
-    if (dampening_counter > 10) {
+    if (dampening_counter > max_updates) {
       cat("Stopping optimization, more iterations will likely not improve results...\n")
       FOUND_ACCEPTABLE_PROP_VAR <- TRUE
     }
