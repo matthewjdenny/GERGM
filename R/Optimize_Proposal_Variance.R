@@ -3,16 +3,19 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
                                        possible.stats,
                                        verbose,
                                        max_updates = 10,
-                                       fine_grained_optimization = FALSE){
+                                       fine_grained_optimization = FALSE,
+                                       iteration_fraction = 1/10){
 
   # create a temporary GERGM object to use in proposal variance
   # optimization
   Opt_Prop_Var <- GERGM_Object
-  Opt_Prop_Var@number_of_simulations <- max(GERGM_Object@number_of_simulations/10
-                                            ,1000)
-  Opt_Prop_Var@burnin <-  max(GERGM_Object@burnin/10
-                              ,1000)
-  if ((1/GERGM_Object@thin) >  (Opt_Prop_Var@number_of_simulations/10)) {
+  Opt_Prop_Var@number_of_simulations <- round(max(GERGM_Object@number_of_simulations *
+                                              iteration_fraction
+                                            ,1000))
+  Opt_Prop_Var@burnin <-  round(max(GERGM_Object@burnin * iteration_fraction
+                              ,1000))
+  if ((1/GERGM_Object@thin) >  (Opt_Prop_Var@number_of_simulations *
+                                iteration_fraction)) {
     Opt_Prop_Var@thin <- 10/Opt_Prop_Var@number_of_simulations
   }
 
