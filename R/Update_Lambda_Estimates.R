@@ -14,9 +14,6 @@ Update_Lambda_Estimates <- function(i,
 
     # initialize everything
     temp <- net[lower.tri(net)] #this will be n choose 2 in length
-    beta <- rep(0, dim(GERGM_Object@data_transformation)[3])
-    phi <- 1
-    gpar$par <- c(beta, phi)
 
     # give the user some information
     cat("Updating Estimates -- Iteration:", i," \n")

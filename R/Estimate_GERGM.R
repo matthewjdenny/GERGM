@@ -43,9 +43,17 @@ Estimate_GERGM <- function(formula_object,
   if (length(GERGM_Object@data_transformation) > 0) {
     num.theta <- length(which(GERGM_Object@stats_to_use > 0))
     gpar <- list()
-    gpar$par <- c(mean(c(GERGM_Object@network)),
-                  rep(0, dim(GERGM_Object@data_transformation)[3] - 1),
-                  log(sd(c(GERGM_Object@network))))
+
+    # initialize gpar for lambda/beta optimization
+    if (GERGM_Object@beta_correlation_model) {
+      beta <- rep(0, dim(GERGM_Object@data_transformation)[3])
+      phi <- 1
+      gpar$par <- c(beta, phi)
+    } else {
+      gpar$par <- c(mean(c(GERGM_Object@network)),
+                    rep(0, dim(GERGM_Object@data_transformation)[3] - 1),
+                    log(sd(c(GERGM_Object@network))))
+    }
     theta <- list()
     theta$par <- rep(0, num.theta)
     num.nodes <- nrow(GERGM_Object@num_nodes)
