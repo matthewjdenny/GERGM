@@ -71,25 +71,37 @@ test_that("Model works for correlation networks", {
   diag(correlations) <- 1
   net <- (correlations + t(correlations)) / 2
   colnames(net) <- rownames(net) <- letters[1:10]
+  node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                                      Height = c(70,70,67,58,65,67,64,74,76,80),
+                                      Type = c("A","B","B","A","A","A","B","B","C","C"))
+  rownames(node_level_covariates) <- letters[1:10]
+  network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
 
-  formula <- net ~ edges + ttriads
+  formula <- net ~ ttriads + sender("Age") +
+    netcov("network_covariate") + nodematch("Type",base = "A")
 
   test <- gergm(formula,
+                covariate_data = node_level_covariates,
                 normalization_type = "division",
                 network_is_directed = FALSE,
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
-                number_of_networks_to_simulate = 40000,
-                thin = 1/10,
-                proposal_variance = 0.03,
-                downweight_statistics_together = TRUE,
-                MCMC_burnin = 10000,
+                number_of_networks_to_simulate = 100000,
+                thin = 1/40,
+                proposal_variance = 0.001,
+                downweight_statistics_together = FALSE,
+                MCMC_burnin = 100000,
                 seed = 456,
-                convergence_tolerance = 0.01,
+                convergence_tolerance = 0.9,
                 MPLE_gain_factor = 0,
-                force_x_theta_updates = 4,
-                force_x_lambda_updates = 2,
-                using_correlation_network = TRUE,
-                omit_intercept_term = TRUE)
+                force_x_theta_updates = 1,
+                force_x_lambda_updates = 1,
+                hyperparameter_optimization = TRUE,
+                beta_correlation_model = TRUE,
+                weighted_MPLE = TRUE,
+                theta_grid_optimization_list = list(grid_steps = 4,
+                                                    step_size = 0.1,
+                                                    cores = 2,
+                                                    iteration_fraction = 1))
 
 })
