@@ -16,7 +16,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
                               ,1000))
   if ((1/GERGM_Object@thin) >  (Opt_Prop_Var@number_of_simulations *
                                 iteration_fraction)) {
-    Opt_Prop_Var@thin <- 10/Opt_Prop_Var@number_of_simulations
+    Opt_Prop_Var@thin <- (1/iteration_fraction)/Opt_Prop_Var@number_of_simulations
   }
 
   FOUND_ACCEPTABLE_PROP_VAR <- FALSE
