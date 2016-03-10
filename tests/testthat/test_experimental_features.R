@@ -77,7 +77,7 @@ test_that("Model works for correlation networks", {
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
 
-  formula <- net ~ ttriads + sender("Age") +
+  formula <- net ~ ttriads(0.8) + sender("Age") +
     netcov("network_covariate") + nodematch("Type",base = "A")
 
   test <- gergm(formula,
@@ -87,12 +87,12 @@ test_that("Model works for correlation networks", {
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
-                thin = 1/40,
+                thin = 1/100,
                 proposal_variance = 0.001,
                 downweight_statistics_together = FALSE,
                 MCMC_burnin = 100000,
                 seed = 456,
-                convergence_tolerance = 0.9,
+                convergence_tolerance = 0.5,
                 MPLE_gain_factor = 0,
                 force_x_theta_updates = 1,
                 force_x_lambda_updates = 1,
