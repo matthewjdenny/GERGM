@@ -48,6 +48,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
         # if we are on our first pass, just divide the proposal variance by 10
         if (first_pass) {
           Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance/10
+          first_pass <- FALSE
         } else {
           # otherwise, if we had been increasing the proposal variance because
           # our accept rate was too high, then we know we have overshot and can
@@ -69,6 +70,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
           # also make sure we note that we started out too small and need to
           # get bigger
           need_to_decrease_prop_var <- FALSE
+          first_pass <- FALSE
         } else {
           # if we are not on the first pass were making it smaller, then we know
           # we have overshot and need to make it bigger.
