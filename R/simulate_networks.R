@@ -125,25 +125,11 @@ simulate_networks <- function(formula,
 
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
-    simulate_correlation_network <- FALSE
-    beta_correlation_model <- FALSE
     weighted_MPLE <- FALSE
     covariate_data <- NULL
     lambdas <- NULL
     object <- as.list(substitute(list(...)))[-1L]
     if (length(object) > 0) {
-      if (!is.null(object$simulate_correlation_network)) {
-        if (object$simulate_correlation_network) {
-          simulate_correlation_network <- TRUE
-          cat("Using experimental correlation network feature...\n")
-        }
-      }
-      if (!is.null(object$beta_correlation_model)) {
-        if (object$beta_correlation_model) {
-          beta_correlation_model <- TRUE
-          cat("Using experimental beta model for correlation networks...\n")
-        }
-      }
       if (!is.null(object$weighted_MPLE)) {
         if (object$weighted_MPLE) {
           weighted_MPLE <- TRUE
@@ -194,17 +180,6 @@ simulate_networks <- function(formula,
     if (!omit_intercept_term) {
       formula <- add_intercept_term(formula)
     }
-    if (simulate_correlation_network & beta_correlation_model) {
-      stop("You may only specify one of: simulate_correlation_network (Harry-Joe) or beta_correlation_model.")
-    }
-
-    # if we are using a correlation network, then the network must be undirected.
-    if (simulate_correlation_network | beta_correlation_model) {
-      if (network_is_directed) {
-        cat("Setting network_is_directed to FALSE for correlation network...\n")
-      }
-      network_is_directed <- FALSE
-    }
 
     #make sure proposal variance is greater than zero
     if (proposal_variance <= 0) {
@@ -221,9 +196,9 @@ simulate_networks <- function(formula,
       possible_network_terms,
       covariate_data = covariate_data,
       normalization_type = normalization_type,
-      is_correlation_network = simulate_correlation_network,
+      is_correlation_network = FALSE,
       is_directed = network_is_directed,
-      beta_correlation_model = beta_correlation_model)
+      beta_correlation_model = FALSE)
 
     data_transformation <- NULL
     if (!is.null(Transformed_Data$transformed_covariates) &
@@ -264,13 +239,15 @@ simulate_networks <- function(formula,
       transform.data = data_transformation,
       lambda.coef = lambdas,
       transformation_type = transformation_type,
-      is_correlation_network = simulate_correlation_network,
+      is_correlation_network = FALSE,
       is_directed = network_is_directed,
-      beta_correlation_model = beta_correlation_model)
+      beta_correlation_model = FALSE)
     if (!is.null(data_transformation)) {
       GERGM_Object@data_transformation <- data_transformation
     }
     GERGM_Object@transformation_type <- transformation_type
+    GERGM_Object@is_correlation_network <- FALSE
+    GERGM_Object@beta_correlation_model <- FALSE
     GERGM_Object@theta_estimation_converged <- TRUE
     GERGM_Object@lambda_estimation_converged <- TRUE
     GERGM_Object@observed_network  <- GERGM_Object@network
@@ -278,7 +255,6 @@ simulate_networks <- function(formula,
     GERGM_Object@simulation_only <- TRUE
     GERGM_Object@theta.par <- theta_coeficients
     GERGM_Object@directed_network <- network_is_directed
-    GERGM_Object@is_correlation_network <- simulate_correlation_network
     GERGM_Object@proposal_variance <- proposal_variance
     GERGM_Object@estimation_method <- simulation_method
     GERGM_Object@target_accept_rate <- target_accept_rate
@@ -286,40 +262,9 @@ simulate_networks <- function(formula,
     GERGM_Object@thin <- thin
     GERGM_Object@burnin <- MCMC_burnin
     GERGM_Object@downweight_statistics_together <- downweight_statistics_together
-    GERGM_Object@beta_correlation_model <- beta_correlation_model
     GERGM_Object@weighted_MPLE <- weighted_MPLE
     GERGM_Object@hyperparameter_optimization <- optimize_proposal_variance
 
-    # allow the user to specify mu and phi
-    if (GERGM_Object@beta_correlation_model) {
-      inds <- 1:(length(lambdas) - 1)
-      #Transform to bounded network X via beta cdf
-      beta <- as.numeric(lambdas[inds])
-
-      mu <- logistic(beta, GERGM_Object@data_transformation)
-      phi <- lambdas[length(lambdas)]
-      shape1 <- mu * phi
-      shape2 <- (1 - mu) * phi
-      temp <- (GERGM_Object@bounded.network + 1)/2
-      X <- pbeta(temp,shape1 = shape1, shape2 = shape2)
-      # store our new bounded network
-      GERGM_Object@bounded.network <- X
-
-      # store mu and phi for later use in reverse transformation
-      GERGM_Object@mu <- mu
-      GERGM_Object@phi <- phi
-    } else if (!omit_intercept_term) {
-      beta <- lambdas[1:(length(lambdas) - 1)]
-      sig <- 0.01 + exp(lambdas[length(lambdas)])
-      BZ <- 0
-      for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
-        BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
-      }
-
-      #store so we can transform back
-      GERGM_Object@BZ <- BZ
-      GERGM_Object@BZstdev <- sig
-    }
 
   } else {
     # a GERGM_Object was provided

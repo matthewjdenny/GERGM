@@ -205,23 +205,9 @@ gergm <- function(formula,
                   ){
 
   # pass in experimental features through elipsis
-  using_correlation_network <- FALSE
-  beta_correlation_model <- FALSE
   weighted_MPLE <- FALSE
   object <- as.list(substitute(list(...)))[-1L]
   if (length(object) > 0) {
-    if (!is.null(object$using_correlation_network)) {
-      if (object$using_correlation_network) {
-        using_correlation_network <- TRUE
-        cat("Using experimental correlation network feature...\n")
-      }
-    }
-    if (!is.null(object$beta_correlation_model)) {
-      if (object$beta_correlation_model) {
-        beta_correlation_model <- TRUE
-        cat("Using experimental beta model for correlation networks...\n")
-      }
-    }
     if (!is.null(object$weighted_MPLE)) {
       if (object$weighted_MPLE) {
         weighted_MPLE <- TRUE
@@ -253,18 +239,6 @@ gergm <- function(formula,
                                 "gaussian",
                                 "lognormal")
 
-
-  if (using_correlation_network & beta_correlation_model) {
-    stop("You may only specify one of: using_correlation_network (Harry-Joe) or beta_correlation_model.")
-  }
-
-  # if we are using a correlation network, then the network must be undirected.
-  if (using_correlation_network | beta_correlation_model) {
-    if (network_is_directed) {
-      cat("Setting network_is_directed to FALSE for correlation network...\n")
-    }
-    network_is_directed <- FALSE
-  }
 
   # check terms for undirected network
   if (!network_is_directed) {
@@ -323,9 +297,9 @@ gergm <- function(formula,
      possible_network_terms,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
-     is_correlation_network = using_correlation_network,
+     is_correlation_network = FALSE,
      is_directed = network_is_directed,
-     beta_correlation_model = beta_correlation_model)
+     beta_correlation_model = FALSE)
 
   data_transformation <- NULL
   if (!is.null(Transformed_Data$transformed_covariates)) {
@@ -346,9 +320,9 @@ gergm <- function(formula,
      transform.data = data_transformation,
      lambda.coef = NULL,
      transformation_type = transformation_type,
-     is_correlation_network = using_correlation_network,
+     is_correlation_network = FALSE,
      is_directed = network_is_directed,
-     beta_correlation_model = beta_correlation_model)
+     beta_correlation_model = FALSE)
 
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
@@ -376,8 +350,8 @@ gergm <- function(formula,
   }
 
   # if we are using a correlation network then set field to TRUE.
-  GERGM_Object@is_correlation_network <- using_correlation_network
-  GERGM_Object@beta_correlation_model <- beta_correlation_model
+  GERGM_Object@is_correlation_network <- FALSE
+  GERGM_Object@beta_correlation_model <- FALSE
   GERGM_Object@weighted_MPLE <- weighted_MPLE
 
   # set adaptive metropolis parameters

@@ -11,30 +11,6 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
   printseq <- round(seq(1,samples, length.out = 11)[2:11],0)
   printcounter <- 1
   if (length(GERGM_Object@data_transformation) > 0) {
-    if (GERGM_Object@is_correlation_network) {
-      cat("Currently not implemented for correlation networks with covariates.")
-    } else if (GERGM_Object@beta_correlation_model) {
-      # if we are using a beta model for correlation networks, we can reverse
-      # the transformation as follows.
-      for (i in 1:samples) {
-        if (i == printseq[printcounter]) {
-          cat(10*printcounter,"% complete...\n", sep = "")
-          printcounter <- printcounter + 1
-        }
-        # symmetrize incase there were any numerical imperfections
-        symnet <- Symmetrize_Network(GERGM_Object@MCMC_output$Networks[,,i])
-
-        # note that we stored these in the Update_Lambda_Estimates() function
-        # using BZ and BZstdev as containers for mu and phi respectively.
-        P <- 2*qbt(symnet, GERGM_Object@mu , GERGM_Object@phi) - 1
-
-        # Transform P to a correlation matrix R
-        R <- partials.to.correlations(P)
-
-        # store
-        GERGM_Object@MCMC_output$Networks[,,i] <- R
-      }
-    } else {
       for (i in 1:samples) {
         if (i == printseq[printcounter]) {
           cat(10*printcounter,"% complete...\n", sep = "")
@@ -75,24 +51,9 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
           together = 1,
           directed = TRUE)
       }
-    }
-
   }else{
-    if (GERGM_Object@is_correlation_network) {
-      for (i in 1:samples) {
-        if (i == printseq[printcounter]) {
-          cat(10*printcounter,"% complete...\n", sep = "")
-          printcounter <- printcounter + 1
-        }
-        # symmetrize incase there were any numerical imperfections
-        symnet <- Symmetrize_Network(GERGM_Object@MCMC_output$Networks[,,i])
-        GERGM_Object@MCMC_output$Networks[,,i] <- bounded.to.correlations(
-          symnet)
-      }
-    } else {
       # if we did not do a transformation (only structural terms)
       cat("Currently not implemented for non-transformed networks.")
-    }
   }
   return(GERGM_Object)
 }
