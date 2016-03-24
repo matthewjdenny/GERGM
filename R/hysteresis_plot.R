@@ -1,9 +1,11 @@
 #' Generate hysteresis plots for theta parameter estimates
 #'
 #' @param hysteresis_output The list object output from the hysteresis function.
+#' @param text_size The base size for axis text. Defaults to 12.
 #' @param ... Additional arguments currently not supported.
 #' @export
 hysteresis_plot <- function(hysteresis_output,
+                            text_size = 12,
                 ...){
   #define colors
   UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
@@ -41,7 +43,8 @@ hysteresis_plot <- function(hysteresis_output,
     data <- data.frame(modelFrame)
 
     zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Order, group = Order)) +
-      ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
+      ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+      ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
 
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0, colour = gray(1/2), lty = 2)
 
