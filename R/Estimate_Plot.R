@@ -23,7 +23,8 @@
 #' parameter estimates are to be compared to the existing model. Defaults to
 #' NULL.
 #' @param model_names If a comparison_model is provided, then each model must be
-#' given a name via the model_names parameter. Defaults to NULL
+#' given a name via the model_names parameter. Defaults to NULL.
+#' @param text_size The base size for axis text. Defaults to 12.
 #' @return A parameter estimate plot.
 #' @export
 Estimate_Plot <- function(
@@ -33,7 +34,8 @@ Estimate_Plot <- function(
   coefficient_names = NULL,
   leave_out_coefficients = NULL,
   comparison_model = NULL,
-  model_names = NULL
+  model_names = NULL,
+  text_size = 12
   ){
 
   coefficients_to_plot <- coefficients_to_plot[1]
@@ -62,10 +64,12 @@ Estimate_Plot <- function(
         (coefficients_to_plot == "covariate" |
          coefficients_to_plot == "both")) {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
-        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+        ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
     } else {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
-        ggplot2::scale_color_manual(values = UMASS_BLUE)
+        ggplot2::scale_color_manual(values = UMASS_BLUE) +
+        ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
     }
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0,
                                      colour = gray(1/2),
@@ -116,7 +120,8 @@ Estimate_Plot <- function(
     # Plot
 
     zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
-        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED))
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+      ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
 
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0,
                                      colour = gray(1/2),

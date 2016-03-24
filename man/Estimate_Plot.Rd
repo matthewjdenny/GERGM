@@ -7,7 +7,7 @@
 Estimate_Plot(GERGM_Object, normalize_coefficients = FALSE,
   coefficients_to_plot = c("both", "covariate", "structural"),
   coefficient_names = NULL, leave_out_coefficients = NULL,
-  comparison_model = NULL, model_names = NULL)
+  comparison_model = NULL, model_names = NULL, text_size = 12)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
@@ -39,7 +39,9 @@ parameter estimates are to be compared to the existing model. Defaults to
 NULL.}
 
 \item{model_names}{If a comparison_model is provided, then each model must be
-given a name via the model_names parameter. Defaults to NULL}
+given a name via the model_names parameter. Defaults to NULL.}
+
+\item{text_size}{The base size for axis text. Defaults to 12.}
 }
 \value{
 A parameter estimate plot.
