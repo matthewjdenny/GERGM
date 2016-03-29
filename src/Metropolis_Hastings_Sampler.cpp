@@ -543,6 +543,48 @@ arma::vec save_network_statistics(arma::mat current_network,
   return to_return;
 };
 
+
+// Function that will calculate h statistics
+arma::vec h_function_and_statistics(arma::mat current_network,
+                                    arma::vec statistics_to_use,
+                                    arma::vec thetas,
+                                    arma::mat triples,
+                                    arma::mat pairs,
+                                    arma::vec alphas,
+                                    int together) {
+
+  arma::vec to_return = arma::zeros(7);
+  to_return[0] = Out2Star(current_network, triples, alphas[0], together);
+  to_return[1] = In2Star(current_network, triples, alphas[1], together);
+  to_return[2] = CTriads(current_network, triples, alphas[2], together);
+  to_return[3] = Recip(current_network, pairs, alphas[3], together);
+  to_return[4] = TTriads(current_network, triples, alphas[4], together);
+  to_return[5] = EdgeDensity(current_network, pairs, alphas[5], together);
+
+  double h_value = 0;
+  if (statistics_to_use[0] == 1) {
+    h_value += thetas[0] * to_return[0];
+  }
+  if (statistics_to_use[1] == 1) {
+    h_value += thetas[1] * to_return[1];
+  }
+  if (statistics_to_use[2] == 1) {
+    h_value += thetas[2] * to_return[2];
+  }
+  if (statistics_to_use[3] == 1) {
+    h_value += thetas[3] * to_return[3];
+  }
+  if (statistics_to_use[4] == 1) {
+    h_value += thetas[4] * to_return[4];
+  }
+  if (statistics_to_use[5] == 1) {
+    h_value += thetas[5] * to_return[5];
+  }
+  // put in the h value
+  to_return[6] = h_value;
+  return to_return;
+};
+
 } //end of mjd namespace
 
 using std::log;
@@ -571,6 +613,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
   int number_of_thetas = statistics_to_use.n_elem;
   int MH_Counter = 0;
   int Storage_Counter = 0;
+  bool network_did_not_change = false;
+  double previous_h_function_value = 0;
   arma::vec Accept_or_Reject = arma::zeros (number_of_iterations);
   arma::vec Log_Prob_Accept = arma::zeros (number_of_iterations);
   arma::vec P_Ratios = arma::zeros (number_of_iterations);
@@ -714,8 +758,8 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       }
     } //end of condition for whether we are using a correlation network
 
-    double proposed_addition = -1;
-    double current_addition = -1;
+    double proposed_addition = 0;
+    double current_addition = 0;
 
     if(using_correlation_network == 1){
       arma::mat corr_proposed_edge_weights = mjd::bounded_to_correlations(proposed_edge_weights);
@@ -730,12 +774,19 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
       proposed_addition = mjd::CalculateNetworkStatistics(
         proposed_edge_weights, statistics_to_use, thetas, triples, pairs,
         alphas, together);
-      current_addition = mjd::CalculateNetworkStatistics(
-        current_edge_weights, statistics_to_use, thetas, triples, pairs,
-        alphas, together);
+      // only calculate the h function if we updated the network last round
+      // otherwise use the cached value.
+      if (network_did_not_change) {
+        current_addition = previous_h_function_value;
+      } else {
+        current_addition = mjd::CalculateNetworkStatistics(
+          current_edge_weights, statistics_to_use, thetas, triples, pairs,
+          alphas, together);
+        previous_h_function_value = current_addition ;
+      }
     }
 
-    // store some additional diagnostics
+    // store some additional diagnostics h value is the last entry
     P_Ratios[n] = (proposed_addition - current_addition);
     Q_Ratios[n] = log_prob_accept;
 
@@ -745,7 +796,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
     double temp2 = arma::accu(current_edge_weights);
     Current_Density[n] = temp2/total_edges;
 
-    log_prob_accept += (proposed_addition - current_addition);
+    log_prob_accept += (proposed_addition- current_addition);
 
     if(using_correlation_network == 1){
       // now add in the bit about Jacobians
@@ -762,8 +813,10 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
     // Accept or reject the new proposed positions
     if (log_prob_accept < lud) {
       accept_proportion +=0;
+      network_did_not_change = true;
     } else {
       accept_proportion +=1;
+      network_did_not_change = false;
       for (int i = 0; i < number_of_nodes; ++i) {
           for (int j = 0; j < number_of_nodes; ++j) {
               if (i != j) {
