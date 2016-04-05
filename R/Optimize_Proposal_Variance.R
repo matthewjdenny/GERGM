@@ -122,6 +122,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
     if (dampening_counter > max_updates) {
       cat("Stopping optimization, more iterations will likely not improve results...\n")
       FOUND_ACCEPTABLE_PROP_VAR <- TRUE
+      Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
     }
   }
 
