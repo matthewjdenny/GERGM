@@ -24,6 +24,8 @@
 #' but can be a positive integer (eg. 12345).
 #' @param white_background Defaults to FALSE. If TRUE, then network is plotted
 #' on a white background with black lettering.
+#' @param show_legend Logical indicating whether a legend with extremal edge
+#' values should be shown. Defualts to TRUE
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)
@@ -38,8 +40,9 @@ plot_network <- function(sociomatrix,
                          comparison_network = NULL,
                          comparison_names = NULL,
                          seed = NULL,
-                         white_background = FALSE
-                         ){
+                         white_background = FALSE,
+                         show_legend = TRUE
+){
 
   if (!is.null(seed)) {
     set.seed(seed)
@@ -82,7 +85,7 @@ plot_network <- function(sociomatrix,
 
     # check optional input
     if (class(comparison_network) != "matrix" &
-       class(comparison_network) != "data.frame") {
+        class(comparison_network) != "data.frame") {
       stop("You must provide the network as a numeric matrix.")
     }
 
@@ -112,7 +115,7 @@ plot_network <- function(sociomatrix,
 
     # create a network object using adjacency matrix with edges removed
     net3 <- igraph::graph.adjacency(temp ,mode="directed",
-                                   weighted=TRUE,diag=FALSE)
+                                    weighted=TRUE,diag=FALSE)
 
     #create layout with Fuchterman Reingold
     layout_c <- igraph::layout_with_fr(net3, weights = igraph::E(net3)$weight)
@@ -158,7 +161,7 @@ plot_network <- function(sociomatrix,
 
   # create a second network object with the un-truncated network
   net2 <- igraph::graph.adjacency(temp2,mode="directed",
-                                 weighted=TRUE,diag=FALSE)
+                                  weighted=TRUE,diag=FALSE)
 
   # get an edgelist
   edgelist <- igraph::get.edgelist(net2)
@@ -177,7 +180,7 @@ plot_network <- function(sociomatrix,
   widths <- seq(0,5,length.out = 50)
 
   if (COMPARISON) {
-    layout_c <- vegan::procrustes(layout, layout_c, scale=F)$Yrot
+    layout_c <- vegan::procrustes(layout, layout_c, scale = F)$Yrot
   }
 
   ##### If we are saving a PDF
@@ -250,15 +253,19 @@ plot_network <- function(sociomatrix,
       }
       if (white_background) {
         text(layout,labels = rownames(sociomatrix), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
       } else {
         text(layout,labels = rownames(sociomatrix), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        }
       }
 
 
@@ -322,17 +329,21 @@ plot_network <- function(sociomatrix,
       }
       if (white_background) {
         text(layout_c,labels = rownames(comparison_network), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(comparison_network),2),
-                          round(max(comparison_network),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(comparison_network),2),
+                            round(max(comparison_network),2)),
+                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
       } else {
         text(layout_c,labels = rownames(comparison_network), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(comparison_network),2),
-                          round(max(comparison_network),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(comparison_network),2),
+                            round(max(comparison_network),2)),
+                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        }
       }
 
       dev.off()
@@ -400,15 +411,20 @@ plot_network <- function(sociomatrix,
       }
       if (white_background) {
         text(layout,labels = rownames(sociomatrix), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
+
       } else {
         text(layout,labels = rownames(sociomatrix), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        }
       }
       dev.off()
 
@@ -553,17 +569,21 @@ plot_network <- function(sociomatrix,
 
       if (white_background) {
         text(layout_c,labels = rownames(comparison_network), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(comparison_network),2),
-                          round(max(comparison_network),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(comparison_network),2),
+                            round(max(comparison_network),2)),
+                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
       } else {
         text(layout_c,labels = rownames(comparison_network), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(comparison_network),2),
-                          round(max(comparison_network),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(comparison_network),2),
+                            round(max(comparison_network),2)),
+                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        }
       }
 
     } else {
@@ -628,15 +648,19 @@ plot_network <- function(sociomatrix,
       }
       if (white_background) {
         text(layout,labels = rownames(sociomatrix), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
       } else {
         text(layout,labels = rownames(sociomatrix), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+        }
       }
     }
   }

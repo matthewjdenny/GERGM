@@ -7,7 +7,7 @@
 plot_network(sociomatrix, threshold = 0.5, save_pdf = FALSE,
   pdf_name = "Test.pdf", output_directory = "./",
   comparison_network = NULL, comparison_names = NULL, seed = NULL,
-  white_background = FALSE)
+  white_background = FALSE, show_legend = TRUE)
 }
 \arguments{
 \item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges
@@ -41,6 +41,9 @@ but can be a positive integer (eg. 12345).}
 
 \item{white_background}{Defaults to FALSE. If TRUE, then network is plotted
 on a white background with black lettering.}
+
+\item{show_legend}{Logical indicating whether a legend with extremal edge
+values should be shown. Defualts to TRUE}
 }
 \description{
 Generates a visualization of a value-edged network.
