@@ -7,6 +7,6 @@
 There were no ERRORs or WARNINGs or NOTEs. 
 
 ## Downstream dependencies
-There are no downstream dependencies as this is a new package
+The package update does not cause any issues for the one package that depends on it, to the best of my knowledge. 
 
 
