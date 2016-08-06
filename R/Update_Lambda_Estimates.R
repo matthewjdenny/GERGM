@@ -5,6 +5,7 @@ Update_Lambda_Estimates <- function(i,
                                     verbose,
                                     net,
                                     GERGM_Object){
+  
     #do our normal t regression
     cat("Updating Estimates -- Iteration:", i," \n")
     GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))

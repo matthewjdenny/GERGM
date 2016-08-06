@@ -17,7 +17,9 @@ Trace_Plot <- function(GERGM_Object){
   nr <- nrow(GERGM_Object@network)
   normalizer <- nr * (nr - 1)
   stats <- cbind(stats/normalizer,iteration_number)
-  actual_density <- GERGM_Object@stats[2,6]/normalizer
+
+  col_index <- which(colnames(GERGM_Object@stats) == "edges")[1]
+  actual_density <- GERGM_Object@stats[2,col_index]/normalizer
 
   p <- ggplot2::ggplot(stats, ggplot2::aes(x = iteration_number, y = edges))
   p  <- p + ggplot2::geom_line(color = UMASS_BLUE) +
