@@ -1,5 +1,6 @@
 test_that("calculating statistics based on a categorical node level covariate works", {
   skip_on_cran()
+  skip("Still in development")
 
   set.seed(12345)
   net <- matrix(runif(100,0,1),10,10)
