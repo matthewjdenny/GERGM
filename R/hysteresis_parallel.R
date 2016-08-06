@@ -21,8 +21,9 @@ hysteresis_parallel <- function(i,
   n_nodes <- nrow(GERGM_Object@bounded.network)
   zero_net <- matrix(initial_density,n_nodes,n_nodes)
   GERGM_Object@bounded.network <- zero_net
-  which_term <- which(GERGM_Object@stats_to_use > 0)[i]
-  cur_term <- possible_structural_terms[which_term]
+  # update since we no longer use fixed length theta vector
+  # which_term <- which(GERGM_Object@stats_to_use > 0)[i]
+  cur_term <- GERGM_Object@stats_to_use[i]
   # tell the user what is going on
   cat("Currently simulating networks while varying the",
       cur_term,"parameter from:",min_val,"to",max_val,"for a total of",
