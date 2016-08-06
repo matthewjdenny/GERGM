@@ -4,16 +4,35 @@
 \alias{GOF}
 \title{Generate Goodness Of Fit plot from a GERGM object.}
 \usage{
-GOF(GERGM_Object, ...)
+GOF(GERGM_Object, column_names = NULL, modularity_group_memberships = NULL,
+  return_GERGM_Object = FALSE, ...)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
 GERGM function.}
 
-\item{...}{Additional Arguments can be passed in. Included for eventual compatibility with XERGM package.}
+\item{column_names}{Optional argument allowing the user to specify names for
+statistics to be plotted.}
+
+\item{modularity_group_memberships}{Optional numeric vector of node group
+memberships indexed from 1, which will be used to calculate network
+modularities.}
+
+\item{return_GERGM_Object}{Optional argument to return the GERGM Object that
+was passed in, but now with additional GOF statistics such as modularity
+included in the `@simulated_statistics_for_GOF` and `@additional_stats`
+fields}
+
+\item{...}{Additional Arguments can be passed in. Included for eventual
+compatibility with XERGM package.}
 }
 \value{
-A set of box plots where of simulated network statistics centered at the observed value for those statistics and normalized by their standard deviation. This aids in interpretation as the y-axis can be interpreted as the number of simulated-sample standard deviations above or below the observed statistic.
+A set of box plots where of simulated network statistics centered at
+the observed value for those statistics and normalized by their standard
+deviation. This aids in interpretation as the y-axis can be interpreted as
+the number of simulated-sample standard deviations above or below the
+observed statistic. Optionally also returns a GERGM object with updated
+statistics.
 }
 \description{
 Generate Goodness Of Fit plot from a GERGM object.

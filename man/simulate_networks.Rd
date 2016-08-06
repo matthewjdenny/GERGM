@@ -4,15 +4,14 @@
 \alias{simulate_networks}
 \title{A Function to simulate networks from a GERGM with given theta parameters.}
 \usage{
-simulate_networks(formula, edges = 0, mutual = 0, ttriads = 0,
-  ctriads = 0, in2stars = 0, out2stars = 0, twostars = 0,
-  simulation_method = c("Metropolis", "Gibbs"),
-  network_is_directed = c(TRUE, FALSE),
+simulate_networks(formula, thetas, simulation_method = c("Metropolis",
+  "Gibbs"), network_is_directed = TRUE,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  omit_intercept_term = FALSE, GERGM_Object = NULL,
-  return_constrained_networks = FALSE, optimize_proposal_variance = FALSE,
-  target_accept_rate = 0.25, ...)
+  GERGM_Object = NULL, return_constrained_networks = FALSE,
+  optimize_proposal_variance = FALSE, target_accept_rate = 0.25,
+  use_stochastic_MH = FALSE, stochastic_MH_proportion = 1,
+  covariate_data = NULL, lambdas = NULL, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
@@ -21,31 +20,8 @@ providing as the initial network. Currently, the following statistics can be
 specified: c("edges", "out2stars", "in2stars",     "ctriads", "mutual",
 "ttriads").}
 
-\item{edges}{The theta value provided for the reciprocity parameter, defaults
-to 0. Only statistics for structural terms included in formula will be used.}
-
-\item{mutual}{The theta value provided for the reciprocity parameter, defaults
-to 0. Only statistics for structural terms included in formula will be used.}
-
-\item{ttriads}{The theta value provided for the transitive triads parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{ctriads}{The theta value provided for the cyclic triads parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{in2stars}{The theta value provided for the in 2-stars parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{out2stars}{The theta value provided for the out 2-starts parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
-
-\item{twostars}{The theta value provided for the undirected 2-starts parameter,
-defaults to 0. Only statistics for structural terms included in formula will
-be used.}
+\item{thetas}{A vector of theta parameters given in the same order as the
+formula terms, which the user would like to use to parameterize the model.}
 
 \item{simulation_method}{Default is "Metropolis" which allows for exponential
 downweighting, can also be "Gibbs".}
@@ -75,12 +51,6 @@ will be discarded before drawing the samples used for estimation. Default is
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
 
-\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the user
-wishes to omit the model intercept term which is automatically included as
-a covariate effect (lambda parameter). If the user wishes to specify an
-edges term, then they must set omit_intercept_term = TRUE so that only one
-intercept term is included in the model.}
-
 \item{GERGM_Object}{Optional argument allowing the user to supply a GERGM
 object output by the gergm() estimation function in order to simualt further
 networks. Defaults to NULL. If a GERGM object is provided, any user specified
@@ -103,6 +73,24 @@ Defaults to FALSE.}
 \item{target_accept_rate}{Defaults to 0.25, can be used to optimize
 Metropolis Hastings simulations.}
 
+\item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
+to the h statistics should be used under Metropolis Hastings in-between
+thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+HIGHLY EXPERIMENTAL!}
+
+\item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
+approximation, defaults to 0.25}
+
+\item{covariate_data}{A data frame containing node level covariates the user
+wished to transform into sender or reciever effects. It must have row names
+that match every entry in colnames(raw_network), should have descriptive
+column names.  If left NULL, then no sender or reciever effects will be
+added.}
+
+\item{lambdas}{A vector of lambda parameters given in the same order as the
+formula terms, which the user would like to use to parameterize the model.
+Covariate effects should be specified after endogenous effects.}
+
 \item{...}{Optional arguments, currently unsupported.}
 }
 \value{
@@ -121,8 +109,7 @@ colnames(net) <- rownames(net) <- letters[1:10]
 formula <- net ~ ttriads + in2stars
 
 test <- simulate_networks(formula,
- ttriads = 0.6,
- in2stars = -0.8,
+ thetas = c(0.6,-0.8),
  network_is_directed = TRUE,
  simulation_method = "Metropolis",
  number_of_networks_to_simulate = 100,
@@ -131,6 +118,20 @@ test <- simulate_networks(formula,
  downweight_statistics_together = TRUE,
  MCMC_burnin = 1000,
  omit_intercept_term = TRUE,
+ seed = 456)
+
+# preferred method for specifying a null model
+formula <- net ~ edges(method = "endogenous")
+test <- simulate_networks(
+ formula,
+ thetas = 0,
+ network_is_directed = TRUE,
+ simulation_method = "Metropolis",
+ number_of_networks_to_simulate = 1000,
+ thin = 1/10,
+ proposal_variance = 0.5,
+ downweight_statistics_together = TRUE,
+ MCMC_burnin = 1000,
  seed = 456)
 }
 

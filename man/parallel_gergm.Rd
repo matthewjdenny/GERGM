@@ -16,8 +16,13 @@ parallel_gergm(formula_list, observed_network_list,
   convergence_tolerance = 0.01, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
-  generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE,
-  hyperparameter_optimization = FALSE, target_accept_rate = 0.25, ...)
+  generate_plots = TRUE, verbose = TRUE,
+  hyperparameter_optimization = FALSE, stop_for_degeneracy = FALSE,
+  target_accept_rate = 0.25, theta_grid_optimization_list = NULL,
+  weighted_MPLE = FALSE, fine_grained_pv_optimization = FALSE,
+  parallel = FALSE, parallel_statistic_calculation = FALSE,
+  cores_per_model = 1, use_stochastic_MH = FALSE,
+  stochastic_MH_proportion = 0.25, ...)
 }
 \arguments{
 \item{formula_list}{A list of formula objects that specifies the relationship
@@ -39,8 +44,7 @@ would need a $distance entry containing the corresponding matrix object.}
 
 \item{cores}{The number of cores to be used for parallelization.}
 
-\item{normalization_type}{If only a raw_network is provided and
-omit_intercept_term = TRUE then, the function
+\item{normalization_type}{If only a raw_network is provided the function
 will automatically check to determine if all edges fall in the [0,1] interval.
 If edges are determined to fall outside of this interval, then a trasformation
 onto the interval may be specified. If "division" is selected, then the data
@@ -151,9 +155,6 @@ parameter plots are generated.}
 \item{verbose}{Defaults to TRUE (providing lots of output while model is
 running). Can be set to FALSE if the user wishes to see less output.}
 
-\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the
-user wishes to omit the model intercept term.}
-
 \item{hyperparameter_optimization}{Logical indicating whether automatic
 hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
 the algorithm will automatically seek to find an optimal burnin and number of
@@ -164,8 +165,72 @@ will attempt to adress the issue automatically. WARNING: This feature is
 experimental, and may greatly increase runtime. Please monitor console
 output!}
 
+\item{stop_for_degeneracy}{When TRUE, automatically stops estimation when
+degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
+Defaults to FALSE. SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.}
+
 \item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
 Defaults to 0.25}
+
+\item{theta_grid_optimization_list}{Defaults to NULL. This highly
+experimental feature may allow the user to address model degeneracy arising
+from a suboptimal theta initialization. It performs a grid search around the
+theta values calculated via MPLE to select a potentially improved
+initialization. The runtime complexity of this feature grows exponentially in
+the size of the grid and number of parameters -- use with great care. This
+feature may only be used if hyperparameter_optimization = TRUE, and if a list
+object of the following form is provided: list(grid_steps = 2,
+step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
+the number of steps out the grid search will perform, step_size indicates the
+fraction of the MPLE theta estimate that each grid search step will change by,
+cores indicates the number of cores to be used for parallel optimization, and
+iteration_fraction indicates the fraction of the number of MCMC iterations
+that will be used for each grid point (should be set less than 1 to speed up
+optimization). In general grid_steps should be smaller the more structural
+parameters the user wishes to specify. For example, with 5 structural
+parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+= 16807 parameter grid search. Again this feature is highly experimental and
+should only be used as a last resort (after playing with exponential
+downweighting and the MPLE_gain_factor).  SPECIFY SINGLE VALUE, MUST BE
+CONSTANT ACROSS SPECIFICATIONS.}
+
+\item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
+specifying statistics with alpha downweighting. Tends to provide better
+initialization when downweight_statistics_together = FALSE. SPECIFY SINGLE
+VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.}
+
+\item{fine_grained_pv_optimization}{Logical indicating whether fine grained
+proposal variance optimization should be used. This will often slow down
+proposal variance optimization, but may provide better results. Highly
+recommended if running a correlation model.  SPECIFY SINGLE VALUE, MUST BE
+CONSTANT ACROSS SPECIFICATIONS.}
+
+\item{parallel}{Logical indicating whether the weighted MPLE objective and any
+other operations that can be easily paralllelized should be calculated in
+parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
+may be possible.  SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS
+SPECIFICATIONS.}
+
+\item{parallel_statistic_calculation}{Logical indicating whether network
+statistics should be calculated in parallel. This will tend to be slower for
+networks with les than ~30 nodes but may provide a substantial speedup for
+larger networks. SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.}
+
+\item{cores_per_model}{Numeric value defaulting to 1. Can be set to any
+number up to the number of threads/cores available on your machine. Will be
+used to speed up computations if parllel = TRUE. Note that this will be the
+number of croes requested by EACH model, so plan accordingly!  SPECIFY SINGLE
+VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.}
+
+\item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
+to the h statistics should be used under Metropolis Hastings in-between
+thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+HIGHLY EXPERIMENTAL!  SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS
+SPECIFICATIONS.}
+
+\item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
+approximation, defaults to 0.25. SPECIFY SINGLE VALUE, MUST BE CONSTANT
+ACROSS SPECIFICATIONS.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }
@@ -193,9 +258,9 @@ network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
 
 network_data_list <- list(network_covariate = network_covariate)
 
-formula <- net ~ mutual + ttriads + sender("Age") +
+formula <- net ~ edges +
   netcov("network_covariate") + nodematch("Type",base = "A")
-formula2 <- net ~ mutual + ttriads + sender("Age") +
+formula2 <- net ~ edges + sender("Age") +
   netcov("network_covariate") + nodemix("Type",base = "A")
 
 form_list <- list(f1 = formula,
@@ -206,19 +271,9 @@ testl <- parallel_gergm(formula_list = form_list,
                         covariate_data_list = node_level_covariates,
                         network_data_list = network_data_list,
                         cores = 2,
-                        network_is_directed = TRUE,
-                        use_MPLE_only = FALSE,
-                        estimation_method = "Metropolis",
-                        number_of_networks_to_simulate = 100000,
-                        thin = 1/100,
-                        proposal_variance = 0.1,
-                        downweight_statistics_together = TRUE,
-                        MCMC_burnin = 50000,
-                        seed = 456,
-                        convergence_tolerance = 0.01,
-                        MPLE_gain_factor = 0,
-                        force_x_theta_updates = 2,
-                        hyperparameter_optimization = TRUE)
+                        number_of_networks_to_simulate = 10000,
+                        thin = 1/10,
+                        MCMC_burnin = 5000)
 }
 }
 

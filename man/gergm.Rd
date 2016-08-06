@@ -5,42 +5,60 @@
 \title{A Function to estimate a GERGM.}
 \usage{
 gergm(formula, covariate_data = NULL, normalization_type = c("log",
-  "division"), network_is_directed = c(TRUE, FALSE),
-  use_MPLE_only = c(FALSE, TRUE), transformation_type = c("Cauchy",
-  "LogCauchy", "Gaussian", "LogNormal"), estimation_method = c("Gibbs",
-  "Metropolis"), maximum_number_of_lambda_updates = 10,
+  "division"), network_is_directed = TRUE, use_MPLE_only = c(FALSE, TRUE),
+  transformation_type = c("Cauchy", "LogCauchy", "Gaussian", "LogNormal"),
+  estimation_method = c("Metropolis", "Gibbs"),
+  maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 10,
   number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
   downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  convergence_tolerance = 0.01, MPLE_gain_factor = 0,
+  convergence_tolerance = 0.5, MPLE_gain_factor = 0,
   acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
   force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
-  generate_plots = TRUE, verbose = TRUE, omit_intercept_term = FALSE,
-  hyperparameter_optimization = FALSE, target_accept_rate = 0.25,
-  theta_grid_optimization_list = NULL, ...)
+  generate_plots = TRUE, verbose = TRUE,
+  hyperparameter_optimization = FALSE, stop_for_degeneracy = FALSE,
+  target_accept_rate = 0.25, theta_grid_optimization_list = NULL,
+  weighted_MPLE = FALSE, fine_grained_pv_optimization = FALSE,
+  parallel = FALSE, parallel_statistic_calculation = FALSE, cores = 1,
+  use_stochastic_MH = FALSE, stochastic_MH_proportion = 0.25,
+  estimate_model = TRUE, slackr_integration_list = NULL, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
 statistics and the observed network. Currently, the user may specify a model
- using any combination of the following statistics: `out2stars(alpha = 1)`,
- `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
- `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
- `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
- `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
-  `nodemix(covariate, base = "MyBase")`, `netcov(network)`. To use
- exponential downweighting for any of the network level terms, simply
- specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted
-  from the structural terms if no exponential downweighting is required. In
-  this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`,
-  `recip`, `ttriads`. If the network is undirected the user may only specify
-  the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
-  `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`,
-  `sender(covariate = "MyCov")`, `nodematch(covariate)`,
-  `nodemix(covariate, base = "MyBase")`, `netcov(network)`. An intercept
-  term is included by default, but can be omitted by setting
-  omit_intercept_term = TRUE. If the user specifies
-  `nodemix(covariate, base = NULL)`, then all levels of the covariate
-  will be matched on.}
+using any combination of the following statistics: `out2stars(alpha = 1)`,
+`in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
+`ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
+`edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
+`reciever(covariate = "MyCov")`, `nodematch(covariate)`,
+`nodemix(covariate, base = "MyBase")`, `netcov(network)` and
+`edges(alpha = 1, method = c("regression","endogenous"))`. If the user
+specifies `nodemix(covariate, base = NULL)`, then all levels of the
+covariate will be matched on. Note that the `edges` term must be specified if
+the user wishes to include an intercept
+(strongly recommended). The user may select the "regression" method
+(default) to include an intercept in the lambda transformation of the
+network, or "endogenous" to include the intercept as in a traditional ERGM
+model.  To use exponential downweighting for any of the network level terms,
+simply specify a value for alpha less than 1. The `(alpha = 1)` term may be
+omitted from the structural terms if no exponential downweighting is
+required. In this case, the terms may be provided as: `out2star`, `in2star`,
+`ctriads`, `recip`, `ttriads`. If the network is undirected the user may only
+specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
+`absdiff(covariate = "MyCov")`,
+`sender(covariate = "MyCov")`, `nodematch(covariate)`,
+`nodemix(covariate, base = "MyBase")`, `netcov(network)` and
+`edges(alpha = 1, method = c("regression","endogenous"))`. In some cases,
+the user may only wish to calculate endogenous statistics for edges between
+some subset of the nodes in the network. For each of the endogenous
+statistics, the user may optionally specify a `covariate` and `base` field
+such as in `in2stars(covariate = "Type", base = "C")`. This will add an
+in-2star statistic for the subnetwork defined by actors who match each level
+of the categorical variable "Type" (in this example), and exclude the
+subnetwork for type "C", if the `base` argument is provided. If the `base`
+argument is excluded, then terms will be added to the model for all levels of
+the statistic. This can be a useful option if the user believes that a
+network property varies with some property of nodes.}
 
 \item{covariate_data}{A data frame containing node level covariates the user
 wished to transform into sender or reciever effects. It must have row names
@@ -48,8 +66,7 @@ that match every entry in colnames(raw_network), should have descriptive
 column names.  If left NULL, then no sender or reciever effects will be
 added.}
 
-\item{normalization_type}{If only a raw_network is provided and
-omit_intercept_term = TRUE then, the function
+\item{normalization_type}{If only a raw_network is provided the function
 will automatically check to determine if all edges fall in the [0,1] interval.
 If edges are determined to fall outside of this interval, then a trasformation
 onto the interval may be specified. If "division" is selected, then the data
@@ -79,8 +96,8 @@ select "Gaussian" and for strictly positive raw networks, select "LogNormal".
 The Default value is "Cauchy".}
 
 \item{estimation_method}{Simulation method for MCMC estimation. Default is
-"Gibbs" which will generally be faster with well behaved networks but will not
-allow for exponential downweighting.}
+"Metropolis", which allows for the most flexible model specifications, but
+may also be set to "Gibbs", if the user wishes to use Gibbs sampling.}
 
 \item{maximum_number_of_lambda_updates}{Maximum number of iterations of outer
 MCMC loop which alternately estimates transform parameters and ERGM
@@ -115,7 +132,8 @@ Default is 100.}
 \item{convergence_tolerance}{Threshold designated for stopping criterion. If
 the difference of parameter estimates from one iteration to the next all have
 a p -value (under a paired t-test) greater than this value, the parameter
-estimates are declared to have converged. Default is 0.01.}
+estimates are declared to have converged. Default is 0.5, which is quite
+conservative.}
 
 \item{MPLE_gain_factor}{Multiplicative constant between 0 and 1 that controls
 how far away the initial theta estimates will be from the standard MPLEs via
@@ -158,9 +176,6 @@ parameter plots are generated.}
 \item{verbose}{Defaults to TRUE (providing lots of output while model is
 running). Can be set to FALSE if the user wishes to see less output.}
 
-\item{omit_intercept_term}{Defualts to FALSE, can be set to TRUE if the
-user wishes to omit the model intercept term.}
-
 \item{hyperparameter_optimization}{Logical indicating whether automatic
 hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
 the algorithm will automatically seek to find an optimal burnin and number of
@@ -170,6 +185,10 @@ target_accept_rate. Furthermore, if degeneracy is detected, the algorithm
 will attempt to adress the issue automatically. WARNING: This feature is
 experimental, and may greatly increase runtime. Please monitor console
 output!}
+
+\item{stop_for_degeneracy}{When TRUE, automatically stops estimation when
+degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
+Defaults to FALSE.}
 
 \item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
 Defaults to 0.25}
@@ -186,14 +205,63 @@ step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
 the number of steps out the grid search will perform, step_size indicates the
 fraction of the MPLE theta estimate that each grid search step will change by,
 cores indicates the number of cores to be used for parallel optimization, and
-iteration_fraction indcates the fraction of the nubmer of MCMC iterations
+iteration_fraction indicates the fraction of the number of MCMC iterations
 that will be used for each grid point (should be set less than 1 to speed up
 optimization). In general grid_steps should be smaller the more structural
 parameters the user wishes to specify. For example, with 5 structural
-paramters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
 = 16807 parameter grid search. Again this feature is highly experimental and
 should only be used as a last resort (after playing with exponential
 downweighting and the MPLE_gain_factor).}
+
+\item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
+specifying statistics with alpha downweighting. Tends to provide better
+initialization when downweight_statistics_together = FALSE.}
+
+\item{fine_grained_pv_optimization}{Logical indicating whether fine grained
+proposal variance optimization should be used. This will often slow down
+proposal variance optimization, but may provide better results. Highly
+recommended if running a correlation model.}
+
+\item{parallel}{Logical indicating whether the weighted MPLE objective and any
+other operations that can be easily paralllelized should be calculated in
+parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
+may be possible.}
+
+\item{parallel_statistic_calculation}{Logical indicating whether network
+statistics should be calculated in parallel. This will tend to be slower for
+networks with les than ~30 nodes but may provide a substantial speedup for
+larger networks.}
+
+\item{cores}{Numeric value defaulting to 1. Can be set to any number up to the
+number of threads/cores available on your machine. Will be used to speed up
+computations if parllel = TRUE.}
+
+\item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
+to the h statistics should be used under Metropolis Hastings in-between
+thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+HIGHLY EXPERIMENTAL!}
+
+\item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
+approximation, defaults to 0.25.}
+
+\item{estimate_model}{Logical indicating whether a model should be estimated.
+Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
+a GERGM object containing the model specification. Useful for debugging.}
+
+\item{slackr_integration_list}{An optional list object that contains
+information necessary to provide updates about model fitting progress to a
+Slack channel (https://slack.com/). This can be useful if models take a long
+time to run, and you wish to receive updates on their progress (or if they
+become degenerate). The list object must be of the following form:
+list(model_name = "descriptive model name", channel = "#yourchannelname",
+ incoming_webhook_url = "https://hooks.slack.com/services/XX/YY/ZZ"). You
+ will need to set up incoming webhook integration for your slack channel and
+ then paste in the URL you get from slack into the incoming_webhook_url field.
+ If all goes well, and the computer you are running the GERGM estimation on
+ has internet access, your slack channel will receive updates when you start
+ estimation, after each lambda/theta parameter update, if the model becomes
+ degenerate, and when it completes running.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }
