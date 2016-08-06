@@ -1,6 +1,7 @@
 .onAttach <- function(libname, pkgname) {
     packageStartupMessage("GERGM: Generalized Exponential Random Graph Models
-Version 0.8.1 created on 2016-03-04.
+Version 0.10.0 created on 2016-08-06.
+Advanced Development Version: Correlation Networks
 copyright (c) 2016, Matthew J. Denny, Penn State University
                     James D. Wilson, University of San Francisco
                     Skyler Cranmer, Ohio State University
