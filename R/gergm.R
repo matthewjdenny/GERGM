@@ -3,32 +3,45 @@
 #'
 #' @param formula A formula object that specifies the relationship between
 #' statistics and the observed network. Currently, the user may specify a model
-#'  using any combination of the following statistics: `out2stars(alpha = 1)`,
-#'  `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
-#'  `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
-#'  `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
-#'  `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
-#'   `nodemix(covariate, base = "MyBase")`, `netcov(network)`. To use
-#'  exponential downweighting for any of the network level terms, simply
-#'  specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted
-#'   from the structural terms if no exponential downweighting is required. In
-#'   this case, the terms may be provided as: `out2star`, `in2star`, `ctriads`,
-#'   `recip`, `ttriads`. If the network is undirected the user may only specify
-#'   the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
-#'   `absdiff(covariate = "MyCov")`, `edgecov(covariate = "MyCov")`,
-#'   `sender(covariate = "MyCov")`, `nodematch(covariate)`,
-#'   `nodemix(covariate, base = "MyBase")`, `netcov(network)`. An intercept
-#'   term is included by default, but can be omitted by setting
-#'   omit_intercept_term = TRUE. If the user specifies
-#'   `nodemix(covariate, base = NULL)`, then all levels of the covariate
-#'   will be matched on.
+#' using any combination of the following statistics: `out2stars(alpha = 1)`,
+#' `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
+#' `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
+#' `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
+#' `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
+#' `nodemix(covariate, base = "MyBase")`, `netcov(network)` and
+#' `edges(alpha = 1, method = c("regression","endogenous"))`. If the user
+#' specifies `nodemix(covariate, base = NULL)`, then all levels of the
+#' covariate will be matched on. Note that the `edges` term must be specified if
+#' the user wishes to include an intercept
+#' (strongly recommended). The user may select the "regression" method
+#' (default) to include an intercept in the lambda transformation of the
+#' network, or "endogenous" to include the intercept as in a traditional ERGM
+#' model.  To use exponential downweighting for any of the network level terms,
+#' simply specify a value for alpha less than 1. The `(alpha = 1)` term may be
+#' omitted from the structural terms if no exponential downweighting is
+#' required. In this case, the terms may be provided as: `out2star`, `in2star`,
+#' `ctriads`, `recip`, `ttriads`. If the network is undirected the user may only
+#' specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
+#' `absdiff(covariate = "MyCov")`,
+#' `sender(covariate = "MyCov")`, `nodematch(covariate)`,
+#' `nodemix(covariate, base = "MyBase")`, `netcov(network)` and
+#' `edges(alpha = 1, method = c("regression","endogenous"))`. In some cases,
+#' the user may only wish to calculate endogenous statistics for edges between
+#' some subset of the nodes in the network. For each of the endogenous
+#' statistics, the user may optionally specify a `covariate` and `base` field
+#' such as in `in2stars(covariate = "Type", base = "C")`. This will add an
+#' in-2star statistic for the subnetwork defined by actors who match each level
+#' of the categorical variable "Type" (in this example), and exclude the
+#' subnetwork for type "C", if the `base` argument is provided. If the `base`
+#' argument is excluded, then terms will be added to the model for all levels of
+#' the statistic. This can be a useful option if the user believes that a
+#' network property varies with some property of nodes.
 #' @param covariate_data A data frame containing node level covariates the user
 #' wished to transform into sender or reciever effects. It must have row names
 #' that match every entry in colnames(raw_network), should have descriptive
 #' column names.  If left NULL, then no sender or reciever effects will be
 #' added.
-#' @param normalization_type If only a raw_network is provided and
-#' omit_intercept_term = TRUE then, the function
+#' @param normalization_type If only a raw_network is provided the function
 #' will automatically check to determine if all edges fall in the [0,1] interval.
 #' If edges are determined to fall outside of this interval, then a trasformation
 #' onto the interval may be specified. If "division" is selected, then the data
@@ -54,8 +67,8 @@
 #' select "Gaussian" and for strictly positive raw networks, select "LogNormal".
 #' The Default value is "Cauchy".
 #' @param estimation_method Simulation method for MCMC estimation. Default is
-#' "Gibbs" which will generally be faster with well behaved networks but will not
-#' allow for exponential downweighting.
+#' "Metropolis", which allows for the most flexible model specifications, but
+#' may also be set to "Gibbs", if the user wishes to use Gibbs sampling.
 #' @param maximum_number_of_lambda_updates Maximum number of iterations of outer
 #' MCMC loop which alternately estimates transform parameters and ERGM
 #' parameters. In the case that data_transformation = NULL, this argument is
@@ -81,7 +94,8 @@
 #' @param convergence_tolerance Threshold designated for stopping criterion. If
 #' the difference of parameter estimates from one iteration to the next all have
 #' a p -value (under a paired t-test) greater than this value, the parameter
-#' estimates are declared to have converged. Default is 0.01.
+#' estimates are declared to have converged. Default is 0.5, which is quite
+#' conservative.
 #' @param MPLE_gain_factor Multiplicative constant between 0 and 1 that controls
 #' how far away the initial theta estimates will be from the standard MPLEs via
 #' a one step Fisher update. In the case of strongly dependent data, it is
@@ -115,8 +129,6 @@
 #' parameter plots are generated.
 #' @param verbose Defaults to TRUE (providing lots of output while model is
 #' running). Can be set to FALSE if the user wishes to see less output.
-#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the
-#' user wishes to omit the model intercept term.
 #' @param hyperparameter_optimization Logical indicating whether automatic
 #' hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
 #' the algorithm will automatically seek to find an optimal burnin and number of
@@ -126,6 +138,9 @@
 #' will attempt to adress the issue automatically. WARNING: This feature is
 #' experimental, and may greatly increase runtime. Please monitor console
 #' output!
+#' @param stop_for_degeneracy When TRUE, automatically stops estimation when
+#' degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
+#' Defaults to FALSE.
 #' @param target_accept_rate The target Metropolis Hastings acceptance rate.
 #' Defaults to 0.25
 #' @param theta_grid_optimization_list Defaults to NULL. This highly
@@ -140,14 +155,54 @@
 #' the number of steps out the grid search will perform, step_size indicates the
 #' fraction of the MPLE theta estimate that each grid search step will change by,
 #' cores indicates the number of cores to be used for parallel optimization, and
-#' iteration_fraction indcates the fraction of the nubmer of MCMC iterations
+#' iteration_fraction indicates the fraction of the number of MCMC iterations
 #' that will be used for each grid point (should be set less than 1 to speed up
 #' optimization). In general grid_steps should be smaller the more structural
 #' parameters the user wishes to specify. For example, with 5 structural
-#' paramters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+#' parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
 #' = 16807 parameter grid search. Again this feature is highly experimental and
 #' should only be used as a last resort (after playing with exponential
 #' downweighting and the MPLE_gain_factor).
+#' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
+#' specifying statistics with alpha downweighting. Tends to provide better
+#' initialization when downweight_statistics_together = FALSE.
+#' @param fine_grained_pv_optimization Logical indicating whether fine grained
+#' proposal variance optimization should be used. This will often slow down
+#' proposal variance optimization, but may provide better results. Highly
+#' recommended if running a correlation model.
+#' @param parallel Logical indicating whether the weighted MPLE objective and any
+#' other operations that can be easily paralllelized should be calculated in
+#' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
+#' may be possible.
+#' @param parallel_statistic_calculation Logical indicating whether network
+#' statistics should be calculated in parallel. This will tend to be slower for
+#' networks with les than ~30 nodes but may provide a substantial speedup for
+#' larger networks.
+#' @param cores Numeric value defaulting to 1. Can be set to any number up to the
+#' number of threads/cores available on your machine. Will be used to speed up
+#' computations if parllel = TRUE.
+#' @param use_stochastic_MH A logical indicating whether a stochastic approximation
+#' to the h statistics should be used under Metropolis Hastings in-between
+#' thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+#' HIGHLY EXPERIMENTAL!
+#' @param stochastic_MH_proportion Percentage of dyads/triads to use for
+#' approximation, defaults to 0.25.
+#' @param estimate_model Logical indicating whether a model should be estimated.
+#' Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
+#' a GERGM object containing the model specification. Useful for debugging.
+#' @param slackr_integration_list An optional list object that contains
+#' information necessary to provide updates about model fitting progress to a
+#' Slack channel (https://slack.com/). This can be useful if models take a long
+#' time to run, and you wish to receive updates on their progress (or if they
+#' become degenerate). The list object must be of the following form:
+#' list(model_name = "descriptive model name", channel = "#yourchannelname",
+#'  incoming_webhook_url = "https://hooks.slack.com/services/XX/YY/ZZ"). You
+#'  will need to set up incoming webhook integration for your slack channel and
+#'  then paste in the URL you get from slack into the incoming_webhook_url field.
+#'  If all goes well, and the computer you are running the GERGM estimation on
+#'  has internet access, your slack channel will receive updates when you start
+#'  estimation, after each lambda/theta parameter update, if the model becomes
+#'  degenerate, and when it completes running.
 #' @param ... Optional arguments, currently unsupported.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -176,10 +231,10 @@
 gergm <- function(formula,
                   covariate_data = NULL,
                   normalization_type = c("log","division"),
-                  network_is_directed = c(TRUE, FALSE),
+                  network_is_directed = TRUE,
                   use_MPLE_only = c(FALSE, TRUE),
                   transformation_type = c("Cauchy","LogCauchy","Gaussian","LogNormal"),
-                  estimation_method = c("Gibbs", "Metropolis"),
+                  estimation_method = c("Metropolis","Gibbs"),
                   maximum_number_of_lambda_updates = 10,
                   maximum_number_of_theta_updates = 10,
                   number_of_networks_to_simulate = 500,
@@ -188,7 +243,7 @@ gergm <- function(formula,
                   downweight_statistics_together = TRUE,
                   MCMC_burnin = 100,
                   seed = 123,
-                  convergence_tolerance = 0.01,
+                  convergence_tolerance = 0.5,
                   MPLE_gain_factor = 0,
                   acceptable_fit_p_value_threshold = 0.05,
                   force_x_theta_updates = 1,
@@ -197,24 +252,24 @@ gergm <- function(formula,
                   output_name = NULL,
                   generate_plots = TRUE,
                   verbose = TRUE,
-                  omit_intercept_term = FALSE,
                   hyperparameter_optimization = FALSE,
+                  stop_for_degeneracy = FALSE,
                   target_accept_rate = 0.25,
                   theta_grid_optimization_list = NULL,
+                  weighted_MPLE = FALSE,
+                  fine_grained_pv_optimization = FALSE,
+                  parallel = FALSE,
+                  parallel_statistic_calculation = FALSE,
+                  cores = 1,
+                  use_stochastic_MH = FALSE,
+                  stochastic_MH_proportion = 0.25,
+                  estimate_model = TRUE,
+                  slackr_integration_list = NULL,
                   ...
                   ){
 
-  # pass in experimental features through elipsis
-  weighted_MPLE <- FALSE
-  object <- as.list(substitute(list(...)))[-1L]
-  if (length(object) > 0) {
-    if (!is.null(object$weighted_MPLE)) {
-      if (object$weighted_MPLE) {
-        weighted_MPLE <- TRUE
-        cat("Using experimental weighted_MPLE...\n")
-      }
-    }
-  }
+  # record start time for estimation
+  start_time <- Sys.time()
 
   # hard coded possible stats
   possible_structural_terms <- c("out2stars",
@@ -223,9 +278,15 @@ gergm <- function(formula,
                                  "mutual",
                                  "ttriads",
                                  "edges")
-  possible_structural_terms_undirected <- c("edges",
-                                            "twostars",
-                                            "ttriads")
+  possible_structural_terms_undirected <- c("twostars",
+                                            "ttriads",
+                                            "edges")
+  if (network_is_directed) {
+    possible_structural_term_indices <- 1:6
+  } else {
+    possible_structural_term_indices <- c(2,5,6)
+  }
+
   possible_covariate_terms <- c("absdiff",
                                 "nodecov",
                                 "nodematch",
@@ -239,6 +300,10 @@ gergm <- function(formula,
                                 "gaussian",
                                 "lognormal")
 
+  # set the number of threads to use with parallel
+  if (parallel) {
+    RcppParallel::setThreadOptions(numThreads = cores)
+  }
 
   # check terms for undirected network
   if (!network_is_directed) {
@@ -248,17 +313,21 @@ gergm <- function(formula,
       possible_structural_terms_undirected)
   }
 
-  # automatically add an intercept term unless omit_intercept_term is TRUE
-  if (!omit_intercept_term) {
-    formula <- add_intercept_term(formula)
-    #check for an edges statistic
-    form <- as.formula(formula)
-    parsed <- deparse(form)
-    if (length(parsed) > 1) {
-      parsed <- paste0(parsed, collapse = " ")
-    }
-    if (grepl("edges",parsed)) {
-      stop("You may not specify an edges statistic if omit_intercept_term == FALSE as this will introduce two identical intercept terms and instability in the model. An intercept term is automatically added in the lambda transformation step unless omit_intercept_term == TRUE, and we have found this method of adding an intercept to be less prone to degeneracy.")
+  # check to see if we are using a regression intercept term, and if we are,
+  # then add the "intercept" field to the formula.
+  check_for_edges <- Parse_Formula_Object(formula,
+                               possible_structural_terms,
+                               possible_covariate_terms,
+                               possible_network_terms,
+                               raw_network = NULL,
+                               theta = NULL,
+                               terms_to_parse = "structural",
+                               covariate_data = covariate_data)
+
+  # automatically add an intercept term if necessary
+  if (check_for_edges$include_intercept) {
+    if (check_for_edges$regression_intercept) {
+      formula <- add_intercept_term(formula)
     }
   }
 
@@ -297,9 +366,7 @@ gergm <- function(formula,
      possible_network_terms,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
-     is_correlation_network = FALSE,
-     is_directed = network_is_directed,
-     beta_correlation_model = FALSE)
+     is_directed = network_is_directed)
 
   data_transformation <- NULL
   if (!is.null(Transformed_Data$transformed_covariates)) {
@@ -320,9 +387,9 @@ gergm <- function(formula,
      transform.data = data_transformation,
      lambda.coef = NULL,
      transformation_type = transformation_type,
-     is_correlation_network = FALSE,
      is_directed = network_is_directed,
-     beta_correlation_model = FALSE)
+     covariate_data = covariate_data,
+     possible_structural_terms_undirected = possible_structural_terms_undirected)
 
   GERGM_Object@theta_estimation_converged <- FALSE
   GERGM_Object@lambda_estimation_converged <- FALSE
@@ -349,10 +416,16 @@ gergm <- function(formula,
     GERGM_Object@print_output <- TRUE
   }
 
-  # if we are using a correlation network then set field to TRUE.
-  GERGM_Object@is_correlation_network <- FALSE
-  GERGM_Object@beta_correlation_model <- FALSE
+  # record the various optimizations we are using so that they can be used in
+  # the main algorithm
   GERGM_Object@weighted_MPLE <- weighted_MPLE
+  GERGM_Object@fine_grained_pv_optimization <- fine_grained_pv_optimization
+  GERGM_Object@parallel <- parallel
+  GERGM_Object@parallel_statistic_calculation <- parallel_statistic_calculation
+  GERGM_Object@cores <- cores
+  GERGM_Object@use_stochastic_MH <- use_stochastic_MH
+  GERGM_Object@stochastic_MH_proportion <- stochastic_MH_proportion
+  GERGM_Object@possible_endogenous_statistic_indices <- possible_structural_term_indices
 
   # set adaptive metropolis parameters
   GERGM_Object@hyperparameter_optimization <- hyperparameter_optimization
@@ -363,156 +436,240 @@ gergm <- function(formula,
   GERGM_Object@thin <- thin
   GERGM_Object@burnin <- MCMC_burnin
   GERGM_Object@MPLE_gain_factor <- MPLE_gain_factor
+  GERGM_Object@start_time <- toString(start_time)
+
+  GERGM_Object@using_slackr_integration <- FALSE
+  if (!is.null(slackr_integration_list)) {
+    if (length(slackr_integration_list) != 3) {
+      stop("slackr_integration_list must contain three fields, see documentation...")
+    }
+    GERGM_Object@slackr_integration_list <- slackr_integration_list
+    GERGM_Object@using_slackr_integration <- TRUE
+
+    start_message <- paste('Starting GERGM Estimation at',toString(start_time))
+    specification <- paste('Specification:',toString(formula))
+    specification <- gsub("\"", "", specification, fixed=TRUE)
+
+    slackr::slackr_bot(
+      start_message,
+      specification,
+      channel = GERGM_Object@slackr_integration_list$channel,
+      username = GERGM_Object@slackr_integration_list$model_name,
+      incoming_webhook_url = GERGM_Object@slackr_integration_list$incoming_webhook_url)
+  }
+
+  # prepare auxiliary data
+  GERGM_Object@statistic_auxiliary_data <- prepare_statistic_auxiliary_data(
+    GERGM_Object)
+
+  # record statistics on observed and bounded network
+  h.statistics1 <- calculate_h_statistics(
+    GERGM_Object,
+    GERGM_Object@statistic_auxiliary_data,
+    all_weights_are_one = FALSE,
+    calculate_all_statistics = TRUE,
+    use_constrained_network = FALSE)
+  h.statistics2 <- calculate_h_statistics(
+    GERGM_Object,
+    GERGM_Object@statistic_auxiliary_data,
+    all_weights_are_one = FALSE,
+    calculate_all_statistics = TRUE,
+    use_constrained_network = TRUE)
+  statistic_values <- rbind(h.statistics1, h.statistics2)
+  colnames(statistic_values) <- GERGM_Object@full_theta_names
+  rownames(statistic_values) <- c("network", "bounded_network")
+  GERGM_Object@stats <- statistic_values
 
   #2. Estimate GERGM
-  GERGM_Object <- Estimate_GERGM(formula,
-                                 MPLE.only = use_MPLE_only,
-                                 max.num.iterations = maximum_number_of_lambda_updates,
-                                 mc.num.iterations = maximum_number_of_theta_updates,
-                                 seed = seed,
-                                 tolerance = convergence_tolerance,
-                                 possible.stats = possible_structural_terms,
-                                 GERGM_Object = GERGM_Object,
-                                 force_x_theta_updates = force_x_theta_updates,
-                                 verbose = verbose,
-                                 force_x_lambda_updates = force_x_lambda_updates)
+  if (estimate_model) {
+    GERGM_Object <- Estimate_GERGM(
+      formula,
+      MPLE.only = use_MPLE_only,
+      max.num.iterations = maximum_number_of_lambda_updates,
+      mc.num.iterations = maximum_number_of_theta_updates,
+      seed = seed,
+      tolerance = convergence_tolerance,
+      possible.stats = possible_structural_terms,
+      GERGM_Object = GERGM_Object,
+      force_x_theta_updates = force_x_theta_updates,
+      transformation_type =  transformation_type,
+      verbose = verbose,
+      force_x_lambda_updates = force_x_lambda_updates,
+      stop_for_degeneracy = stop_for_degeneracy)
 
-  #3. Perform degeneracy diagnostics and create GOF plots
-  if (!GERGM_Object@theta_estimation_converged) {
-    warning("Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
-  }
-  if (!GERGM_Object@lambda_estimation_converged) {
-    warning("Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
-    GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
-  }
-
-  #now simulate from last update of theta parameters
-  GERGM_Object <- Simulate_GERGM(GERGM_Object,
-                                 seed1 = seed,
-                                 possible.stats = possible_structural_terms)
-
-  colnames(GERGM_Object@lambda.coef) = gpar.names
-  num.nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num.nodes, 3))
-
-  # change back column names if we are dealing with an undirected network
-  if (!network_is_directed) {
-    change <- which(colnames(GERGM_Object@theta.coef) == "in2stars")
-    if (length(change) > 0) {
-      colnames(GERGM_Object@theta.coef)[change] <- "twostars"
+    #3. Perform degeneracy diagnostics and create GOF plots
+    if (!GERGM_Object@theta_estimation_converged) {
+      warning("Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+      GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Theta estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
     }
-  }
+    if (!GERGM_Object@lambda_estimation_converged) {
+      warning("Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+      GERGM_Object <- store_console_output(GERGM_Object,"Estimation procedure did not detect convergence in Lambda estimates. Estimation halted when maximum number of updates was reached. Be careful to assure good model fit or select a more relaxed convergence criterion.")
+    }
 
-  init.statistics <- NULL
-  if (GERGM_Object@is_correlation_network) {
-    init.statistics <- h2(GERGM_Object@network,
-                          triples = triples,
-                          statistics = rep(1, length(possible_structural_terms)),
-                          alphas = GERGM_Object@weights,
-                          together = downweight_statistics_together)
-  }else{
-    init.statistics <- h2(GERGM_Object@bounded.network,
-                          triples = triples,
-                          statistics = rep(1, length(possible_structural_terms)),
-                          alphas = GERGM_Object@weights,
-                          together = downweight_statistics_together)
-  }
+    #now simulate from last update of theta parameters
+    GERGM_Object <- Simulate_GERGM(
+      GERGM_Object,
+      seed1 = seed,
+      possible.stats = possible_structural_terms,
+      parallel = GERGM_Object@parallel_statistic_calculation)
 
-  # fix issue with the wrong stats being saved
-  GERGM_Object@stats[2,] <- init.statistics
-  hsn.tot <- GERGM_Object@MCMC_output$Statistics
+    colnames(GERGM_Object@lambda.coef) = gpar.names
 
-  # save these statistics so we can make GOF plots in the future, otherwise
-  # they would be the transformed statistics which would produce poor GOF plots.
-  GERGM_Object@simulated_statistics_for_GOF <- hsn.tot
-  #thin statsitics
-  hsn.tot <- Thin_Statistic_Samples(hsn.tot)
-
-  #calculate t.test p-values for calculating the difference in the means of
-  # the newly simulated data with the original network
-  statistic_test_p_values <- rep(NA,length(possible_structural_terms))
-  for (i in 1:length(possible_structural_terms)) {
-    statistic_test_p_values[i] <- round(t.test(hsn.tot[, i],
-                                      mu = init.statistics[i])$p.value,3)
-  }
-
-  stats.data <- data.frame(Observed = init.statistics,
-                           Simulated = colMeans(hsn.tot))
-  rownames(stats.data) <- possible_structural_terms
-  cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
-  GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
-
-  GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
-
-  statistic_test_p_values <- data.frame(p_values = statistic_test_p_values)
-  rownames(statistic_test_p_values) <- possible_structural_terms
-  cat("\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
-  GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
-  print(statistic_test_p_values)
-  GERGM_Object <- store_console_output(GERGM_Object, toString(statistic_test_p_values))
-
-
-  colnames(statistic_test_p_values) <- "p_values"
-  GERGM_Object@observed_simulated_t_test <- statistic_test_p_values
-
-  #test to see if we have an acceptable fit
-  acceptable_fit <- statistic_test_p_values[which(GERGM_Object@stats_to_use == 1), 1]
-
-  if (min(acceptable_fit) > acceptable_fit_p_value_threshold) {
-    GERGM_Object@acceptable_fit <- TRUE
-    message("Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
-    GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
-  }else{
-    GERGM_Object@acceptable_fit <- FALSE
-    message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
-    GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
-  }
-
-  #4. output everything to the appropriate files and return GERGM object.
-  if (generate_plots) {
-    # only generate output if output_name is not NULL
-    if (!is.null(output_name)) {
-      if (is.null(output_directory)) {
-        output_directory <- getwd()
+    # change back column names if we are dealing with an undirected network
+    if (!network_is_directed) {
+      change <- which(colnames(GERGM_Object@theta.coef) == "in2stars")
+      if (length(change) > 0) {
+        colnames(GERGM_Object@theta.coef)[change] <- "twostars"
       }
-      current_directory <- getwd()
-      setwd(output_directory)
-
-      try({
-        pdf(file = paste(output_name,"_GOF.pdf",sep = ""), height = 4, width = 8)
-        GOF(GERGM_Object)
-        dev.off()
-
-        pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""), height = 4, width = 5)
-        Estimate_Plot(GERGM_Object)
-        dev.off()
-
-        pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""), height = 4, width = 6)
-        Trace_Plot(GERGM_Object)
-        dev.off()
-
-        save(GERGM_Object, file = paste(output_name,"_GERGM_Object.Rdata",sep = ""))
-
-        write.table(GERGM_Object@console_output,file = paste(output_name,"_Estimation_Log.txt",sep = ""),row.names = F,col.names = F,fileEncoding = "utf8", quote = F)
-      })
-      setwd(current_directory)
-    } else{
-      # if we are not saving everything to a directory then just print stuff to
-      # the graphics device
-      try({
-        GOF(GERGM_Object)
-        Sys.sleep(2)
-        Estimate_Plot(GERGM_Object)
-        Sys.sleep(2)
-        Trace_Plot(GERGM_Object)
-      })
     }
+
+    init.statistics <- NULL
+
+      init.statistics <- calculate_h_statistics(
+        GERGM_Object,
+        GERGM_Object@statistic_auxiliary_data,
+        all_weights_are_one = FALSE,
+        calculate_all_statistics = TRUE,
+        use_constrained_network = TRUE)
+
+    # fix issue with the wrong stats being saved
+    GERGM_Object@stats[2,] <- init.statistics
+    hsn.tot <- GERGM_Object@MCMC_output$Statistics
+
+    # save these statistics so we can make GOF plots in the future, otherwise
+    # they would be the transformed statistics which would produce poor GOF plots.
+    GERGM_Object@simulated_statistics_for_GOF <- hsn.tot
+    #thin statsitics
+    hsn.tot <- Thin_Statistic_Samples(hsn.tot)
+
+    #calculate t.test p-values for calculating the difference in the means of
+    # the newly simulated data with the original network
+    statistic_test_p_values <- rep(NA,ncol(hsn.tot))
+    for (i in 1:ncol(hsn.tot)) {
+      statistic_test_p_values[i] <- round(t.test(hsn.tot[, i],
+                                                 mu = init.statistics[i])$p.value,3)
+    }
+
+    stats.data <- data.frame(Observed = init.statistics,
+                             Simulated = colMeans(hsn.tot))
+    rownames(stats.data) <- GERGM_Object@full_theta_names
+    cat("Statistics of observed network and networks simulated from final theta parameter estimates:\n")
+    GERGM_Object <- store_console_output(GERGM_Object,"Statistics of observed network and networks simulated from final theta parameter estimates:\n")
+
+    GERGM_Object <- store_console_output(GERGM_Object, toString(stats.data))
+
+    statistic_test_p_values <- data.frame(p_values = statistic_test_p_values)
+    rownames(statistic_test_p_values) <- GERGM_Object@full_theta_names
+    cat("\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+    GERGM_Object <- store_console_output(GERGM_Object,"\nt-test p-values for statistics of observed network and networks simulated from final theta parameter estimates:\n \n")
+    print(statistic_test_p_values)
+    GERGM_Object <- store_console_output(GERGM_Object, toString(statistic_test_p_values))
+
+
+    colnames(statistic_test_p_values) <- "p_values"
+    GERGM_Object@observed_simulated_t_test <- statistic_test_p_values
+
+    #test to see if we have an acceptable fit
+    check_stats <- GERGM_Object@statistic_auxiliary_data$specified_statistic_indexes_in_full_statistics
+    acceptable_fit <- statistic_test_p_values[check_stats, 1]
+
+    if (min(acceptable_fit) > acceptable_fit_p_value_threshold) {
+      GERGM_Object@acceptable_fit <- TRUE
+      message("Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
+      GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates simulate networks that are statistically indistinguishable from observed network on the statistics specified by the user. ")
+    }else{
+      GERGM_Object@acceptable_fit <- FALSE
+      message("Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
+      GERGM_Object <- store_console_output(GERGM_Object, "Parameter estimates simulate networks that are statistically distinguishable from observed network. Check GOF plots to determine if the model provides a reasonable fit . This is a very stringent test for goodness of fit, so results may still be acceptable even if this criterion is not met.")
+    }
+
+    GERGM_Object@simulated_bounded_networks_for_GOF <- GERGM_Object@MCMC_output$Networks
+
+    # precalculate intensities and degree distributions so we can return them.
+    GERGM_Object <- calculate_additional_GOF_statistics(GERGM_Object)
+
+    #4. output everything to the appropriate files and return GERGM object.
+    if (generate_plots) {
+      # only generate output if output_name is not NULL
+      if (!is.null(output_name)) {
+        if (is.null(output_directory)) {
+          output_directory <- getwd()
+        }
+        current_directory <- getwd()
+        setwd(output_directory)
+
+        try({
+          pdf(file = paste(output_name,"_GOF.pdf",sep = ""),
+              height = 4,
+              width = 10)
+          GOF(GERGM_Object)
+          dev.off()
+
+          pdf(file = paste(output_name,"_Parameter_Estimates.pdf",sep = ""),
+              height = 4,
+              width = 5)
+          Estimate_Plot(GERGM_Object)
+          dev.off()
+
+          pdf(file = paste(output_name,"_Trace_Plot.pdf",sep = ""),
+              height = 4,
+              width = 6)
+          Trace_Plot(GERGM_Object)
+          dev.off()
+
+          save(GERGM_Object,
+               file = paste(output_name,"_GERGM_Object.RData",sep = ""))
+
+          write.table(GERGM_Object@console_output,
+                      file = paste(output_name,"_Estimation_Log.txt",sep = ""),
+                      row.names = F,
+                      col.names = F,
+                      fileEncoding = "utf8",
+                      quote = F)
+        })
+        setwd(current_directory)
+      } else{
+        # if we are not saving everything to a directory then just print stuff to
+        # the graphics device
+        try({
+          GOF(GERGM_Object)
+          Sys.sleep(2)
+          Estimate_Plot(GERGM_Object)
+          Sys.sleep(2)
+          Trace_Plot(GERGM_Object)
+        })
+      }
+    }
+
+    # transform networks back to observed scale
+    cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
+    GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
+  } else {
+    cat("Returning GERGM object without estimating model...\n")
   }
 
-  # transform networks back to observed scale
-  cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
-  GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
+  # now report the total elapsed time and end time to the user
+  end_time <- Sys.time()
+  GERGM_Object@end_time <- toString(end_time)
+
+  elapsed_time <- end_time - start_time
+  GERGM_Object@elapsed_time <- toString(elapsed_time)
+
+  cat("Estimation Complete at:",toString(end_time),
+      "\nElapsed time (seconds):",elapsed_time,"\n")
+
+  # push to slack if desired
+  if (GERGM_Object@using_slackr_integration) {
+    completion_time <- paste("Estimation Complete at:",toString(end_time))
+    elapsed_time <- paste("Elapsed time (seconds):",elapsed_time)
+    slackr::slackr_bot(
+      completion_time,
+      elapsed_time,
+      channel = GERGM_Object@slackr_integration_list$channel,
+      username = GERGM_Object@slackr_integration_list$model_name,
+      incoming_webhook_url = GERGM_Object@slackr_integration_list$incoming_webhook_url)
+  }
 
   return(GERGM_Object)
 }
