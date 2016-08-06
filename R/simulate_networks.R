@@ -6,25 +6,8 @@
 #' providing as the initial network. Currently, the following statistics can be
 #' specified: c("edges", "out2stars", "in2stars", 	"ctriads", "mutual",
 #' "ttriads").
-#' @param edges The theta value provided for the reciprocity parameter, defaults
-#' to 0. Only statistics for structural terms included in formula will be used.
-#' @param mutual The theta value provided for the reciprocity parameter, defaults
-#' to 0. Only statistics for structural terms included in formula will be used.
-#' @param ttriads The theta value provided for the transitive triads parameter,
-#' defaults to 0. Only statistics for structural terms included in formula will
-#' be used.
-#' @param ctriads The theta value provided for the cyclic triads parameter,
-#' defaults to 0. Only statistics for structural terms included in formula will
-#' be used.
-#' @param in2stars The theta value provided for the in 2-stars parameter,
-#' defaults to 0. Only statistics for structural terms included in formula will
-#' be used.
-#' @param out2stars The theta value provided for the out 2-starts parameter,
-#' defaults to 0. Only statistics for structural terms included in formula will
-#' be used.
-#' @param twostars The theta value provided for the undirected 2-starts parameter,
-#' defaults to 0. Only statistics for structural terms included in formula will
-#' be used.
+#' @param thetas A vector of theta parameters given in the same order as the
+#' formula terms, which the user would like to use to parameterize the model.
 #' @param network_is_directed Logical specifying whether or not the observed
 #' network is directed. Default is TRUE.
 #' @param simulation_method Default is "Metropolis" which allows for exponential
@@ -45,11 +28,6 @@
 #' will be discarded before drawing the samples used for estimation. Default is
 #' 100.
 #' @param seed Seed used for reproducibility. Default is 123.
-#' @param omit_intercept_term Defualts to FALSE, can be set to TRUE if the user
-#' wishes to omit the model intercept term which is automatically included as
-#' a covariate effect (lambda parameter). If the user wishes to specify an
-#' edges term, then they must set omit_intercept_term = TRUE so that only one
-#' intercept term is included in the model.
 #' @param GERGM_Object Optional argument allowing the user to supply a GERGM
 #' object output by the gergm() estimation function in order to simualt further
 #' networks. Defaults to NULL. If a GERGM object is provided, any user specified
@@ -68,6 +46,20 @@
 #' Defaults to FALSE.
 #' @param target_accept_rate Defaults to 0.25, can be used to optimize
 #' Metropolis Hastings simulations.
+#' @param use_stochastic_MH A logical indicating whether a stochastic approximation
+#' to the h statistics should be used under Metropolis Hastings in-between
+#' thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+#' HIGHLY EXPERIMENTAL!
+#' @param stochastic_MH_proportion Percentage of dyads/triads to use for
+#' approximation, defaults to 0.25
+#' @param covariate_data A data frame containing node level covariates the user
+#' wished to transform into sender or reciever effects. It must have row names
+#' that match every entry in colnames(raw_network), should have descriptive
+#' column names.  If left NULL, then no sender or reciever effects will be
+#' added.
+#' @param lambdas A vector of lambda parameters given in the same order as the
+#' formula terms, which the user would like to use to parameterize the model.
+#' Covariate effects should be specified after endogenous effects.
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' set.seed(12345)
@@ -77,8 +69,7 @@
 #' formula <- net ~ ttriads + in2stars
 #'
 #' test <- simulate_networks(formula,
-#'  ttriads = 0.6,
-#'  in2stars = -0.8,
+#'  thetas = c(0.6,-0.8),
 #'  network_is_directed = TRUE,
 #'  simulation_method = "Metropolis",
 #'  number_of_networks_to_simulate = 100,
@@ -88,37 +79,60 @@
 #'  MCMC_burnin = 1000,
 #'  omit_intercept_term = TRUE,
 #'  seed = 456)
+#'
+#' # preferred method for specifying a null model
+#' formula <- net ~ edges(method = "endogenous")
+#' test <- simulate_networks(
+#'  formula,
+#'  thetas = 0,
+#'  network_is_directed = TRUE,
+#'  simulation_method = "Metropolis",
+#'  number_of_networks_to_simulate = 1000,
+#'  thin = 1/10,
+#'  proposal_variance = 0.5,
+#'  downweight_statistics_together = TRUE,
+#'  MCMC_burnin = 1000,
+#'  seed = 456)
 #' @return A list object containing simulated networks and parameters used to
 #' specify the simulation. See the $MCMC_Output field for simulated networks. If
 #' GERGM_Object is provded, then a GERGM object will be returned instead.
 #' @export
 simulate_networks <- function(formula,
-  edges = 0,
-  mutual = 0,
-  ttriads = 0,
-  ctriads = 0,
-  in2stars = 0,
-  out2stars = 0,
-  twostars = 0,
+  thetas,
   simulation_method = c("Metropolis","Gibbs"),
-  network_is_directed = c(TRUE, FALSE),
+  network_is_directed = TRUE,
   number_of_networks_to_simulate = 500,
   thin = 1,
   proposal_variance = 0.1,
   downweight_statistics_together = TRUE,
   MCMC_burnin = 100,
   seed = 123,
-  omit_intercept_term = FALSE,
   GERGM_Object = NULL,
   return_constrained_networks = FALSE,
   optimize_proposal_variance = FALSE,
   target_accept_rate = 0.25,
+  use_stochastic_MH = FALSE,
+  stochastic_MH_proportion = 1,
+  covariate_data = NULL,
+  lambdas = NULL,
   ...
 ){
 
+  GERGM_Object_Provided <- TRUE
+  if (is.null(GERGM_Object)) {
+    GERGM_Object_Provided <- FALSE
+  }
+
   # hard coded possible stats
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
-  possible_structural_terms_undirected <- c("twostars", "ttriads")
+  possible_structural_terms_undirected <- c("twostars",
+                                            "ttriads",
+                                            "edges")
+  if (network_is_directed) {
+    possible_structural_term_indices <- 1:6
+  } else {
+    possible_structural_term_indices <- c(2,5,6)
+  }
   possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
@@ -126,38 +140,25 @@ simulate_networks <- function(formula,
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
     weighted_MPLE <- FALSE
-    covariate_data <- NULL
-    lambdas <- NULL
-    object <- as.list(substitute(list(...)))[-1L]
-    if (length(object) > 0) {
-      if (!is.null(object$weighted_MPLE)) {
-        if (object$weighted_MPLE) {
-          weighted_MPLE <- TRUE
-          cat("Using experimental weighted_MPLE...\n")
-        }
-      }
-      if (!is.null(object$covariate_data)) {
-        covariate_data <- object$covariate_data
-      }
-      if (!is.null(object$lambdas)) {
-        lambdas <- object$lambdas
-        if (class(lambdas) == "symbol" | class(lambdas) == "name") {
-          lambdas <- dynGet(as.character(lambdas),
-                             ifnotfound = get(as.character(lambdas)))
-        }
-      }
-    }
 
     # This is the main function to estimate a GERGM model
 
-    #check for an edges statistic
-    form <- as.formula(formula)
-    parsed <- deparse(form)
-    if (length(parsed) > 1) {
-      parsed <- paste0(parsed, collapse = " ")
-    }
-    if (grepl("edges",parsed) & !omit_intercept_term) {
-      stop("You may not specify an edges statistic if omit_intercept_term == FALSE as this will result in the inclusion of two intercept terms.")
+    # check to see if we are using a regression intercept term, and if we are,
+    # then add the "intercept" field to the formula.
+    check_for_edges <- Parse_Formula_Object(formula,
+                                            possible_structural_terms,
+                                            possible_covariate_terms,
+                                            possible_network_terms,
+                                            raw_network = NULL,
+                                            theta = NULL,
+                                            terms_to_parse = "structural",
+                                            covariate_data = covariate_data)
+
+    # automatically add an intercept term if necessary
+    if (check_for_edges$include_intercept) {
+      if (check_for_edges$regression_intercept) {
+        formula <- add_intercept_term(formula)
+      }
     }
 
     # set logical values for whether we are using MPLE only, whether the network
@@ -176,11 +177,6 @@ simulate_networks <- function(formula,
         possible_structural_terms_undirected)
     }
 
-    # automatically add an intercept term unless omit_intercept_term is TRUE
-    if (!omit_intercept_term) {
-      formula <- add_intercept_term(formula)
-    }
-
     #make sure proposal variance is greater than zero
     if (proposal_variance <= 0) {
       stop("You supplied a proposal variance that was less than or equal to zero.")
@@ -196,41 +192,17 @@ simulate_networks <- function(formula,
       possible_network_terms,
       covariate_data = covariate_data,
       normalization_type = normalization_type,
-      is_correlation_network = FALSE,
-      is_directed = network_is_directed,
-      beta_correlation_model = FALSE)
+      is_directed = network_is_directed)
 
     data_transformation <- NULL
-    if (!is.null(Transformed_Data$transformed_covariates) &
-        !omit_intercept_term) {
+    if (!is.null(Transformed_Data$transformed_covariates)) {
       data_transformation <- Transformed_Data$transformed_covariates
-    }
-
-    # create theta coefficients
-    theta_coeficients = NULL
-    if (out2stars != 0) {
-      theta_coeficients <- c(theta_coeficients, out2stars)
-    }
-    if (in2stars != 0 | twostars != 0) {
-      theta_coeficients <- c(theta_coeficients, in2stars)
-    }
-    if (ctriads != 0) {
-      theta_coeficients <- c(theta_coeficients, ctriads)
-    }
-    if (mutual != 0) {
-      theta_coeficients <- c(theta_coeficients, mutual)
-    }
-    if (ttriads != 0) {
-      theta_coeficients <- c(theta_coeficients, ttriads)
-    }
-    if (edges != 0) {
-      theta_coeficients <- c(theta_coeficients, edges)
     }
 
     #1. Create GERGM object from network
     GERGM_Object <- Create_GERGM_Object_From_Formula(
       formula,
-      theta.coef = theta_coeficients,
+      theta.coef = thetas,
       possible_structural_terms,
       possible_covariate_terms,
       possible_network_terms,
@@ -239,21 +211,20 @@ simulate_networks <- function(formula,
       transform.data = data_transformation,
       lambda.coef = lambdas,
       transformation_type = transformation_type,
-      is_correlation_network = FALSE,
       is_directed = network_is_directed,
-      beta_correlation_model = FALSE)
+      possible_structural_terms_undirected = possible_structural_terms_undirected)
+
     if (!is.null(data_transformation)) {
       GERGM_Object@data_transformation <- data_transformation
     }
+
     GERGM_Object@transformation_type <- transformation_type
-    GERGM_Object@is_correlation_network <- FALSE
-    GERGM_Object@beta_correlation_model <- FALSE
     GERGM_Object@theta_estimation_converged <- TRUE
     GERGM_Object@lambda_estimation_converged <- TRUE
     GERGM_Object@observed_network  <- GERGM_Object@network
     GERGM_Object@observed_bounded_network <- GERGM_Object@bounded.network
     GERGM_Object@simulation_only <- TRUE
-    GERGM_Object@theta.par <- theta_coeficients
+    GERGM_Object@theta.par <- thetas
     GERGM_Object@directed_network <- network_is_directed
     GERGM_Object@proposal_variance <- proposal_variance
     GERGM_Object@estimation_method <- simulation_method
@@ -264,7 +235,49 @@ simulate_networks <- function(formula,
     GERGM_Object@downweight_statistics_together <- downweight_statistics_together
     GERGM_Object@weighted_MPLE <- weighted_MPLE
     GERGM_Object@hyperparameter_optimization <- optimize_proposal_variance
+    GERGM_Object@fine_grained_pv_optimization <- TRUE
+    GERGM_Object@parallel <- FALSE
+    GERGM_Object@parallel_statistic_calculation <- FALSE
+    GERGM_Object@cores <- 1
+    GERGM_Object@use_stochastic_MH <- use_stochastic_MH
+    GERGM_Object@stochastic_MH_proportion <- stochastic_MH_proportion
+    GERGM_Object@possible_endogenous_statistic_indices <- possible_structural_term_indices
 
+    # prepare auxiliary data
+    GERGM_Object@statistic_auxiliary_data <- prepare_statistic_auxiliary_data(
+      GERGM_Object)
+
+    # record statistics on observed and bounded network
+    h.statistics1 <- calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = TRUE,
+      use_constrained_network = FALSE)
+    h.statistics2 <- calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = TRUE,
+      use_constrained_network = TRUE)
+    statistic_values <- rbind(h.statistics1, h.statistics2)
+    colnames(statistic_values) <- GERGM_Object@full_theta_names
+    rownames(statistic_values) <- c("network", "bounded_network")
+    GERGM_Object@stats <- statistic_values
+
+    # allow the user to specify mu and phi
+     if (check_for_edges$regression_intercept) {
+      beta <- lambdas[1:(length(lambdas) - 1)]
+      sig <- 0.01 + exp(lambdas[length(lambdas)])
+      BZ <- 0
+      for (j in 1:(dim(GERGM_Object@data_transformation)[3])) {
+        BZ <- BZ + beta[j] * GERGM_Object@data_transformation[, , j]
+      }
+
+      #store so we can transform back
+      GERGM_Object@BZ <- BZ
+      GERGM_Object@BZstdev <- sig
+    }
 
   } else {
     # a GERGM_Object was provided
@@ -295,21 +308,18 @@ simulate_networks <- function(formula,
     }
   }
 
-
   #now simulate from last update of theta parameters
   GERGM_Object <- Simulate_GERGM(GERGM_Object,
                                  seed1 = seed,
                                  possible.stats = possible_structural_terms)
 
-  #which(GERGM_Object@stats_to_use == 1)
-  num.nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num.nodes, 3))
   # initialize the network with the observed network
-  init.statistics <- h2(GERGM_Object@bounded.network,
-                        triples = triples,
-                        statistics = rep(1, length(possible_structural_terms)),
-                        alphas = GERGM_Object@weights,
-                        together = downweight_statistics_together)
+  init.statistics <- calculate_h_statistics(
+    GERGM_Object,
+    GERGM_Object@statistic_auxiliary_data,
+    all_weights_are_one = FALSE,
+    calculate_all_statistics = TRUE,
+    use_constrained_network = TRUE)
 
   hsn.tot <- GERGM_Object@MCMC_output$Statistics
 
@@ -320,11 +330,14 @@ simulate_networks <- function(formula,
 
   stats.data <- data.frame(Observed = init.statistics,
                            Simulated = colMeans(hsn.tot))
-  rownames(stats.data) <- possible_structural_terms
+  rownames(stats.data) <- GERGM_Object@full_theta_names
   cat("Statistics of initial network and networks simulated from given theta
       parameter estimates:\n")
 
   print(stats.data)
+
+  # fix constrained values
+  GERGM_Object@stats[2,] <- init.statistics
 
   # change back column names if we are dealing with an undirected network
   if (!network_is_directed) {
@@ -333,6 +346,7 @@ simulate_networks <- function(formula,
       colnames(GERGM_Object@theta.coef)[change] <- "twostars"
     }
   }
+
 
   # make GOF plot
   try({
@@ -343,16 +357,18 @@ simulate_networks <- function(formula,
 
   if (!return_constrained_networks) {
     cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
+    GERGM_Object@simulated_bounded_networks_for_GOF <- GERGM_Object@MCMC_output$Networks
     GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
   } else {
     cat("Returning constrained [0,1] simulated networks...\n")
   }
 
-  if (is.null(GERGM_Object)) {
+  if (!GERGM_Object_Provided) {
     return_list <- list(formula = GERGM_Object@formula,
                         theta_values = GERGM_Object@theta.coef[,1],
                         alpha_values = GERGM_Object@weights,
-                        MCMC_Output = GERGM_Object@MCMC_output)
+                        MCMC_Output = GERGM_Object@MCMC_output,
+                        bounded_networks = GERGM_Object@simulated_bounded_networks_for_GOF)
     return(return_list)
   } else {
     return(GERGM_Object)
