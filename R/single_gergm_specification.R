@@ -27,9 +27,17 @@ single_gergm_specification <- function(i,
                                        output_name,
                                        generate_plots,
                                        verbose,
-                                       omit_intercept_term,
                                        hyperparameter_optimization ,
+                                       stop_for_degeneracy,
                                        target_accept_rate,
+                                       theta_grid_optimization_list,
+                                       weighted_MPLE,
+                                       fine_grained_pv_optimization,
+                                       parallel,
+                                       parallel_statistic_calculation,
+                                       cores_per_model,
+                                       use_stochastic_MH,
+                                       stochastic_MH_proportion,
                                        ...){
 
   # 0. go through and assign all variables before calling GERGM
@@ -373,18 +381,6 @@ single_gergm_specification <- function(i,
     stop("verbose must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
   }
 
-  if (length(omit_intercept_term) == num_specifications) {
-    if (class(omit_intercept_term) == "list") {
-      normalization_type <- omit_intercept_term[[i]]
-    } else if (class(omit_intercept_term) == "logical") {
-      omit_intercept_term <- omit_intercept_term[i]
-    } else {
-      stop("omit_intercept_term must either be a logical vector or list of logicals.")
-    }
-  } else if (length(omit_intercept_term) != 1) {
-    stop("omit_intercept_term must either be the same length as the number of specifications or of length one, in which case it will be the same across all specifications.")
-  }
-
   if (length(hyperparameter_optimization) == num_specifications) {
     if (class(hyperparameter_optimization) == "list") {
       normalization_type <- hyperparameter_optimization[[i]]
@@ -433,9 +429,17 @@ single_gergm_specification <- function(i,
     output_name = output_name,
     generate_plots = generate_plots,
     verbose = verbose,
-    omit_intercept_term = omit_intercept_term,
     hyperparameter_optimization = hyperparameter_optimization,
+    stop_for_degeneracy = stop_for_degeneracy,
     target_accept_rate = target_accept_rate,
+    theta_grid_optimization_list = theta_grid_optimization_list,
+    weighted_MPLE = weighted_MPLE,
+    fine_grained_pv_optimization = fine_grained_pv_optimization,
+    parallel = parallel,
+    parallel_statistic_calculation = parallel_statistic_calculation,
+    cores = cores_per_model,
+    use_stochastic_MH = use_stochastic_MH,
+    stochastic_MH_proportion = stochastic_MH_proportion,
     ... = ...)
 
   return(Result)
