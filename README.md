@@ -3,12 +3,25 @@ An R package to estimate Generalized Exponential Random Graph Models
 
 **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
 
+## News
+
+**[08/06/16]** A major update to all aspects of the package has been pushed to the public GERGM repo and will shortly be up on CRAN. Here are some highlights:
+
+* **parallelization**: We have added a number of different methods of parallelization to the package, both in initialization, and in statistic calculation.
+* **conditional edge prediction**: The package now provides functionality to predict edge values from a GERGM fit.
+* **updated diagnostic plots**: The package now calculates additional statistics and provides node degree density plots.
+* **node subset statistics**: All endogenous statistics (ttriads, etc.) can now be calculated for subsets of nodes in the network, greatly expanding the number of possible specifications.
+* **explicit intercept specification**: You are now required to explicitly include an intercept term in models.
+* **slackR integration**: You can now have the `gergm()` function send you updates about estimation to a designated slack channel. This is as close to having the package text message users as we could get. Useful for keeping up to date on long running models. 
+* **estimation without endogenous statistics**: You may now estimate models without any endogenous statistics (covariate effects only), while still having access to all goodness of fit diagnostics.
+
 ## Model Overview 
 
 An R package which implements the Generalized Exponential Random Graph Model (GERGM) with an extension to estimation via Metropolis Hastings. The relevant papers detailing the model can be found at the links below:
 
 * Bruce A. Desmarais, and Skyler J. Cranmer,  (2012). "Statistical inference for valued-edge networks: the generalized exponential random graph model". PloS One. [[Available Here](http://dx.plos.org/10.1371/journal.pone.0030136)]
 * James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". [[Available Here](http://arxiv.org/abs/1505.04015)]
+* Matthew J. Denny (2016). "The Importance of Generative Models for Assessing Network Structure". [[Available Here](http://ssrn.com/abstract=2798493)]
 
 ## Installation
 
