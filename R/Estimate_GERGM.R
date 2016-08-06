@@ -11,49 +11,28 @@ Estimate_GERGM <- function(formula_object,
                            force_x_theta_updates,
                            transformation_type,
                            verbose,
-                           force_x_lambda_updates) {
+                           force_x_lambda_updates,
+                           stop_for_degeneracy) {
 
   # set the seed
   set.seed(seed)
-  net <- GERGM_Object@network
-
-  rhs.formula <- possible.stats[GERGM_Object@stats_to_use > 0]
-  #rhs <- paste(rhs.formula, collapse = " + ")  #rewriting a formula for tnet
 
   # Flag if statistics do not meet requirement for Gibbs
-  if (GERGM_Object@estimation_method == "Gibbs" & sum(GERGM_Object@weights != 1) > 0) {
-    warning(paste0("Some statistics do not have second order derivative = 0.",
-                   " Switching to Metropolis"))
-    GERGM_Object@estimation_method = "Metropolis"
+  if (GERGM_Object@estimation_method == "Gibbs") {
+    warning("Gibbs is currently not supported, considder switching to MH...")
   }
-
-  if(GERGM_Object@estimation_method == "Gibbs" & GERGM_Object@is_correlation_network){
-    warning("Gibbs sampling is currently not implemented for correlation networks, switching to Metropolis Hastings.")
-    GERGM_Object@estimation_method = "Metropolis"
-  }
-
-  # Flag if Metropolis is specified but Gibbs is OK
-  if (GERGM_Object@estimation_method == "Metropolis" & sum(GERGM_Object@weights != 1) == 0) {
-    cat("\nAll statistics have second order derivative = 0. Consider switching to Gibbs for speed.\n\n")
-    # method = "Gibbs"
-  }
-
 
   # Estimation if a transformation is needed
   if (length(GERGM_Object@data_transformation) > 0) {
-    num.theta <- length(which(GERGM_Object@stats_to_use > 0))
+    num.theta <- length(GERGM_Object@stats_to_use)
     gpar <- list()
 
     # initialize gpar for lambda/beta optimization
-    if (GERGM_Object@beta_correlation_model) {
-      beta <- rep(0, dim(GERGM_Object@data_transformation)[3])
-      phi <- 1
-      gpar$par <- c(beta, phi)
-    } else {
+    
       gpar$par <- c(mean(c(GERGM_Object@network)),
                     rep(0, dim(GERGM_Object@data_transformation)[3] - 1),
                     log(sd(c(GERGM_Object@network))))
-    }
+    
     theta <- list()
     theta$par <- rep(0, num.theta)
     num.nodes <- nrow(GERGM_Object@num_nodes)
@@ -69,16 +48,12 @@ Estimate_GERGM <- function(formula_object,
           theta = theta,
           together = GERGM_Object@downweight_statistics_together,
           verbose = verbose,
-          net = net,
+          net = GERGM_Object@network,
           GERGM_Object = GERGM_Object)
 
         GERGM_Object <- updates$GERGM_Object
         gpar.new <- updates$gpar.new
         gpar.std.errors <- updates$gpar.std.errors
-
-        num.nodes <- GERGM_Object@num_nodes
-        triples <- t(combn(1:num.nodes, 3))
-        pairs <- t(combn(1:num.nodes, 2))
 
         # get MPLE thetas
         MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
@@ -91,18 +66,27 @@ Estimate_GERGM <- function(formula_object,
         statistics <- MPLE_Results$statistics
         init.statistics <- MPLE_Results$init.statistics
 
+        if (GERGM_Object@covariate_terms_only) {
+          cat("Forcing edges parameter to zero since it was not specified...\n")
+          theta.new$par <- 0
+          statistics <- init.statistics
+        }
+
         if (verbose) {
           cat("theta.new", theta.new$par, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("theta.new", theta.new$par, "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,
+          paste("theta.new", theta.new$par, "\n"))
         if (verbose) {
           cat("theta", theta$par, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("theta", theta$par, "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,
+          paste("theta", theta$par, "\n"))
         if (verbose) {
           cat("statistics", GERGM_Object@stats_to_use, "\n")
         }
-        GERGM_Object <- store_console_output(GERGM_Object,paste("statistics", GERGM_Object@stats_to_use, "\n"))
+        GERGM_Object <- store_console_output(GERGM_Object,
+          paste("statistics", GERGM_Object@stats_to_use, "\n"))
 
         temp <- calculate_standard_errors(hessian = MPLE_Results$hessian,
                                           GERGM_Object = GERGM_Object)
@@ -112,6 +96,10 @@ Estimate_GERGM <- function(formula_object,
         print(theta.new$par)
         GERGM_Object@theta.par <- theta.new$par
 
+        if (GERGM_Object@covariate_terms_only) {
+          theta.std.errors <- 0.00001
+        }
+
         if (i > 1) {
           # Stop if lambda and theta estimates converge
           p.value1 <- rep(0, length(theta$par))
@@ -120,39 +108,46 @@ Estimate_GERGM <- function(formula_object,
           count2 <- rep(0, length(gpar$par))
           for (i in 1:length(theta$par)) {
             #two sided z test
-            p.value1[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
+            p.value1[i] <- 2 * pnorm(-abs((theta.new$par[i] -
+                                           theta$par[i]) / theta.std.errors[i]))
             #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
             #if we reject any of the tests then convergence has not been reached!
             if (p.value1[i] < tolerance) {count1[i] = 1}
           }
           for (i in 1:length(gpar$par)) {
             #two sided z test
-            p.value2[i] <- 2*pnorm(-abs((gpar.new$par[i] - gpar$par[i])/gpar.std.errors[i]))
+            p.value2[i] <- 2 * pnorm(-abs((gpar.new$par[i] -
+                                           gpar$par[i]) / gpar.std.errors[i]))
             #if we reject any of the tests then convergence has not been reached!
             if (p.value2[i] < tolerance) {count2[i] = 1}
           }
           if (verbose) {
             cat("Theta p-values", "\n")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,paste("Theta p.values", "\n"))
+          GERGM_Object <- store_console_output(GERGM_Object,
+                                               paste("Theta p.values", "\n"))
           if (verbose) {
             cat(p.value1, "\n")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value1,collapse = " "))
+          GERGM_Object <- store_console_output(GERGM_Object,
+                                               paste0(p.value1,collapse = " "))
           if (verbose) {
             cat("Lambda p-values", "\n")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda p.values", "\n"))
+          GERGM_Object <- store_console_output(GERGM_Object,
+                                               paste("Lambda p.values", "\n"))
           if (verbose) {
             cat(p.value2, "\n")
           }
-          GERGM_Object <- store_console_output(GERGM_Object,paste0(p.value2,collapse = " "))
+          GERGM_Object <- store_console_output(GERGM_Object,
+                                               paste0(p.value2,collapse = " "))
           if (sum(count1) + sum(count2) == 0) {
             message("Theta parameter estimates have converged...")
             if (force_x_lambda_updates > i) {
               cat("Forcing",force_x_lambda_updates,"lambda updates...\n")
             } else {
-              GERGM_Object <- store_console_output(GERGM_Object,"Parameter estimates have converged")
+              GERGM_Object <- store_console_output(GERGM_Object,
+                "Parameter estimates have converged")
               GERGM_Object@theta_estimation_converged <- TRUE
               GERGM_Object@lambda_estimation_converged <- TRUE
               theta <- theta.new
@@ -173,71 +168,65 @@ Estimate_GERGM <- function(formula_object,
           theta = theta,
           together = GERGM_Object@downweight_statistics_together,
           verbose = verbose,
-          net = net,
+          net = GERGM_Object@network,
           GERGM_Object = GERGM_Object)
 
         GERGM_Object <- updates$GERGM_Object
         gpar.new <- updates$gpar.new
         gpar.std.errors <- updates$gpar.std.errors
 
-        num.nodes <- GERGM_Object@num_nodes
-        triples <- t(combn(1:num.nodes, 3))
-        pairs <- t(combn(1:num.nodes, 2))
+        if (GERGM_Object@covariate_terms_only) {
+          theta.new <- list()
+          theta.new$par <- 0
+          theta.std.errors <- 0.00001
+        } else {
+          # Estimate theta
+          ret_list <- MCMCMLE(
+            mc.num.iterations = mc.num.iterations,
+            theta = theta$par,
+            tolerance = tolerance,
+            seed2 = seed,
+            possible.stats = possible.stats,
+            GERGM_Object = GERGM_Object,
+            force_x_theta_updates = force_x_theta_updates,
+            verbose = verbose,
+            outter_iteration_number = i,
+            stop_for_degeneracy = stop_for_degeneracy)
 
-        # Estimate theta
-        ret_list <- MCMCMLE(
-          mc.num.iterations = mc.num.iterations,
-          theta = theta$par,
-          tolerance = tolerance,
-          seed2 = seed,
-          possible.stats = possible.stats,
-          GERGM_Object = GERGM_Object,
-          force_x_theta_updates = force_x_theta_updates,
-          verbose = verbose)
+          if (GERGM_Object@using_slackr_integration) {
+            time <- Sys.time()
+            message <- paste("Theta parameter estimates converged at:",
+                             toString(time))
+            slackr::slackr_bot(
+              message,
+              channel = GERGM_Object@slackr_integration_list$channel,
+              username = GERGM_Object@slackr_integration_list$model_name,
+              incoming_webhook_url = GERGM_Object@slackr_integration_list$incoming_webhook_url)
+          }
 
-        theta.new <- ret_list[[1]]
-        GERGM_Object <- ret_list[[2]]
+          theta.new <- ret_list[[1]]
+          GERGM_Object <- ret_list[[2]]
 
-        # Calculate standard errors
-        temp <- calculate_standard_errors(hessian = theta.new$hessian,
-                                          GERGM_Object = GERGM_Object)
-        theta.std.errors <- temp$std_errors
-        GERGM_Object <- temp$GERGM_Object
-        # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
+          # Calculate standard errors
+          temp <- calculate_standard_errors(hessian = theta.new$hessian,
+                                            GERGM_Object = GERGM_Object)
+          theta.std.errors <- temp$std_errors
+          GERGM_Object <- temp$GERGM_Object
+        }
 
         # Stop if lambda and theta estimates converge.
         # Convergence criterion is based on individual z-tests for each estimate
-        # p.value1 <- rep(0,length(theta$par))
-        # count1 <- rep(0, length(theta$par))
         p.value2 <- rep(0, length(gpar$par))
         count2 <- rep(0, length(gpar$par))
-        # for (i in 1:length(theta$par)) {
-        #   #two sided z test
-        #   p.value1[i] <- 2*pnorm(-abs((theta.new$par[i] - theta$par[i])/theta.std.errors[i]))
-        #   #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
-        #   #if we reject any of the tests then convergence has not been reached!
-        #   # break if we have hit model degeneracy
-        #   if (GERGM_Object@theta_estimation_converged) {
-        #     if (p.value1[i] < tolerance) {count1[i] = 1}
-        #   }
-        # }
+
         for (i in 1:length(gpar$par)) {
           #two sided z test
-          p.value2[i] <- 2*pnorm(-abs((gpar.new$par[i] - gpar$par[i])/gpar.std.errors[i]))
-          #abs(theta.new$par[i] - theta$par[i]) > bounds[i]
+          p.value2[i] <- 2*pnorm(-abs((gpar.new$par[i] - gpar$par[i]) /
+                                        gpar.std.errors[i]))
           #if we reject any of the tests then convergence has not been reached!
           if (p.value2[i] < tolerance) {count2[i] = 1}
         }
-        # if (verbose) {
-        #   cat("Theta p.values", "\n")
-        # }
-        # GERGM_Object <- store_console_output(GERGM_Object,
-        #                                      paste("Theta p.values", "\n"))
-        # if (verbose) {
-        #   cat(p.value1, "\n")
-        # }
-        # GERGM_Object <- store_console_output(GERGM_Object,
-        #                                      paste0(p.value1,collapse = " "))
+
         if (verbose) {
           cat("Lambda p.values", "\n")
         }
@@ -249,7 +238,19 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,
                                              paste0(p.value2,collapse = " "))
 
-        # if (sum(count1) + sum(count2) == 0) {
+        if (GERGM_Object@using_slackr_integration) {
+          time <- Sys.time()
+          message <- paste("Lambda parameter estimate p-values at:",
+                           toString(time))
+          p_values <- paste(round(p.value2,3))
+          slackr::slackr_bot(
+            message,
+            p_values,
+            channel = GERGM_Object@slackr_integration_list$channel,
+            username = GERGM_Object@slackr_integration_list$model_name,
+            incoming_webhook_url = GERGM_Object@slackr_integration_list$incoming_webhook_url)
+        }
+
         if (sum(count2) == 0) {
           message("Lambda parameter estimates have converged...")
           if (force_x_lambda_updates > i) {
@@ -270,7 +271,7 @@ Estimate_GERGM <- function(formula_object,
     }
     theta <- t(as.matrix(theta$par))
     theta <- rbind(theta, theta.std.errors)
-    colnames(theta) <- rhs.formula
+    colnames(theta) <- GERGM_Object@theta_names
     rownames(theta) <- c("est", "se")
     theta <- as.data.frame(theta)
     lambda <- as.numeric(t(as.matrix(gpar$par)))
@@ -293,7 +294,8 @@ Estimate_GERGM <- function(formula_object,
       if (verbose) {
         cat("Estimating Theta via MPLE... \n")
       }
-      GERGM_Object <- store_console_output(GERGM_Object, "Estimating Theta via MPLE... \n")
+      GERGM_Object <- store_console_output(GERGM_Object,
+                                           "Estimating Theta via MPLE... \n")
       # get MPLE thetas
       MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
                                verbose = verbose,
@@ -305,8 +307,9 @@ Estimate_GERGM <- function(formula_object,
       statistics <- MPLE_Results$statistics
       init.statistics <- MPLE_Results$init.statistics
 
-      #print(theta.init)
-      GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ", theta.init$par, "\n"))
+      GERGM_Object <- store_console_output(GERGM_Object,paste("\nMPLE Thetas: ",
+                                                              theta.init$par,
+                                                              "\n"))
       theta <- theta.init
       lambda <- as.data.frame(0)
 
@@ -314,7 +317,6 @@ Estimate_GERGM <- function(formula_object,
                                         GERGM_Object = GERGM_Object)
       theta.std.errors <- temp$std_errors
       GERGM_Object <- temp$GERGM_Object
-      # theta.std.errors <- 1 / sqrt(abs(diag(theta.init$hessian)))
       GERGM_Object@theta.par <- theta.init$par
     }
 
@@ -327,7 +329,8 @@ Estimate_GERGM <- function(formula_object,
         possible.stats = possible.stats,
         GERGM_Object = GERGM_Object,
         force_x_theta_updates = force_x_theta_updates,
-        verbose = verbose)
+        verbose = verbose,
+        stop_for_degeneracy = stop_for_degeneracy)
 
       theta.new <- ret_list[[1]]
       GERGM_Object <- ret_list[[2]]
@@ -336,14 +339,13 @@ Estimate_GERGM <- function(formula_object,
                                         GERGM_Object = GERGM_Object)
       theta.std.errors <- temp$std_errors
       GERGM_Object <- temp$GERGM_Object
-      # theta.std.errors <- 1 / sqrt(abs(diag(theta.new$hessian)))
       theta <- theta.new
       lambda <- as.data.frame(0)
     }
   }
   theta <- t(as.matrix(theta$par))
   theta <- rbind(theta, theta.std.errors)
-  colnames(theta) <- rhs.formula
+  colnames(theta) <- GERGM_Object@theta_names
   rownames(theta) <- c("est", "se")
   theta <- as.data.frame(theta)
   GERGM_Object@theta.coef <- theta

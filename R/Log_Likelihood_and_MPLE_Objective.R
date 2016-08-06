@@ -1,3 +1,4 @@
+
 # log likelihood
 log.l <- function(thetas,
                   alpha,
@@ -18,29 +19,13 @@ log.l <- function(thetas,
     z <- hsnet %*% (theta - ltheta)
   }
 
-  if(GERGM_Object@is_correlation_network){
-    #this will calculate the h statistics on the original network as desired
-    temp <- h.corr(possible.stats,
-                   alpha,
-                   theta = theta,
-                   together = together,
-                   GERGM_Object)[1, ]
-  }else{
-    dir <- TRUE
-    if(!GERGM_Object@directed_network){
-      dir <- FALSE
-    }
-    num.nodes <- nrow(GERGM_Object@bounded.network)
-    triples <- t(combn(1:num.nodes, 3))
-    temp <- h2(net = GERGM_Object@bounded.network,
-       triples = triples,
-       statistics = GERGM_Object@stats_to_use,
-       alphas = GERGM_Object@weights,
-       together = together,
-       directed = dir)
-  }
+    temp <- calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = FALSE,
+      use_constrained_network = TRUE)
   ret <- rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z))))
-  #print(ret)
   return(ret)
 }
 
@@ -82,15 +67,15 @@ llg <- function(par,
     last_term <- sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, Inf))) +
       sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, Inf)))
   }
-  num.nodes <- nrow(net2)
-  triples <- t(combn(1:num.nodes, 3))
 
   log.li <- rbind(theta) %*%
-    h2(net2,
-       triples = triples,
-       statistics = statistics,
-       alphas = alphas,
-       together = together) +
+    calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = FALSE,
+      use_constrained_network = TRUE,
+      network = net2) +
     last_term
   return(as.numeric(log.li))
 }
@@ -160,24 +145,27 @@ mple_weighted <- function(GERGM_Object,
   num_nodes <- nrow(net)
   triples = t(combn(1:num_nodes, 3))
   pairs <- t(combn(1:num_nodes, 2))
-  if (is.null(prev_ests)) {
-    xy <- net2xy(net,
-                 statistics,
-                 directed = GERGM_Object@directed_network,
-                 alphas = rep(1, length(possible.stats)),
-                 together = 1)
-    x <- xy$x
-    y <- xy$y
-    # why do we select this initialization
-    est <- coef(lm(y ~ x - 1))
-  } else {
-    est <- prev_ests
-  }
 
+  # we are removing this for now:
+  # if (is.null(prev_ests)) {
+  #   xy <- net2xy(net,
+  #                statistics,
+  #                directed = GERGM_Object@directed_network,
+  #                alphas = rep(1, length(possible.stats)),
+  #                together = 1)
+  #   x <- xy$x
+  #   y <- xy$y
+  #   # why do we select this initialization
+  #   est <- coef(lm(y ~ x - 1))
+  # } else {
+  #   est <- prev_ests
+  # }
+
+  est <- prev_ests
   ests <- NULL
   if (verbose) {
     ests <- optim(par = est,
-                  fast_pl_weighted,
+                  extended_fast_pl_weighted,
                   triples = triples,
                   pairs = pairs,
                   GERGM_Object = GERGM_Object,
@@ -186,7 +174,7 @@ mple_weighted <- function(GERGM_Object,
                   control = list(fnscale = -1, trace = 6))
   } else {
     ests <- optim(par = est,
-                  fast_pl_weighted,
+                  extended_fast_pl_weighted,
                   triples = triples,
                   pairs = pairs,
                   GERGM_Object = GERGM_Object,
@@ -197,112 +185,7 @@ mple_weighted <- function(GERGM_Object,
   return(ests)
 }
 
-integrand <- function(edge_weight, i, j, thetas, triples, GERGM_Object){
-  # change the one edge weight
-  net <- GERGM_Object@bounded.network
-  vals <- rep(0,length(edge_weight))
-  for(k in 1:length(edge_weight)) {
-    net[i,j] <- edge_weight[k]
-    h_statistics <- h2(
-      net,
-      triples = triples,
-      statistics = GERGM_Object@stats_to_use,
-      alphas = GERGM_Object@weights,
-      together = GERGM_Object@downweight_statistics_together)
-    vals[k] <- as.numeric(thetas %*% h_statistics)
-  }
-  return(vals)
-}
-
-log_sum_exp_integrator <- function(i,
-                                   j,
-                                   thetas,
-                                   triples,
-                                   GERGM_Object,
-                                   lower,
-                                   upper,
-                                   tollerance = 0.001) {
-  steps <- 150
-  converged <- FALSE
-  # current_value <- 0
-  while (!converged) {
-    # get the points at which we are evaluating the function
-    points <- seq(from = lower, to = upper, length.out = steps)
-    evaluations <- rep(0, steps)
-    # evaluate at each point
-    for (k in 1:steps) {
-      evaluations[k] <- integrand(points[k], i, j, thetas, triples, GERGM_Object)
-    }
-
-    # now do low-sum-exp trick
-    max_val <- max(evaluations)
-    evaluations <- evaluations - max_val
-    new_value <- max_val + log(sum(exp(evaluations))/steps)
-
-    # for now , 150 steps should be good enough
-    return(new_value)
-    # if (abs(new_value - current_value) < tollerance) {
-    #   return(new_value)
-    # } else {
-    #   current_value <- new_value
-    #   steps <- steps + 20
-    # }
-  }
-
-}
-
-# performs the integration
-# integrator <- function(edge_value ,i, j, thetas, triples, GERGM_Object){
-#   result <- stats::integrate(f = integrand,
-#                              lower = 0,
-#                              upper = edge_value,
-#                              i = i,
-#                              j = j,
-#                              thetas = thetas,
-#                              triples = triples,
-#                              GERGM_Object = GERGM_Object)$value
-#
-#   result2 <- stats::integrate(f = integrand,
-#                              lower = edge_value,
-#                              upper = 1,
-#                              i = i,
-#                              j = j,
-#                              thetas = thetas,
-#                              triples = triples,
-#                              GERGM_Object = GERGM_Object)$value
-#   return(result + result2)
-# }
-
-# pseudolikelihood given theta#
-pl_weighted <- function(theta, triples, GERGM_Object) {
-  cat("Calculating weighted pseudo-likelihood objective. Theta = ",theta,"\n")
-  net <- GERGM_Object@bounded.network
-  num_nodes <- nrow(net)
-  sum_term <- 0
-
-  printseq <- round(seq(1,num_nodes*(num_nodes - 1), length.out = 11)[2:11],0)
-  printcounter <- 1
-  count <- 1
-  for (i in 1:num_nodes) {
-    for (j in 1:num_nodes) {
-      if (i != j) {
-        if (count == printseq[printcounter]) {
-          cat(".")
-          printcounter <- printcounter + 1
-        }
-        # cat("Currently working on edge",i,",",j,"\n")
-        temp1 <- integrand(net[i,j], i, j, theta, triples, GERGM_Object)
-        temp2 <- log_sum_exp_integrator(i = i,j = j,thetas = theta,
-          triples = triples, GERGM_Object = GERGM_Object,lower = 0,upper = 1)
-        sum_term <- sum_term + temp1 - temp2
-        count <- count + 1
-      }
-    }
-  }
-  cat("\nCalculation complete, objective is:",sum_term,"\n")
-  return(sum_term)
-}
-
+# this version is now deprecated
 fast_pl_weighted <- function(theta,
                              triples,
                              pairs,
@@ -334,7 +217,58 @@ fast_pl_weighted <- function(theta,
                             pairs - 1,
                             GERGM_Object@weights,
                             dw,
-                            integration_interval)
+                            integration_interval,
+                            GERGM_Object@parallel)
+  cat("Calculation complete, objective is:",objective,"\n\n")
+  return(objective)
+}
+
+# current version that works with all of our flexible new statistics
+extended_fast_pl_weighted <- function(theta,
+                             triples,
+                             pairs,
+                             GERGM_Object,
+                             lower = 0,
+                             upper = 1,
+                             steps = 150){
+
+  cat("Weighted MPLE Theta = ",theta,"\n")
+  current_network <- GERGM_Object@bounded.network
+  number_of_nodes <- nrow(current_network)
+
+
+  dw <- as.numeric(GERGM_Object@downweight_statistics_together)
+
+  integration_interval <- seq(from = lower,
+                              to = upper,
+                              length.out = steps)
+
+  sad <- GERGM_Object@statistic_auxiliary_data
+
+  # here we are only going to work with our actual thetas/statistics, not the full suite.
+  selected_rows_matrix <- sad$specified_selected_rows_matrix
+  rows_to_use <- sad$specified_rows_to_use
+  base_statistics_to_save <- sad$specified_base_statistics_to_save
+  base_statistic_alphas <- sad$specified_base_statistic_alphas
+  num_non_base_statistics <- sum(GERGM_Object@non_base_statistic_indicator)
+
+  objective <- extended_weighted_mple_objective(
+    number_of_nodes,
+    GERGM_Object@stats_to_use - 1,
+    current_network,
+    triples - 1,
+    pairs - 1,
+    selected_rows_matrix - 1,
+    rows_to_use - 1,
+    base_statistics_to_save - 1,
+    base_statistic_alphas,
+    num_non_base_statistics,
+    GERGM_Object@non_base_statistic_indicator,
+    theta,
+    GERGM_Object@weights,
+    dw,
+    integration_interval,
+    GERGM_Object@parallel)
   cat("Calculation complete, objective is:",objective,"\n\n")
   return(objective)
 }

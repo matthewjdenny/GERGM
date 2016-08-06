@@ -199,12 +199,13 @@ parse_formula_term <- function(term,
                       threshold = 0,
                       levels = NA,
                       same = NA,
+                      method = "regression",
                       parens_no_arg = NA,
                       network_matrix_object = NA,
                       num_levels = NA,
                       base_index = NA)
   possible_fields <- c("term","alpha","covariate", "base", "network",
-                       "threshold", "levels", "same", "")
+                       "threshold", "levels", "same", "method", "")
   # if there is an argument to the term -- this will be a lazy implementation
   # where if you do not get the name right, it will simply not be set and a
   # warning will be thrown.

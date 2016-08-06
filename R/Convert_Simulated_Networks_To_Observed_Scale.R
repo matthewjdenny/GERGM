@@ -43,17 +43,19 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
           }
           diag(GERGM_Object@MCMC_output$Networks[,,i]) <- 0
         }
-        GERGM_Object@MCMC_output$Statistics[i,] <- h2(
-          net = GERGM_Object@MCMC_output$Networks[,,i],
-          triples = triples,
-          statistics = stats,
-          alphas = NULL,
-          together = 1,
-          directed = TRUE)
+        GERGM_Object@MCMC_output$Statistics[i,] <- calculate_h_statistics(
+          GERGM_Object,
+          GERGM_Object@statistic_auxiliary_data,
+          all_weights_are_one = FALSE,
+          calculate_all_statistics = TRUE,
+          use_constrained_network = TRUE,
+          network = GERGM_Object@MCMC_output$Networks[,,i])
       }
+
   }else{
-      # if we did not do a transformation (only structural terms)
+	  # if we did not do a transformation (only structural terms)
       cat("Currently not implemented for non-transformed networks.")
+    
   }
   return(GERGM_Object)
 }

@@ -22,8 +22,6 @@ Gibbs_Sampler <- function(GERGM_Object,
     num.nodes <- GERGM_Object@num_nodes
   }
 
-  statistics <- GERGM_Object@stats_to_use
-
   sims <- num.draws * thin
   netarray <- array(NA, dim = c(num.nodes, num.nodes, num.draws + 1))
   if (is.null(start))
@@ -35,14 +33,14 @@ Gibbs_Sampler <- function(GERGM_Object,
     if (directed == TRUE) {
       for (i in 1:num.nodes) {
         for (j in (1:num.nodes)[-i]) {
-          net[i, j] <- rtexp(1, t(theta) %*% dh(net, statistics, i, j))
+          net[i, j] <- rtexp(1, t(theta) %*% ex_dh(GERGM_Object, i, j, net))
         }
       }
     }
     if (directed == FALSE) {
       for (i in 2:num.nodes) {
         for (j in (1:(i - 1))) {
-          net[i, j] <- rtexp(1, t(theta) %*% dh(net, statistics, i, j))
+          net[i, j] <- rtexp(1, t(theta) %*% ex_dh(GERGM_Object, i, j, net))
         }
       }
     }

@@ -1,15 +1,13 @@
-#' GERGM: A package for estimating and diagnosing Generalized Exponential Random
-#' Graph Models
+#' GGERGM: Generalized Exponential Random Graph Models
 #'
 #' @section GERGM functions:
 #' To use this package, first load in the network you wish to use as a (square)
 #' matrix, following the example provided below. You may then use the gergm()
 #' function to estimate a model using any combination of the following statistics:
-#' "out2stars", "in2stars", "ctriads", "mutual", "ttriads",
+#' "out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges"
 #' "absdiff(covariate)", "edgecov(covariate)", "sender(covariate)",
 #' "reciever(covariate)", "nodematch(covariate)", "nodemix(covariate)",
-#' "netcov(network_covariate)". An intercept term is automatically included by
-#' default, but may be excluded. The gergm() function provides all of the basic
+#' "netcov(network_covariate)". The gergm() function provides all of the basic
 #' estimation and diagnostic functionality and the parameters of this function
 #' can be querried by typing ?gergm into the R console. If you wish to access
 #' additional fit and degeneracy diagnostic functionaly, the GOF(),
@@ -34,13 +32,13 @@ NULL
 #' @importFrom grDevices dev.off gray pdf rgb colorRampPalette
 NULL
 
-#' @importFrom graphics boxplot legend lines par plot text axis
+#' @importFrom graphics boxplot legend lines par plot text axis plot.new layout abline
 NULL
 
 #' @import plyr
 NULL
 
-#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test cor dbeta pbeta qbeta
+#' @importFrom  stats as.formula dgamma dt lm optim pgamma pnorm pt qgamma qnorm qt rnorm runif sd t.test cor dbeta pbeta qbeta density
 NULL
 
 #' @importFrom utils combn write.table
@@ -48,5 +46,6 @@ NULL
 
 #' @useDynLib GERGM
 #' @importFrom Rcpp sourceCpp
+#' @importFrom RcppParallel RcppParallelLibs
 NULL
 #> NULL

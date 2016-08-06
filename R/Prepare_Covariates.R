@@ -4,10 +4,7 @@ Prepare_Network_and_Covariates <- function(formula,
                                     possible_network_terms,
                                     covariate_data = NULL,
                                     normalization_type = c("log","division"),
-                                    is_correlation_network = FALSE,
-                                    is_directed = FALSE,
-                                    beta_correlation_model = FALSE
-                                    ){
+                                    is_directed = FALSE){
 
   node_covariates_list <- Parse_Formula_Object(formula = formula,
      possible_structural_terms = possible_structural_terms,
@@ -343,15 +340,13 @@ Prepare_Network_and_Covariates <- function(formula,
   }
 
   if (!node_covariates_provided & !network_covariates_provided) {
+    cat("Normalizing without covariate transformation...\n")
     # If no covariates were provided, then make sure the network lives on the
     # [0,1] interval and standardize it by one of the provided methods if it
     # does not. Then return the network and no covariates.
 
     # deal with the case where we have a correlation matrix provided
-    if (is_correlation_network | beta_correlation_model) {
-      network <- raw_network
-      diag(network) <- 1
-    } else {
+
       if (min(raw_network) < 0) {
         raw_network <- raw_network - min(raw_network)
       }
@@ -370,7 +365,7 @@ Prepare_Network_and_Covariates <- function(formula,
       } else {
         network <- raw_network
       }
-    }
+
     cat("Transformed Network...\n")
     print(round(network,3))
     return(list(network = network))
