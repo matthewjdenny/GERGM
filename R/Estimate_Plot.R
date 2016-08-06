@@ -61,11 +61,20 @@ Estimate_Plot <- function(
 
     # Plot
     if (length(GERGM_Object@lambda.coef[,1]) > 0 &
-        (coefficients_to_plot == "covariate" |
-         coefficients_to_plot == "both")) {
+        coefficients_to_plot == "covariate") {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
         ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
         ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
+    } else if (length(GERGM_Object@lambda.coef[,1]) > 0 &
+                coefficients_to_plot == "both") {
+      zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+        ggplot2::theme(axis.text = ggplot2::element_text(size = text_size,
+          angle = 90, hjust = 1)) +
+        ggplot2::facet_grid(~ Coefficient_Type,
+                            scales = "free",
+                            space = "free_x")
+        # ggplot2::facet_wrap(~ Coefficient_Type, ncol = 1)
     } else {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
         ggplot2::scale_color_manual(values = UMASS_BLUE) +
@@ -92,9 +101,19 @@ Estimate_Plot <- function(
         ggplot2::theme(legend.position = "none") +
         ggplot2::ylab("Normalized Coefficient")
     }else{
-      zp1 <- zp1  + ggplot2::theme_bw() +
-        ggplot2::coord_flip() +
-        ggplot2::theme(legend.position = "none")
+      if (length(GERGM_Object@lambda.coef[,1]) > 0 &
+          coefficients_to_plot == "both") {
+        zp1 <- zp1  + ggplot2::theme_bw() +
+          ggplot2::theme(legend.position = "none",
+                         axis.text = ggplot2::element_text(size = text_size,
+                                                      angle = 90, hjust = 1),
+                         strip.background = ggplot2::element_blank(),
+                         strip.text = ggplot2::element_blank())
+      } else {
+        zp1 <- zp1  + ggplot2::theme_bw() +
+          ggplot2::coord_flip() +
+          ggplot2::theme(legend.position = "none")
+      }
     }
     print(zp1)
 
