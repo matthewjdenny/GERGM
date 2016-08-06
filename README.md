@@ -142,7 +142,7 @@ Following on from the example above, we can also predict individual edge values,
 	                                             xlim = c(-10,10),
 	                                             ylim = c(-10,10))
 
-### Parallel GERGM Specification Fitting (Currently Buggy)
+### Parallel GERGM Specification Fitting 
     
 There is also now functionality to run multiple `gergm()` model specifications in parallel using the `parallel_gergm()` function. This can come in very handy if the user wishes to specify the same model but for a large number of networks, or multiple models for the same network. Another useful (experimental) feature that can now be turned out is `hyperparameter_optimization = TRUE`, which will seek to automatically optimize the number of networks simulated during MCMC, the burnin, the Metropolis Hastings proposal variance and will seek to address any issues with model degeneracy that arise during estimation by reducing exponential weights if using Metropolis Hastings. This feature is generally meant to make it easier and less time intensive to find a model that fits the data well.  
 
