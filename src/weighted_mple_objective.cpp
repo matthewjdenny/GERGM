@@ -1,6 +1,8 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::depends(BH)]]
+// [[Rcpp::depends(RcppParallel)]]
 
+#include <RcppParallel.h>
 #include <RcppArmadillo.h>
 
 using namespace Rcpp;
@@ -295,6 +297,131 @@ namespace wobj {
     return to_return;
   };
 
+
+  // ***********************************************************************//
+  //     Constructor for Parallel Token Topic Distribution Generator        //
+  // ***********************************************************************//
+
+  // create a RcppParallel::Worker struct that we can use to fill in the
+  // entries in our token topic distribution in parallel
+  struct Parallel_Integrand : public RcppParallel::Worker {
+
+    // Instantiate all of our input variables which will then be initialized
+    // via the Function initializer below. This is how the struct makes sure
+    // that everything has the right type
+    arma::mat current_network;
+    arma::vec statistics_to_use;
+    arma::vec thetas;
+    arma::mat triples;
+    arma::mat pairs;
+    arma::vec alphas;
+    int together;
+    int sender;
+    int recipient;
+    arma::vec integration_interval;
+
+    // We need to initialize the output vector to an RcppParallel::RVector
+    // vector (which is compatible with an Rcpp::NumericVector but not an
+    // arma::vec). This is what will be implicitly returned
+    RcppParallel::RVector<double> return_dist;
+
+    // Function initializer
+    Parallel_Integrand(arma::mat current_network,
+                       arma::vec statistics_to_use,
+                       arma::vec thetas,
+                       arma::mat triples,
+                       arma::mat pairs,
+                       arma::vec alphas,
+                       int together,
+                       int sender,
+                       int recipient,
+                       arma::vec integration_interval,
+                       Rcpp::NumericVector return_dist)
+      : current_network(current_network),
+        statistics_to_use(statistics_to_use),
+        thetas(thetas),
+        triples(triples),
+        pairs(pairs),
+        alphas(alphas),
+        together(together),
+        sender(sender),
+        recipient(recipient),
+        integration_interval(integration_interval),
+        return_dist(return_dist) {}
+
+    // function call operator that works for the specified range (begin/end)
+    void operator()(std::size_t begin, std::size_t end) {
+      for (std::size_t i = begin; i < end; i++) {
+        double integ = wobj::integrand(current_network,
+                                     statistics_to_use,
+                                     thetas,
+                                     triples,
+                                     pairs,
+                                     alphas,
+                                     together,
+                                     sender,
+                                     recipient,
+                                     integration_interval[i]);
+        return_dist[i] = integ;
+      }
+    }
+  };
+
+  // ***********************************************************************//
+  //             Calculate token topic probabilities in parallel            //
+  // ***********************************************************************//
+  arma::vec parallel_integration(
+      arma::mat current_network,
+      arma::vec statistics_to_use,
+      arma::vec thetas,
+      arma::mat triples,
+      arma::mat pairs,
+      arma::vec alphas,
+      int together,
+      int sender,
+      int recipient,
+      arma::vec integration_interval) {
+
+    int innterval_size = integration_interval.n_elem;
+    // the vector that will be operated on by RcppParallel::parallelFor.
+    // This vector must be an Rcpp::NumericVector or the parallelization
+    // will not work. THis makes everything slower, but I have not found an
+    // alternative
+    Rcpp::NumericVector output_vec(innterval_size);
+    // Once we have the token topic distribution back from the parallel for
+    // function, we will put it in to an arma::vec of the same length.
+    arma::vec return_vec = arma::zeros(innterval_size);
+
+    // create the RcppParallel::Worker function which will iterate over the
+    // distribution
+    Parallel_Integrand Parallel_Integrand(
+        current_network,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        sender,
+        recipient,
+        integration_interval,
+        output_vec);
+
+    // Call our Parallel_Token_Topic_Distribution with parallelFor
+    RcppParallel::parallelFor(0,
+                              innterval_size,
+                              Parallel_Integrand);
+
+    // Take the NumericVector output and put it in the arma::vec to actually
+    // return
+    for (int i = 0; i < innterval_size; i++) {
+      // write to output vector
+      return_vec[i] = output_vec[i];
+    }
+
+    return return_vec;
+  }
+
   double log_sum_exp_integrator (arma::mat current_network,
                                  arma::vec statistics_to_use,
                                  arma::vec thetas,
@@ -304,22 +431,37 @@ namespace wobj {
                                  int together,
                                  int sender,
                                  int recipient,
-                                 arma::vec integration_interval) {
+                                 arma::vec integration_interval,
+                                 bool parallel) {
 
     int num_evaluations = integration_interval.n_elem;
     arma::vec integral_evaluations = arma::zeros(num_evaluations);
 
-    for (int i = 0; i < num_evaluations; ++i) {
-      integral_evaluations[i] = integrand(current_network,
-                statistics_to_use,
-                thetas,
-                triples,
-                pairs,
-                alphas,
-                together,
-                sender,
-                recipient,
-                integration_interval[i]);
+    if (parallel) {
+      integral_evaluations = parallel_integration(
+        current_network,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        sender,
+        recipient,
+        integration_interval);
+    } else {
+      for (int i = 0; i < num_evaluations; ++i) {
+        integral_evaluations[i] = integrand(current_network,
+                                            statistics_to_use,
+                                            thetas,
+                                            triples,
+                                            pairs,
+                                            alphas,
+                                            together,
+                                            sender,
+                                            recipient,
+                                            integration_interval[i]);
+      }
     }
 
     // find the max on the interval
@@ -357,7 +499,8 @@ double weighted_mple_objective ( int number_of_nodes,
                           arma::mat pairs,
                           arma::vec alphas,
                           int together,
-                          arma::vec integration_interval) {
+                          arma::vec integration_interval,
+                          bool parallel) {
 
   double objective = 0;
   // Calculate the
@@ -383,7 +526,8 @@ double weighted_mple_objective ( int number_of_nodes,
                                together,
                                i,
                                j,
-                               integration_interval);
+                               integration_interval,
+                               parallel);
 
       objective += temp1 - temp2;
     }
