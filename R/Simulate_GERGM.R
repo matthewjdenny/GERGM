@@ -3,7 +3,11 @@ Simulate_GERGM <- function(GERGM_Object,
                            coef = GERGM_Object@theta.par,
                            seed1,
 						               possible.stats,
-						               verbose = TRUE) {
+						               verbose = TRUE,
+						               parallel = FALSE,
+						               predict_conditional_edges = FALSE,
+						               i = NULL,
+						               j = NULL) {
   # object: an object of class "gergm"
 
   sample_every <- floor(1/GERGM_Object@thin)
@@ -19,11 +23,7 @@ Simulate_GERGM <- function(GERGM_Object,
   }
 
   # if we are dealing with a correlation network
-  is_correlation_network <- 0
-  if (GERGM_Object@is_correlation_network) {
-    is_correlation_network <- 1
-    undirect_network <- 1
-  }
+
 
   # Gibbs Simulation
   if (GERGM_Object@estimation_method == "Gibbs") {
@@ -37,44 +37,131 @@ Simulate_GERGM <- function(GERGM_Object,
                           directed = TRUE,
                           possible.stats = possible.stats)
     # Calculate the network statistics over all of the simulated networks
-    h.statistics <- t(apply(nets, 3, h2,
-                            triples = triples,
-                            statistics = rep(1, length(possible.stats)),
-                            alphas = rep(1, length(possible.stats)),
-                            together = GERGM_Object@downweight_statistics_together))
+    for(i in 1:dim(nets)[3]) {
+      temp <- calculate_h_statistics(
+        GERGM_Object,
+        GERGM_Object@statistic_auxiliary_data,
+        all_weights_are_one = FALSE,
+        calculate_all_statistics = TRUE,
+        use_constrained_network = TRUE,
+        network = nets[,,i])
+      if (i == 1) {
+        h.statistics <- matrix(0, nrow = dim(nets)[3], ncol = length(temp))
+        h.statistics[i,] <- temp
+      } else {
+        h.statistics[i,] <- temp
+      }
+    }
+
     acceptance.rate <- NULL
+
+    h.statistics <- as.data.frame(h.statistics)
+    colnames(h.statistics) <- GERGM_Object@full_theta_names
   }
 
   # Metropolis Hastings Simulation
   if (GERGM_Object@estimation_method == "Metropolis") {
-    #need to put the thetas into a full length vector for MH function
-    stat.indx <- which(GERGM_Object@stats_to_use > 0)
-    #cat("stat.idx",stat.indx,"\n" )
-    full_thetas <- rep(0, length(GERGM_Object@stats_to_use))
-    for (i in 1:length(thetas)) {
-      full_thetas[stat.indx[i]] <- thetas[i]
-    }
 
-    #cat("Current Theta Estimates:",thetas,"\n")
+    # prepare variables for use with MH sampler
     store <- ceiling((GERGM_Object@number_of_simulations + GERGM_Object@burnin)/sample_every)
     nsim <- GERGM_Object@number_of_simulations + GERGM_Object@burnin
     dw <- as.numeric(GERGM_Object@downweight_statistics_together)
-    samples <- Metropolis_Hastings_Sampler(
-      number_of_iterations = nsim,
-      shape_parameter = GERGM_Object@proposal_variance,
-      number_of_nodes = num.nodes,
-      statistics_to_use = GERGM_Object@stats_to_use,
-      initial_network = GERGM_Object@bounded.network,
-      take_sample_every = sample_every,
-      thetas = full_thetas,
-      triples = triples - 1,
-      pairs = pairs - 1,
-      alphas = GERGM_Object@weights,
-      together = dw,
-      seed = seed1,
-      number_of_samples_to_store = store,
-      using_correlation_network = is_correlation_network,
-      undirect_network = undirect_network)
+
+    # get the statistic auxiliary data list object
+    sad <- GERGM_Object@statistic_auxiliary_data
+    num_non_base_statistics <- sum(GERGM_Object@non_base_statistic_indicator)
+
+    # prepare stochastic MH input
+    num_unique_random_triad_samples <- 100
+    smh <- generate_stochastic_MH_triples_pairs(
+      GERGM_Object@stochastic_MH_proportion,
+      GERGM_Object@use_stochastic_MH,
+      triples = triples,
+      pairs = pairs,
+      samples = num_unique_random_triad_samples)
+
+    # extract relevant quantites
+    random_triad_samples <- smh$random_triples
+    random_dyad_samples <- smh$random_pairs
+
+    # do not use the multiplicative factor unless we are using stochastic MH
+    if (GERGM_Object@use_stochastic_MH) {
+      p_ratio_multaplicative_factor <- 1 / GERGM_Object@stochastic_MH_proportion
+    } else {
+      p_ratio_multaplicative_factor <- 1
+    }
+
+    rows_to_use <- sad$specified_rows_to_use - 1
+    for (k in 1:length(rows_to_use)) {
+      rows_to_use[k] <- max(rows_to_use[k], 0)
+    }
+
+    # if we are doing conditional edge prediction, then we only want to simulate
+    # networks with one edge changing, conditional on the rest of the network
+    # which will be fixed.
+    if (predict_conditional_edges) {
+      samples <- Individual_Edge_Conditional_Prediction(
+        number_of_iterations = nsim,
+        shape_parameter = GERGM_Object@proposal_variance,
+        number_of_nodes = num.nodes,
+        statistics_to_use = GERGM_Object@stats_to_use - 1,
+        initial_network = GERGM_Object@bounded.network,
+        take_sample_every = sample_every,
+        thetas = thetas,
+        triples = triples - 1,
+        pairs = pairs - 1,
+        alphas = GERGM_Object@weights,
+        together = dw,
+        seed = seed1,
+        number_of_samples_to_store = store,
+        undirect_network = undirect_network,
+        parallel = parallel,
+        use_selected_rows = sad$specified_selected_rows_matrix - 1,
+        save_statistics_selected_rows_matrix = sad$full_selected_rows_matrix - 1,
+        rows_to_use = rows_to_use,
+        base_statistics_to_save = sad$full_base_statistics_to_save - 1,
+        base_statistic_alphas = sad$full_base_statistic_alphas,
+        num_non_base_statistics = num_non_base_statistics,
+        non_base_statistic_indicator = GERGM_Object@non_base_statistic_indicator,
+        p_ratio_multaplicative_factor = p_ratio_multaplicative_factor,
+        random_triad_sample_list = random_triad_samples,
+        random_dyad_sample_list = random_dyad_samples,
+        use_triad_sampling = GERGM_Object@use_stochastic_MH,
+        num_unique_random_triad_samples = num_unique_random_triad_samples,
+        i = i - 1,
+        j = j - 1)
+    } else {
+      # take samples using MH
+      samples <- Extended_Metropolis_Hastings_Sampler(
+        number_of_iterations = nsim,
+        shape_parameter = GERGM_Object@proposal_variance,
+        number_of_nodes = num.nodes,
+        statistics_to_use = GERGM_Object@stats_to_use - 1,
+        initial_network = GERGM_Object@bounded.network,
+        take_sample_every = sample_every,
+        thetas = thetas,
+        triples = triples - 1,
+        pairs = pairs - 1,
+        alphas = GERGM_Object@weights,
+        together = dw,
+        seed = seed1,
+        number_of_samples_to_store = store,
+        undirect_network = undirect_network,
+        parallel = parallel,
+        use_selected_rows = sad$specified_selected_rows_matrix - 1,
+        save_statistics_selected_rows_matrix = sad$full_selected_rows_matrix - 1,
+        rows_to_use = rows_to_use,
+        base_statistics_to_save = sad$full_base_statistics_to_save - 1,
+        base_statistic_alphas = sad$full_base_statistic_alphas,
+        num_non_base_statistics = num_non_base_statistics,
+        non_base_statistic_indicator = GERGM_Object@non_base_statistic_indicator,
+        p_ratio_multaplicative_factor = p_ratio_multaplicative_factor,
+        random_triad_sample_list = random_triad_samples,
+        random_dyad_sample_list = random_dyad_samples,
+        use_triad_sampling = GERGM_Object@use_stochastic_MH,
+        num_unique_random_triad_samples = num_unique_random_triad_samples)
+    }
+
     # keep only the networks after the burnin
     start <- floor(GERGM_Object@burnin/sample_every) + 1
     end <- length(samples[[3]][,1])
@@ -132,13 +219,11 @@ Simulate_GERGM <- function(GERGM_Object,
            "\nMean difference between proposed and current network densities:",
            mean(Proposed_Density - Current_Density ),"\n", sep = ""))
 
+    # make them a data frame and give them the correct row names
+    h.statistics <- as.data.frame(h.statistics)
+    colnames(h.statistics) <- GERGM_Object@full_theta_names
   }
-  h.statistics = data.frame(out2stars = h.statistics[, 1],
-                            in2stars = h.statistics[, 2],
-                            ctriads = h.statistics[, 3],
-                            mutual = h.statistics[, 4],
-                            ttriads = h.statistics[, 5],
-                            edges = h.statistics[, 6])
+
 
   # if we are using MH, then return more diagnostics
   if (GERGM_Object@estimation_method == "Metropolis") {

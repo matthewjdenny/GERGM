@@ -31,10 +31,12 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
     cat("--------- START HYPERPARAMETER OPTIMIZATION ---------",
         "\nSimulating",Opt_Prop_Var@number_of_simulations,
         "networks with proposal variance:", Opt_Prop_Var@proposal_variance,"\n")
-    Opt_Prop_Var <- Simulate_GERGM(Opt_Prop_Var,
-                                   seed1 = seed2,
-                                   possible.stats = possible.stats,
-                                   verbose = verbose)
+    Opt_Prop_Var <- Simulate_GERGM(
+      Opt_Prop_Var,
+      seed1 = seed2,
+      possible.stats = possible.stats,
+      verbose = verbose,
+      parallel = GERGM_Object@parallel_statistic_calculation)
     ar <- Opt_Prop_Var@MCMC_output$Acceptance.rate
     cat("Current acceptance rate:", ar,"\n")
     lb <- GERGM_Object@target_accept_rate - acceptable_bounds
@@ -58,7 +60,7 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
           } else {
             # if we had not previously been increasing the porposal variance,
             # continue to make it smaller
-            Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance/10
+            Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance / 10
           }
         }
         # now deal with the case where the accept rate is too high
@@ -100,18 +102,24 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
         change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
         Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance - change
       } else if (ub < ar) {
-        if (fine_grained_optimization) {
-          # if we want to do fine grained optimization, then increase prop var by a
-          # small increment
-          change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
+        # deal with the case where making the proposal variance bigger will not help
+        if (Opt_Prop_Var@proposal_variance > 0.45) {
+          Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
+          FOUND_ACCEPTABLE_PROP_VAR <- TRUE
         } else {
-          if (Opt_Prop_Var@proposal_variance > 0.25) {
-            change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
+          if (fine_grained_optimization) {
+            # if we want to do fine grained optimization, then increase prop var by a
+            # small increment
+            change <- (1/(1 + dampening_counter)) * Opt_Prop_Var@proposal_variance
           } else {
-            change <- (1/(1 + dampening_counter)) * (0.37 - Opt_Prop_Var@proposal_variance)
+            if (Opt_Prop_Var@proposal_variance > 0.25) {
+              change <- (1/(1 + dampening_counter)) * (0.5 - Opt_Prop_Var@proposal_variance)
+            } else {
+              change <- (1/(1 + dampening_counter)) * (0.37 - Opt_Prop_Var@proposal_variance)
+            }
           }
+          Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
         }
-        Opt_Prop_Var@proposal_variance <- Opt_Prop_Var@proposal_variance + change
       } else {
         Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
         FOUND_ACCEPTABLE_PROP_VAR <- TRUE
@@ -120,9 +128,9 @@ Optimize_Proposal_Variance <- function(GERGM_Object,
       dampening_counter <-  dampening_counter + 1
     }
     if (dampening_counter > max_updates) {
+      Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
       cat("Stopping optimization, more iterations will likely not improve results...\n")
       FOUND_ACCEPTABLE_PROP_VAR <- TRUE
-      Acceptable_Proposal_Variance <- Opt_Prop_Var@proposal_variance
     }
   }
 

@@ -29,7 +29,10 @@ theta_grid_search <- function(x,
                                  possible.stats = possible.stats,
                                  verbose = verbose)
 
-  hsn <- GERGM_Object@MCMC_output$Statistics[,which(statistics == 1)]
+  # change due to variable length vector of stats
+  indicies <- GERGM_Object@statistic_auxiliary_data$specified_statistic_indexes_in_full_statistics
+
+  hsn <- GERGM_Object@MCMC_output$Statistics[,indicies]
 
   theta.new <- optim(par = thetas,
                      log.l,

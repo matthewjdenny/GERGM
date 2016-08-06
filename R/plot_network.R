@@ -25,7 +25,10 @@
 #' @param white_background Defaults to FALSE. If TRUE, then network is plotted
 #' on a white background with black lettering.
 #' @param show_legend Logical indicating whether a legend with extremal edge
-#' values should be shown. Defualts to TRUE
+#' values should be shown. Defualts to TRUE.
+#' @param title The title we wish to give our plot.
+#' @param identical_node_positions Logical indicating whether node positions
+#' should be fixed to be the same when comparing networks. Defualts to FALSE.
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)
@@ -41,8 +44,10 @@ plot_network <- function(sociomatrix,
                          comparison_names = NULL,
                          seed = NULL,
                          white_background = FALSE,
-                         show_legend = TRUE
-){
+                         show_legend = TRUE,
+                         title = "",
+                         identical_node_positions = FALSE
+                         ){
 
   if (!is.null(seed)) {
     set.seed(seed)
@@ -85,7 +90,7 @@ plot_network <- function(sociomatrix,
 
     # check optional input
     if (class(comparison_network) != "matrix" &
-        class(comparison_network) != "data.frame") {
+       class(comparison_network) != "data.frame") {
       stop("You must provide the network as a numeric matrix.")
     }
 
@@ -115,7 +120,7 @@ plot_network <- function(sociomatrix,
 
     # create a network object using adjacency matrix with edges removed
     net3 <- igraph::graph.adjacency(temp ,mode="directed",
-                                    weighted=TRUE,diag=FALSE)
+                                   weighted=TRUE,diag=FALSE)
 
     #create layout with Fuchterman Reingold
     layout_c <- igraph::layout_with_fr(net3, weights = igraph::E(net3)$weight)
@@ -161,7 +166,7 @@ plot_network <- function(sociomatrix,
 
   # create a second network object with the un-truncated network
   net2 <- igraph::graph.adjacency(temp2,mode="directed",
-                                  weighted=TRUE,diag=FALSE)
+                                 weighted=TRUE,diag=FALSE)
 
   # get an edgelist
   edgelist <- igraph::get.edgelist(net2)
@@ -180,7 +185,12 @@ plot_network <- function(sociomatrix,
   widths <- seq(0,5,length.out = 50)
 
   if (COMPARISON) {
-    layout_c <- vegan::procrustes(layout, layout_c, scale = F)$Yrot
+    if (identical_node_positions) {
+      # if we are using the same positions, then just make the layouts identical
+      layout_c <- layout
+    } else {
+      layout_c <- vegan::procrustes(layout, layout_c, scale = F)$Yrot
+    }
   }
 
   ##### If we are saving a PDF
@@ -354,13 +364,13 @@ plot_network <- function(sociomatrix,
       if (white_background) {
         par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
-             xlab = "", ylab = "",
+             xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
              ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
       } else {
         par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
-             xlab = "", ylab = "",
+             xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
              ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
       }
@@ -591,13 +601,13 @@ plot_network <- function(sociomatrix,
       if (white_background) {
         par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
-             xlab = "", ylab = "",
+             xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
              ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
       } else {
         par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
-             xlab = "", ylab = "",
+             xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
              ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
       }
