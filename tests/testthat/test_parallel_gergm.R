@@ -14,9 +14,9 @@ test_that("Parallel GERGMs", {
 
   network_data_list <- list(network_covariate = network_covariate)
 
-  formula <- net ~ mutual + ttriads + sender("Age") +
+  formula <- net ~ edges + mutual + ttriads + sender("Age") +
     netcov("network_covariate") + nodematch("Type",base = "A")
-  formula2 <- net ~ mutual + ttriads + sender("Age") +
+  formula2 <- net ~ edges + mutual + ttriads + sender("Age") +
     netcov("network_covariate") + nodemix("Type",base = "A")
 
   form_list <- list(f1 = formula,

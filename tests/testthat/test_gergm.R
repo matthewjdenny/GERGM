@@ -9,7 +9,7 @@ test_that("Simple model with no covariates runs", {
   colnames(net) <- rownames(net) <- letters[1:10]
 
   # one parameter model
-  formula <- net ~ ttriads
+  formula <- net ~ edges + ttriads
 
   test <- gergm(formula,
                 normalization_type = "division",
@@ -30,7 +30,7 @@ test_that("Simple model with no covariates runs", {
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # three parameter model
-  formula <- net ~  mutual +  ttriads
+  formula <- net ~  edges + mutual + ttriads
 
   test <- gergm(formula,
                 normalization_type = "division",
@@ -51,7 +51,7 @@ test_that("Simple model with no covariates runs", {
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # five parameter model
-  formula2 <- net ~  mutual + ttriads + in2stars
+  formula2 <- net ~  edges + mutual + ttriads + in2stars
 
   test <- gergm(formula2,
               normalization_type = "division",
@@ -68,12 +68,12 @@ test_that("Simple model with no covariates runs", {
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
-check_against <- c(-0.492,  2.445,  0.053)
+check_against <- c(2.445,  0.053, -0.492)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 #check that code works for undirected network
 
-formula <- net ~ ttriads + twostars
+formula <- net ~ edges + ttriads + twostars
 
 test <- gergm(formula,
               normalization_type = "division",
@@ -90,12 +90,12 @@ test <- gergm(formula,
               MPLE_gain_factor = 0,
               force_x_theta_updates = 4)
 
-check_against <- c(-0.244,  0.096)
+check_against <- c(0.096, -0.244)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 #check that code works with MPLE only
 
-formula <- net ~ ttriads + in2stars
+formula <- net ~ edges + ttriads + in2stars
 
 test <- gergm(formula,
               normalization_type = "division",
@@ -113,7 +113,7 @@ test <- gergm(formula,
               force_x_theta_updates = 2,
               force_x_lambda_updates = 3)
 
-check_against <- c(-0.610,  0.226)
+check_against <- c(0.226, -0.610)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -129,7 +129,7 @@ test_that("Model with covariates runs", {
                                       Type = c("A","B","B","A","A","A","B","B","C","C"))
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
-  formula <- net ~ mutual + ttriads + sender("Age") +
+  formula <- net ~ edges + mutual + ttriads + sender("Age") +
   netcov("network_covariate") + nodemix("Type",base = "A")
 
   test <- gergm(formula,
@@ -151,7 +151,7 @@ test_that("Model with covariates runs", {
                      -0.035,  0.002, -0.040, -0.050,  3.061, 0.129, -1.931)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
-  formula <- net ~ mutual + ttriads + sender("Age") +
+  formula <- net ~ edges + mutual + ttriads + sender("Age") +
     netcov("network_covariate") + nodematch("Type")
 
   test <- gergm(formula,

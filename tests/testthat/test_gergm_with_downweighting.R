@@ -9,7 +9,7 @@ test_that("That gergm with exponential downweighting works", {
 
 
   # three parameter model
-  formula <- net ~  mutual(0.95) +  ttriads(0.95)
+  formula <- net ~  edges + mutual(0.95) +  ttriads(0.95)
 
   test <- gergm(formula,
                 normalization_type = "division",
@@ -32,7 +32,7 @@ test_that("That gergm with exponential downweighting works", {
 
   #check that code works for undirected network
 
-  formula <- net ~  ttriads(alpha = 0.9) + twostars(0.9)
+  formula <- net ~  edges + ttriads(alpha = 0.9) + twostars(0.9)
 
   test <- gergm(formula,
                 normalization_type = "division",
@@ -49,7 +49,7 @@ test_that("That gergm with exponential downweighting works", {
                 MPLE_gain_factor = 0.08,
                 force_x_theta_updates = 1)
 
-  check_against <- c(-0.477,  0.192)
+  check_against <- c(0.192, -0.477)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   set.seed(12345)
@@ -60,7 +60,7 @@ test_that("That gergm with exponential downweighting works", {
                                       Type = c("A","B","B","A","A","A","B","B","C","C"))
   rownames(node_level_covariates) <- letters[1:10]
   network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
-  formula <- net ~ mutual(0.95) + ttriads(0.95) + sender("Age") +
+  formula <- net ~ edges + mutual(0.95) + ttriads(0.95) + sender("Age") +
     netcov("network_covariate") + nodemix("Type",base = "A")
 
   test <- gergm(formula,
@@ -92,14 +92,13 @@ test_that("That weighted MPLE works", {
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
 
-  skip("Something strange is going on with testing, cannot replicated in main environment")
   set.seed(12345)
   net <- matrix(rnorm(100,0,20),10,10)
   colnames(net) <- rownames(net) <- letters[1:10]
 
 
   # three parameter model
-  formula <- net ~  mutual(0.8) +  ttriads(0.8)
+  formula <- net ~  edges + mutual(0.8) +  ttriads(0.8)
 
   # MPLE ONLY
   test <- gergm(formula,
@@ -118,7 +117,7 @@ test_that("That weighted MPLE works", {
                 force_x_theta_updates = 1,
                 weighted_MPLE = TRUE)
 
-  check_against <- c(2.905, -0.497)
+  check_against <- c(5.244, -0.861)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
@@ -138,7 +137,7 @@ test_that("That weighted MPLE works", {
                 force_x_theta_updates = 1,
                 weighted_MPLE = TRUE)
 
-  check_against <- c(4.015, -0.729)
+  check_against <- c(4.100, -0.732)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
