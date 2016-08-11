@@ -71,12 +71,9 @@
 #' test <- simulate_networks(formula,
 #'  thetas = c(0.6,-0.8),
 #'  lambdas = 0.2,
-#'  network_is_directed = TRUE,
-#'  simulation_method = "Metropolis",
 #'  number_of_networks_to_simulate = 100,
 #'  thin = 1/10,
 #'  proposal_variance = 0.5,
-#'  downweight_statistics_together = TRUE,
 #'  MCMC_burnin = 1000,
 #'  seed = 456)
 #'
