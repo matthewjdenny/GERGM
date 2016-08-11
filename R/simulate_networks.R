@@ -347,6 +347,11 @@ simulate_networks <- function(formula,
     }
   }
 
+  GERGM_Object@simulated_bounded_networks_for_GOF <- GERGM_Object@MCMC_output$Networks
+
+  # precalculate intensities and degree distributions so we can return them.
+  GERGM_Object <- calculate_additional_GOF_statistics(GERGM_Object)
+
 
   # make GOF plot
   try({
