@@ -9,21 +9,15 @@ test_that("Simple model with no covariates runs", {
   colnames(net) <- rownames(net) <- letters[1:10]
 
   # three parameter model
-  formula <- net ~  mutual +  ttriads
+  formula <- net ~  edges +  mutual +  ttriads
 
   test <- gergm(formula,
                 normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
                 thin = 1/100,
                 proposal_variance = 0.5,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
                 force_x_theta_updates = 4)
 
   test2 <- hysteresis(test,
@@ -49,7 +43,7 @@ test_that("Simple model with no covariates runs", {
                       thin = 1/10,
                       parallel = T)
 
-  hysteresis_plot(test3)
+  hysteresis_plot(test2)
 
 })
 
