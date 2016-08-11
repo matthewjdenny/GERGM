@@ -66,10 +66,11 @@
 #' net <- matrix(runif(100),10,10)
 #' diag(net) <- 0
 #' colnames(net) <- rownames(net) <- letters[1:10]
-#' formula <- net ~ ttriads + in2stars
+#' formula <- net ~ edges + ttriads + in2stars
 #'
 #' test <- simulate_networks(formula,
 #'  thetas = c(0.6,-0.8),
+#'  lambdas = 0.2,
 #'  network_is_directed = TRUE,
 #'  simulation_method = "Metropolis",
 #'  number_of_networks_to_simulate = 100,
@@ -77,7 +78,6 @@
 #'  proposal_variance = 0.5,
 #'  downweight_statistics_together = TRUE,
 #'  MCMC_burnin = 1000,
-#'  omit_intercept_term = TRUE,
 #'  seed = 456)
 #'
 #' # preferred method for specifying a null model
@@ -85,12 +85,9 @@
 #' test <- simulate_networks(
 #'  formula,
 #'  thetas = 0,
-#'  network_is_directed = TRUE,
-#'  simulation_method = "Metropolis",
 #'  number_of_networks_to_simulate = 1000,
 #'  thin = 1/10,
 #'  proposal_variance = 0.5,
-#'  downweight_statistics_together = TRUE,
 #'  MCMC_burnin = 1000,
 #'  seed = 456)
 #' @return A list object containing simulated networks and parameters used to
