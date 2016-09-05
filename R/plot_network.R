@@ -53,6 +53,7 @@ plot_network <- function(sociomatrix,
     set.seed(seed)
   }
 
+  par(mar = c(1,0,1,0))
   # check input
   if (class(sociomatrix) != "matrix" & class(sociomatrix) != "data.frame") {
     stop("You must provide the network as a numeric matrix.")
@@ -211,17 +212,19 @@ plot_network <- function(sociomatrix,
       pdf(file = pdf_name, width = 24, height = 12)
       #start plot
       if (white_background) {
-        par(bg = "white", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        par(bg = "white", oma = c(1,1,2,1) + 0.1,
+            mar = c(0,0.5,1,0.5) + 0.5, xpd=TRUE, mfrow = c(1,2))
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = comparison_names[1],col.main = "black",
-             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+             xlim = c((min(layout[,1])-0.1), (max(layout[,1])+0.1)),
+             ylim = c((min(layout[,2])-1.3), (max(layout[,2])+0.5)))
       } else {
-        par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        par(bg = "black", oma = c(1,1,2,1) + 0.1,
+            mar = c(0,0.5,1,0.5) + 0.5, xpd=TRUE, mfrow = c(1,2))
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
-             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+             xlim = c((min(layout[,1])-0.1), (max(layout[,1])+0.1)),
+             ylim = c((min(layout[,2])-1.3), (max(layout[,2])+0.5)))
       }
 
       # add in edges
@@ -307,13 +310,13 @@ plot_network <- function(sociomatrix,
       if (white_background) {
         plot(layout_c ,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = comparison_names[2],col.main = "black",
-             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+             xlim = c((min(layout_c[,1]) - 0.1), (max(layout_c[,1]) + 0.1)),
+             ylim = c((min(layout_c[,2]) - 1.3), (max(layout_c[,2]) + 0.5)))
       } else {
         plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
-             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+             xlim = c((min(layout_c[,1]) - 0.1), (max(layout_c[,1]) + 0.1)),
+             ylim = c((min(layout_c[,2]) - 1.3), (max(layout_c[,2]) + 0.5)))
       }
 
       max_bin_c <- 1
@@ -487,17 +490,19 @@ plot_network <- function(sociomatrix,
     if (COMPARISON) {
       #start plot
       if (white_background) {
-        par(bg = "white", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        par(bg = "white", oma = c(1,1,2,1) + 0.1,
+            mar = c(0,0.5,1,0.5) + 0.5, xpd=TRUE, mfrow = c(1,2))
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = comparison_names[1],col.main = "black",
-             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+             xlim = c((min(layout[,1])-0.1), (max(layout[,1])+0.1)),
+             ylim = c((min(layout[,2])-1.3), (max(layout[,2])+0.5)))
       } else {
-        par(bg = "black", mar = c(2,2,2,2), xpd=TRUE, mfrow = c(1,2))
+        par(bg = "black", oma = c(1,1,2,1) + 0.1,
+            mar = c(0,0.5,1,0.5) + 0.5, xpd=TRUE, mfrow = c(1,2))
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = comparison_names[1],col.main = "white",
-             xlim = c((min(layout[,1])-2), (max(layout[,1])+2)),
-             ylim = c((min(layout[,2])-2), (max(layout[,2])+2)))
+             xlim = c((min(layout[,1])-0.1), (max(layout[,1])+0.1)),
+             ylim = c((min(layout[,2])-1.3), (max(layout[,2])+0.5)))
       }
 
       # add in edges
@@ -575,13 +580,13 @@ plot_network <- function(sociomatrix,
       if (white_background) {
         plot(layout_c ,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = comparison_names[2],col.main = "black",
-             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+             xlim = c((min(layout_c[,1]) - 0.1), (max(layout_c[,1]) + 0.1)),
+             ylim = c((min(layout_c[,2]) - 1.3), (max(layout_c[,2]) + 0.5)))
       } else {
         plot(layout_c ,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = comparison_names[2],col.main = "white",
-             xlim = c((min(layout_c[,1]) - 2), (max(layout_c[,1]) + 2)),
-             ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
+             xlim = c((min(layout_c[,1]) - 0.1), (max(layout_c[,1]) + 0.1)),
+             ylim = c((min(layout_c[,2]) - 1.3), (max(layout_c[,2]) + 0.5)))
       }
 
       # add in edges
