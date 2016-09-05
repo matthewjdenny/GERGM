@@ -140,10 +140,10 @@ plot_network <- function(sociomatrix,
     weights_c <- weights_c[ordering]
 
     # generate edge widths
-    negbreaks_c <- seq(min(weights_c), 0, length.out = 26)
-    posbreaks_c <- seq(0, max(weights_c), length.out = 26)
-    widbreaks_c <- seq(0,max(abs(weights_c)),length.out = 50)
-    widths_c <- seq(0,5,length.out = 50)
+    # negbreaks_c <- seq(min(weights_c), 0, length.out = 26)
+    # posbreaks_c <- seq(0, max(weights_c), length.out = 26)
+    # widbreaks_c <- seq(0,max(abs(weights_c)),length.out = 50)
+    # widths_c <- seq(0,5,length.out = 50)
   }
 
   diag(sociomatrix) <- 0
@@ -179,10 +179,17 @@ plot_network <- function(sociomatrix,
   weights <- weights[ordering]
 
   # generate edge widths
-  negbreaks <- seq(min(weights), 0, length.out = 26)
-  posbreaks <- seq(0, max(weights), length.out = 26)
+  negbreaks <- seq(-max(abs(weights)), 0, length.out = 26)
+  posbreaks <- seq(0,max(abs(weights)), length.out = 26)
   widbreaks <- seq(0,max(abs(weights)),length.out = 50)
   widths <- seq(0,5,length.out = 50)
+
+  if (COMPARISON) {
+    negbreaks <- seq(-max(abs(c(weights, weights_c))), 0, length.out = 26)
+    posbreaks <- seq(0, max(abs(c(weights, weights_c))), length.out = 26)
+    widbreaks <- seq(0,max(abs(c(weights, weights_c))),length.out = 50)
+    widths <- seq(0,5,length.out = 50)
+  }
 
   if (COMPARISON) {
     if (identical_node_positions) {
@@ -218,6 +225,8 @@ plot_network <- function(sociomatrix,
       }
 
       # add in edges
+      max_bin <- 1
+      min_bin <- 1
       for(i in 1:length(weights)){
         cur1 <- layout[edgelist[i,1],]
         cur2 <- layout[edgelist[i,2],]
@@ -256,9 +265,15 @@ plot_network <- function(sociomatrix,
         if(curweight > 0){
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
                 col = poscolors[bin], lwd = widths[wid])
+          if (bin > max_bin) {
+            max_bin <- bin
+          }
         }else{
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
                 col = negcolors[bin], lwd = widths[wid])
+          if (bin > min_bin) {
+            min_bin <- bin
+          }
         }
       }
       if (white_background) {
@@ -266,7 +281,11 @@ plot_network <- function(sociomatrix,
         if (show_legend) {
           legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
                  legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 fill = c(negcolors[min_bin - 1],
+                          poscolors[max_bin - 1]),
+                 horiz = T,
+                 bg = "white",
+                 text.col = "black",
                  box.col = "white")
         }
       } else {
@@ -274,7 +293,11 @@ plot_network <- function(sociomatrix,
         if (show_legend) {
           legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
                  legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+                 fill = c(negcolors[min_bin - 1],
+                          poscolors[max_bin - 1]),
+                 horiz = T,
+                 bg = "black",
+                 text.col = "white")
         }
       }
 
@@ -293,6 +316,8 @@ plot_network <- function(sociomatrix,
              ylim = c((min(layout_c[,2]) - 2), (max(layout_c[,2]) + 2)))
       }
 
+      max_bin_c <- 1
+      min_bin_c <- 1
       # add in edges
       for(i in 1:length(weights_c)){
         cur1 <- layout_c[edgelist_c[i,1],]
@@ -305,12 +330,12 @@ plot_network <- function(sociomatrix,
         bin <- 1
         while(nf){
           if(curweight > 0){
-            if(posbreaks_c[counter] >= curweight){
+            if(posbreaks[counter] >= curweight){
               bin <- counter
               nf <- FALSE
             }
           }else{
-            if(negbreaks_c[counter] >= curweight){
+            if(negbreaks[counter] >= curweight){
               bin <- counter
               nf <- FALSE
             }
@@ -323,7 +348,7 @@ plot_network <- function(sociomatrix,
         counter <- 1
         wid <- 1
         while(nf){
-          if(widbreaks_c[counter] >= abs(curweight)){
+          if(widbreaks[counter] >= abs(curweight)){
             wid <- counter
             nf <- FALSE
           }
@@ -331,10 +356,16 @@ plot_network <- function(sociomatrix,
         }
         if(curweight > 0){
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-                col = poscolors[bin], lwd = widths_c[wid])
+                col = poscolors[bin], lwd = widths[wid])
+          if (bin > max_bin_c) {
+            max_bin_c <- bin
+          }
         }else{
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-                col = negcolors[bin], lwd = widths_c[wid])
+                col = negcolors[bin], lwd = widths[wid])
+          if (bin > min_bin_c) {
+            min_bin_c <- bin
+          }
         }
       }
       if (white_background) {
@@ -343,7 +374,11 @@ plot_network <- function(sociomatrix,
           legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
                  legend = c(round(min(comparison_network),2),
                             round(max(comparison_network),2)),
-                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 fill = c(negcolors[min_bin_c - 1],
+                          poscolors[max_bin_c - 1]),
+                 horiz = T,
+                 bg = "white",
+                 text.col = "black",
                  box.col = "white")
         }
       } else {
@@ -352,7 +387,11 @@ plot_network <- function(sociomatrix,
           legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
                  legend = c(round(min(comparison_network),2),
                             round(max(comparison_network),2)),
-                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+                 fill = c(negcolors[min_bin_c - 1],
+                          poscolors[max_bin_c - 1]),
+                 horiz = T,
+                 bg = "black",
+                 text.col = "white")
         }
       }
 
@@ -462,6 +501,8 @@ plot_network <- function(sociomatrix,
       }
 
       # add in edges
+      max_bin <- 1
+      min_bin <- 1
       for(i in 1:length(weights)){
         cur1 <- layout[edgelist[i,1],]
         cur2 <- layout[edgelist[i,2],]
@@ -500,22 +541,33 @@ plot_network <- function(sociomatrix,
         if(curweight > 0){
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
                 col = poscolors[bin], lwd = widths[wid])
+          if (bin > max_bin) {
+            max_bin <- bin
+          }
         }else{
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
                 col = negcolors[bin], lwd = widths[wid])
+          if (bin > min_bin) {
+            min_bin <- bin
+          }
         }
       }
+      print(max_bin)
       if (white_background) {
         text(layout,labels = rownames(sociomatrix), col = "black")
         legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
                legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+               fill = c(negcolors[min_bin - 1],
+                        poscolors[max_bin - 1]),
+               horiz = T, bg = "white",text.col = "black",
                box.col = "white")
       } else {
         text(layout,labels = rownames(sociomatrix), col = "white")
         legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
                legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+               fill = c(negcolors[min_bin - 1],
+                        poscolors[max_bin - 1]),
+               horiz = T, bg = "black",text.col = "white")
       }
 
       # now for the comparison network
@@ -533,6 +585,8 @@ plot_network <- function(sociomatrix,
       }
 
       # add in edges
+      max_bin_c <- 1
+      min_bin_c <- 1
       for(i in 1:length(weights_c)){
         cur1 <- layout_c[edgelist_c[i,1],]
         cur2 <- layout_c[edgelist_c[i,2],]
@@ -544,12 +598,12 @@ plot_network <- function(sociomatrix,
         bin <- 1
         while(nf){
           if(curweight > 0){
-            if(posbreaks_c[counter] >= curweight){
+            if(posbreaks[counter] >= curweight){
               bin <- counter
               nf <- FALSE
             }
           }else{
-            if(negbreaks_c[counter] >= curweight){
+            if(negbreaks[counter] >= curweight){
               bin <- counter
               nf <- FALSE
             }
@@ -562,7 +616,7 @@ plot_network <- function(sociomatrix,
         counter <- 1
         wid <- 1
         while(nf){
-          if(widbreaks_c[counter] >= abs(curweight)){
+          if(widbreaks[counter] >= abs(curweight)){
             wid <- counter
             nf <- FALSE
           }
@@ -570,10 +624,16 @@ plot_network <- function(sociomatrix,
         }
         if(curweight > 0){
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-                col = poscolors[bin], lwd = widths_c[wid])
+                col = poscolors[bin], lwd = widths[wid])
+          if (bin > max_bin_c) {
+            max_bin_c <- bin
+          }
         }else{
           lines(c(cur1[1],cur2[1]) , c(cur1[2],cur2[2]),
-                col = negcolors[bin], lwd = widths_c[wid])
+                col = negcolors[bin], lwd = widths[wid])
+          if (bin > min_bin_c) {
+            min_bin_c <- bin
+          }
         }
       }
 
@@ -583,7 +643,9 @@ plot_network <- function(sociomatrix,
           legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
                  legend = c(round(min(comparison_network),2),
                             round(max(comparison_network),2)),
-                 fill = c("red","blue"), horiz = T, bg = "white",text.col = "black",
+                 fill = c(negcolors[min_bin_c - 1],
+                          poscolors[max_bin_c - 1]),
+                 horiz = T, bg = "white",text.col = "black",
                  box.col = "white")
         }
       } else {
@@ -592,7 +654,9 @@ plot_network <- function(sociomatrix,
           legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
                  legend = c(round(min(comparison_network),2),
                             round(max(comparison_network),2)),
-                 fill = c("red","blue"), horiz = T, bg = "black",text.col = "white")
+                 fill = c(negcolors[min_bin_c - 1],
+                          poscolors[max_bin_c - 1]),
+                 horiz = T, bg = "black",text.col = "white")
         }
       }
 
