@@ -55,7 +55,7 @@ Once the `GERGM` package is installed, you may access its functionality as you w
 
 If all went well, check out the `?GERGM` help file to see a full working example with info on how the data should look. 
 
-## Basic Useage
+## Basic Usage
 
 To use this package, first load in the network you wish to use as a (square) matrix, following the example provided below. You may then use the `gergm()` function to estimate a model using any combination of the following statistics: `out2stars(alpha = 1)`, `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`, `ttriads(alpha = 1)`,  `absdiff(covariate = "MyCov")`, `sender(covariate = "MyCov")`, `reciever(covariate = "MyCov")`, `nodematch(covariate)`, `nodemix(covariate, base = "MyBase")`, `netcov(network)`, and `edges(alpha = 1, method = c("regression","endogenous"))`. Note that the `edges` term must be specified if the user wishes to include an intercept (strongly recommended). The user may select the "regression" method (default) to include an intercept in the lambda transformation of the network, or "endogenous" to include the intercept as in a traditional ERGM model. To use exponential down-weighting for any of the network level terms, simply specify a value for alpha less than 1. The `(alpha = 1)` term may be omitted from the structural terms if no exponential down-weighting is required. In this case, the terms may be provided as: `out2stars`, `in2stars`, `ctriads`, `mutual`, `ttriads`, `edges`. 
 
