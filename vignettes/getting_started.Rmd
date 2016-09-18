@@ -52,15 +52,6 @@ Now we can install from Github using the following line:
 ```{r eval=FALSE} 
 devtools::install_github("matthewjdenny/GERGM")
 ```
-I have had success installing this way on most major operating systems with R 
-3.3.1+ installed, but if you do not have the latest version of R installed, or 
-run into some install errors (please email if you do), it should work as long 
-as you install the dependencies first with the following block of code:
-```{r eval=FALSE} 
-install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods",
-    "stringr","igraph", "plyr", "parallel", "coda", "vegan", "scales",
-	  "RcppParallel","slackr"), dependencies = TRUE) 
-```
 Once the `GERGM` package is installed, you may access its functionality as you 
 would any other package by calling:
 ```{r eval=FALSE} 
@@ -158,7 +149,7 @@ alpha weighting. A good rule of thumb is to set `alpha = 0.8` for all of the
 endogenous statistics included in the model. Note that these currently include:
 `out2stars`, `in2stars`, `ctriads`, `mutual`, and  `ttriads` (or just `twostars`
 and `ttriads` if your network is undirected). If this does not work, you can try
-cranking down the weights to around 0.5. IF this still does not work, you will
+cranking down the weights to around 0.5. If this still does not work, you will
 need to explore the `theta_grid_optimization_list` option in the `gergm` 
 documentation, which should always work if given enough time (although this 
 could be weeks, depending on how complex your model is). A fuller example is 
@@ -166,7 +157,7 @@ provided at the end of this vignette.
 
 Having addressed the challenges that come with estimating a GERGM model, lets
 try and example!
-```{r eval=TRUE, echo=TRUE, fig.width=8, fig.height=3.5, results='hide', message=FALSE, fig.align ='center'} 
+```{r eval=TRUE, echo=TRUE, fig.width=8.5, fig.height=3.5, results='hide', message=FALSE, fig.align ='center'} 
 test <- gergm(formula,
               covariate_data = covariate_data_2005,
 	            number_of_networks_to_simulate = 40000,

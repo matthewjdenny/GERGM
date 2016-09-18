@@ -8,11 +8,6 @@
 #  devtools::install_github("matthewjdenny/GERGM")
 
 ## ----eval=FALSE----------------------------------------------------------
-#  install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods",
-#      "stringr","igraph", "plyr", "parallel", "coda", "vegan", "scales",
-#  	  "RcppParallel","slackr"), dependencies = TRUE)
-
-## ----eval=FALSE----------------------------------------------------------
 #  library(GERGM)
 
 ## ----eval=TRUE, fig.width=6, fig.height=6, fig.align ='center'-----------
@@ -30,7 +25,7 @@ head(covariate_data_2005)
 formula <- lending_2005 ~ edges + mutual(alpha = 0.8) + sender("log_GDP") + 
   receiver("log_GDP") + nodemix("G8", base = "No") + netcov(net_exports_2005) 
 
-## ----eval=TRUE, echo=TRUE, fig.width=8, fig.height=3.5, results='hide', message=FALSE, fig.align ='center'----
+## ----eval=TRUE, echo=TRUE, fig.width=8.5, fig.height=3.5, results='hide', message=FALSE, fig.align ='center'----
 test <- gergm(formula,
               covariate_data = covariate_data_2005,
 	            number_of_networks_to_simulate = 40000,
