@@ -1,10 +1,10 @@
-#' GGERGM: Generalized Exponential Random Graph Models
+#' GERGM: Generalized Exponential Random Graph Model
 #'
 #' @section GERGM functions:
 #' To use this package, first load in the network you wish to use as a (square)
 #' matrix, following the example provided below. You may then use the gergm()
 #' function to estimate a model using any combination of the following statistics:
-#' "out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges"
+#' "out2stars", "in2stars", "ctriads", "mutual", "ttriads", "edges",
 #' "absdiff(covariate)", "edgecov(covariate)", "sender(covariate)",
 #' "reciever(covariate)", "nodematch(covariate)", "nodemix(covariate)",
 #' "netcov(network_covariate)". The gergm() function provides all of the basic
@@ -32,7 +32,7 @@ NULL
 #' @importFrom grDevices dev.off gray pdf rgb colorRampPalette
 NULL
 
-#' @importFrom graphics boxplot legend lines par plot text axis plot.new layout abline
+#' @importFrom graphics boxplot legend lines par plot text axis plot.new layout abline points
 NULL
 
 #' @import plyr
