@@ -29,6 +29,20 @@ prepare_parameter_estimate_data <- function(GERGM_Object,
       )
       data2 <- data.frame(modelFrame2)
       data <- rbind(data,data2)
+
+      # add in separate dispersion parameter estimate
+      temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
+      temp1 <- temp1[length(temp1)]
+      temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
+      temp2 <- temp2[length(temp2)]
+      modelFrame2 <- data.frame(Variable = "Dispersion Parameter" ,
+                                Coefficient = temp1,
+                                SE = temp2,
+                                Coefficient_Type = "Dispersion Parameter",
+                                Model = model
+      )
+      data2 <- data.frame(modelFrame2)
+      data <- rbind(data,data2)
     }
   } else if (coefficients_to_plot == "covariate") {
     #now add in lambda estimates
@@ -44,6 +58,20 @@ prepare_parameter_estimate_data <- function(GERGM_Object,
                                 Model = model
       )
       data <- data.frame(modelFrame2)
+
+      # add in separate dispersion parameter estimate
+      temp1 <- as.numeric(GERGM_Object@lambda.coef[1,])
+      temp1 <- temp1[length(temp1)]
+      temp2 <- as.numeric(GERGM_Object@lambda.coef[2,])
+      temp2 <- temp2[length(temp2)]
+      modelFrame2 <- data.frame(Variable = "Dispersion Parameter",
+                                Coefficient = temp1,
+                                SE = temp2,
+                                Coefficient_Type = "Dispersion Parameter",
+                                Model = model
+      )
+      data2 <- data.frame(modelFrame2)
+      data <- rbind(data,data2)
     }
   } else if (coefficients_to_plot == "structural") {
     # make sure that we use rows as estimates and se are in a two row matrix
