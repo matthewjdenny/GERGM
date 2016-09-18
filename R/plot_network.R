@@ -404,13 +404,15 @@ plot_network <- function(sociomatrix,
       pdf(file = pdf_name, width = 12, height = 12)
       #start plot
       if (white_background) {
-        par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
+        par(bg = "white", oma = c(0.1,0.1,0.1,0.1) + 0.1,
+            mar = c(0,0,0,0), xpd=TRUE, mfrow = c(1,1))
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
              ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
       } else {
-        par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
+        par(bg = "black", oma = c(0.1,0.1,0.1,0.1) + 0.1,
+            mar = c(0,0,0,0), xpd=TRUE, mfrow = c(1,1))
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = title,
              xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
@@ -668,17 +670,19 @@ plot_network <- function(sociomatrix,
     } else {
       #start plot
       if (white_background) {
-        par(bg = "white", mar = c(2,2,2,2), xpd = TRUE)
+        par(bg = "white", oma = c(0.1,0.1,0.1,0.1) + 0.1,
+            mar = c(0,0,0,0), xpd=TRUE, mfrow = c(1,1))
         plot(layout,pch = 20, cex = 1, col = "white", axes = F,
              xlab = "", ylab = "", main = title,
-             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
-             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+             xlim = c((min(layout[,1]) - 0.2), (max(layout[,1]) + 0.2)),
+             ylim = c((min(layout[,2]) - 0.2), (max(layout[,2]) + 0.2)))
       } else {
-        par(bg = "black", mar = c(2,2,2,2), xpd = TRUE)
+        par(bg = "black", oma = c(0.1,0.1,0.1,0.1) + 0.1,
+            mar = c(0,0,0,0), xpd=TRUE, mfrow = c(1,1))
         plot(layout,pch = 20, cex = 1, col = "black", axes = F,
              xlab = "", ylab = "", main = title,
-             xlim = c((min(layout[,1]) - 2), (max(layout[,1]) + 2)),
-             ylim = c((min(layout[,2]) - 2), (max(layout[,2]) + 2)))
+             xlim = c((min(layout[,1]) - 0.2), (max(layout[,1]) + 0.2)),
+             ylim = c((min(layout[,2]) - 0.2), (max(layout[,2]) + 0.2)))
       }
 
       # add in edges
