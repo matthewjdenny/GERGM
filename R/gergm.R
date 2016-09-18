@@ -6,7 +6,7 @@
 #' using any combination of the following statistics: `out2stars(alpha = 1)`,
 #' `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
 #' `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
-#' `edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
+#'  `sender(covariate = "MyCov")`,
 #' `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
 #' `nodemix(covariate, base = "MyBase")`, `netcov(network)` and
 #' `edges(alpha = 1, method = c("regression","endogenous"))`. If the user
@@ -163,6 +163,9 @@
 #' = 16807 parameter grid search. Again this feature is highly experimental and
 #' should only be used as a last resort (after playing with exponential
 #' downweighting and the MPLE_gain_factor).
+#' @param beta_correlation_model Defaults to FALSE. If TRUE, then the beta
+#' correlation model is estiamted. A correlation network must be provided, but
+#' all covariates and undirected statistics may be supplied as normal.
 #' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
 #' specifying statistics with alpha downweighting. Tends to provide better
 #' initialization when downweight_statistics_together = FALSE.
@@ -256,6 +259,7 @@ gergm <- function(formula,
                   stop_for_degeneracy = FALSE,
                   target_accept_rate = 0.25,
                   theta_grid_optimization_list = NULL,
+                  beta_correlation_model = FALSE,
                   weighted_MPLE = FALSE,
                   fine_grained_pv_optimization = FALSE,
                   parallel = FALSE,
@@ -267,6 +271,18 @@ gergm <- function(formula,
                   slackr_integration_list = NULL,
                   ...
                   ){
+
+  # pass in experimental features through elipsis
+  using_correlation_network <- FALSE
+  object <- as.list(substitute(list(...)))[-1L]
+  if (length(object) > 0) {
+    if (!is.null(object$using_correlation_network)) {
+      if (object$using_correlation_network) {
+        using_correlation_network <- TRUE
+        cat("Using experimental correlation network feature...\n")
+      }
+    }
+  }
 
   # record start time for estimation
   start_time <- Sys.time()
@@ -300,9 +316,22 @@ gergm <- function(formula,
                                 "gaussian",
                                 "lognormal")
 
+
+  if (using_correlation_network & beta_correlation_model) {
+    stop("You may only specify one of: using_correlation_network (Harry-Joe) or beta_correlation_model.")
+  }
+
   # set the number of threads to use with parallel
   if (parallel) {
     RcppParallel::setThreadOptions(numThreads = cores)
+  }
+
+  # if we are using a correlation network, then the network must be undirected.
+  if (using_correlation_network | beta_correlation_model) {
+    if (network_is_directed) {
+      cat("Setting network_is_directed to FALSE for correlation network...\n")
+    }
+    network_is_directed <- FALSE
   }
 
   # check terms for undirected network
@@ -366,7 +395,9 @@ gergm <- function(formula,
      possible_network_terms,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
-     is_directed = network_is_directed)
+     is_correlation_network = using_correlation_network,
+     is_directed = network_is_directed,
+     beta_correlation_model = beta_correlation_model)
 
   data_transformation <- NULL
   if (!is.null(Transformed_Data$transformed_covariates)) {
@@ -387,7 +418,9 @@ gergm <- function(formula,
      transform.data = data_transformation,
      lambda.coef = NULL,
      transformation_type = transformation_type,
+     is_correlation_network = using_correlation_network,
      is_directed = network_is_directed,
+     beta_correlation_model = beta_correlation_model,
      covariate_data = covariate_data,
      possible_structural_terms_undirected = possible_structural_terms_undirected)
 
@@ -415,6 +448,10 @@ gergm <- function(formula,
   }else{
     GERGM_Object@print_output <- TRUE
   }
+
+  # if we are using a correlation network then set field to TRUE.
+  GERGM_Object@is_correlation_network <- using_correlation_network
+  GERGM_Object@beta_correlation_model <- beta_correlation_model
 
   # record the various optimizations we are using so that they can be used in
   # the main algorithm
@@ -525,14 +562,21 @@ gergm <- function(formula,
     }
 
     init.statistics <- NULL
-
+    if (GERGM_Object@is_correlation_network) {
+      init.statistics <- calculate_h_statistics(
+        GERGM_Object,
+        GERGM_Object@statistic_auxiliary_data,
+        all_weights_are_one = FALSE,
+        calculate_all_statistics = TRUE,
+        use_constrained_network = FALSE)
+    }else{
       init.statistics <- calculate_h_statistics(
         GERGM_Object,
         GERGM_Object@statistic_auxiliary_data,
         all_weights_are_one = FALSE,
         calculate_all_statistics = TRUE,
         use_constrained_network = TRUE)
-
+    }
     # fix issue with the wrong stats being saved
     GERGM_Object@stats[2,] <- init.statistics
     hsn.tot <- GERGM_Object@MCMC_output$Statistics

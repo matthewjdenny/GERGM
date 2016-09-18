@@ -18,8 +18,9 @@ gergm(formula, covariate_data = NULL, normalization_type = c("log",
   generate_plots = TRUE, verbose = TRUE,
   hyperparameter_optimization = FALSE, stop_for_degeneracy = FALSE,
   target_accept_rate = 0.25, theta_grid_optimization_list = NULL,
-  weighted_MPLE = FALSE, fine_grained_pv_optimization = FALSE,
-  parallel = FALSE, parallel_statistic_calculation = FALSE, cores = 1,
+  beta_correlation_model = FALSE, weighted_MPLE = FALSE,
+  fine_grained_pv_optimization = FALSE, parallel = FALSE,
+  parallel_statistic_calculation = FALSE, cores = 1,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 0.25,
   estimate_model = TRUE, slackr_integration_list = NULL, ...)
 }
@@ -29,7 +30,7 @@ statistics and the observed network. Currently, the user may specify a model
 using any combination of the following statistics: `out2stars(alpha = 1)`,
 `in2stars(alpha = 1)`, `ctriads(alpha = 1)`, `mutual(alpha = 1)`,
 `ttriads(alpha = 1)`, `absdiff(covariate = "MyCov")`,
-`edgecov(covariate = "MyCov")`, `sender(covariate = "MyCov")`,
+ `sender(covariate = "MyCov")`,
 `reciever(covariate = "MyCov")`, `nodematch(covariate)`,
 `nodemix(covariate, base = "MyBase")`, `netcov(network)` and
 `edges(alpha = 1, method = c("regression","endogenous"))`. If the user
@@ -213,6 +214,10 @@ parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
 = 16807 parameter grid search. Again this feature is highly experimental and
 should only be used as a last resort (after playing with exponential
 downweighting and the MPLE_gain_factor).}
+
+\item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
+correlation model is estiamted. A correlation network must be provided, but
+all covariates and undirected statistics may be supplied as normal.}
 
 \item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
 specifying statistics with alpha downweighting. Tends to provide better
