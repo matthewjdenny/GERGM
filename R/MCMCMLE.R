@@ -315,6 +315,8 @@ MCMCMLE <- function(mc.num.iterations,
           GERGM_Object <- store_console_output(GERGM_Object,
                             "Theta parameter estimates have converged...")
           GERGM_Object@theta_estimation_converged <- TRUE
+          theta <- theta.new
+          GERGM_Object@theta.par <- as.numeric(theta$par)
           return(list(theta.new,GERGM_Object))
         }else{
           if(verbose){
