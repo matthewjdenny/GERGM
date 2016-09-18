@@ -192,7 +192,7 @@ GOF <- function(GERGM_Object,
              lwd = 3)
     }
   }
-
+  par(mfrow = c(1,1))
   if (return_GERGM_Object) {
     return(GERGM_Object)
   }
