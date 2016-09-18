@@ -8,8 +8,10 @@ Create_GERGM_Object_From_Formula <- function(object,
                                              together = 1,
                                              transform.data = NULL,
                                              lambda.coef = NULL,
-                                             transformation_type,                                             
+                                             transformation_type,
+                                             is_correlation_network = FALSE,
                                              is_directed = TRUE,
+                                             beta_correlation_model = FALSE,
                                              covariate_data = NULL,
                                              possible_structural_terms_undirected = NULL
                                              ){
@@ -47,7 +49,16 @@ Create_GERGM_Object_From_Formula <- function(object,
   }
 
   # for now we are not going to allow any covariates
-   if (!is.null(lambda.coef)) {
+  if (is_correlation_network) {
+    if (!is.null(lambda.coef)) {
+      stop("Covariate effects are currently not supported for correlation networks. Please respecify without covariates.")
+    }
+  } else if (beta_correlation_model) {
+    cat("Using Beta model for correlation network data...\n")
+    # if we are using the beta correlation model
+    diag(network) <- 1
+    bounded.network <- correlations.to.partials(network)
+  } else if (!is.null(lambda.coef)) {
     cat("Covariates Provided...\n")
     # create the network based on the transform family
     # if there are no lambda.coefficients, we assume there is no transformation
@@ -89,6 +100,12 @@ Create_GERGM_Object_From_Formula <- function(object,
   }
 
   # if we are providing a correlation network, transform it
+  if (is_correlation_network) {
+    diag(network) <- 1
+    print(round(network,2))
+    bounded.network <- transform.correlations(network)
+  }
+
   theta.par <- thetas
   thetas <- t(as.matrix(thetas))
   thetas <- rbind(thetas, NA)
