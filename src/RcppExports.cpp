@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // Extended_Metropolis_Hastings_Sampler
-List Extended_Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples);
-RcppExport SEXP GERGM_Extended_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP) {
+List Extended_Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples);
+RcppExport SEXP GERGM_Extended_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -25,6 +25,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< int >::type number_of_samples_to_store(number_of_samples_to_storeSEXP);
+    Rcpp::traits::input_parameter< int >::type using_correlation_network(using_correlation_networkSEXP);
     Rcpp::traits::input_parameter< int >::type undirect_network(undirect_networkSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< arma::umat >::type use_selected_rows(use_selected_rowsSEXP);
@@ -39,7 +40,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type random_dyad_sample_list(random_dyad_sample_listSEXP);
     Rcpp::traits::input_parameter< bool >::type use_triad_sampling(use_triad_samplingSEXP);
     Rcpp::traits::input_parameter< int >::type num_unique_random_triad_samples(num_unique_random_triad_samplesSEXP);
-    __result = Rcpp::wrap(Extended_Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples));
+    __result = Rcpp::wrap(Extended_Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples));
     return __result;
 END_RCPP
 }
@@ -121,8 +122,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Individual_Edge_Conditional_Prediction
-List Individual_Edge_Conditional_Prediction(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, int i, int j);
-RcppExport SEXP GERGM_Individual_Edge_Conditional_Prediction(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP iSEXP, SEXP jSEXP) {
+List Individual_Edge_Conditional_Prediction(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, int i, int j);
+RcppExport SEXP GERGM_Individual_Edge_Conditional_Prediction(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP iSEXP, SEXP jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -139,6 +140,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< int >::type number_of_samples_to_store(number_of_samples_to_storeSEXP);
+    Rcpp::traits::input_parameter< int >::type using_correlation_network(using_correlation_networkSEXP);
     Rcpp::traits::input_parameter< int >::type undirect_network(undirect_networkSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< arma::umat >::type use_selected_rows(use_selected_rowsSEXP);
@@ -155,7 +157,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type num_unique_random_triad_samples(num_unique_random_triad_samplesSEXP);
     Rcpp::traits::input_parameter< int >::type i(iSEXP);
     Rcpp::traits::input_parameter< int >::type j(jSEXP);
-    __result = Rcpp::wrap(Individual_Edge_Conditional_Prediction(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j));
+    __result = Rcpp::wrap(Individual_Edge_Conditional_Prediction(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j));
     return __result;
 END_RCPP
 }
@@ -168,6 +170,32 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
     Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
     __result = Rcpp::wrap(frobenius_norm(mat1, mat2));
+    return __result;
+END_RCPP
+}
+// Metropolis_Hastings_Sampler
+List Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel);
+RcppExport SEXP GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type number_of_iterations(number_of_iterationsSEXP);
+    Rcpp::traits::input_parameter< double >::type shape_parameter(shape_parameterSEXP);
+    Rcpp::traits::input_parameter< int >::type number_of_nodes(number_of_nodesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type statistics_to_use(statistics_to_useSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type initial_network(initial_networkSEXP);
+    Rcpp::traits::input_parameter< int >::type take_sample_every(take_sample_everySEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type triples(triplesSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< int >::type number_of_samples_to_store(number_of_samples_to_storeSEXP);
+    Rcpp::traits::input_parameter< int >::type using_correlation_network(using_correlation_networkSEXP);
+    Rcpp::traits::input_parameter< int >::type undirect_network(undirect_networkSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel));
     return __result;
 END_RCPP
 }
