@@ -1,0 +1,297 @@
+---
+title: "Getting Started With GERGM"
+author: "Matthew Denny"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{getting_started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette is designed to introduce you to the **GERGM** R package. **GERGM**
+stands for **G**eneralized **E**xponential **R**andom **G**raph **M**odel. This 
+class of models was developed to characterize the structure of networks with 
+real-valued edges. GERGMs represent a generalization of ERGMs, which were 
+developed to model the structure of networks with binary edge values, and many 
+network statistics commonly included in ERGM specifications have identical 
+formulations in the weighted case. The relevant papers detailing the model can be 
+found at the links below:
+
+* Bruce A. Desmarais, and Skyler J. Cranmer,  (2012). "Statistical inference for valued-edge networks: the generalized exponential random graph model". PloS One. [[Available Here](http://dx.plos.org/10.1371/journal.pone.0030136)]
+* James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". [[Available Here](http://arxiv.org/abs/1505.04015)]
+* Matthew J. Denny (2016). "The Importance of Generative Models for Assessing Network Structure". [[Available Here](http://ssrn.com/abstract=2798493)]
+
+## Installation
+
+The easiest way to do this is to install the package from CRAN via the standard 
+`install.packages` command:
+
+```{r eval=FALSE} 
+install.packages("GERGM")
+```
+
+This will take care of some weird compilation issues that can arise, and is the 
+best option for most people. If you want the most current development version of 
+the package, you will need to start by making sure you have Hadley Wickham's 
+devtools package installed.
+
+If you want to get the latest version from GitHub, start by checking out the 
+**Requirements for using C++ code with R** section in the following 
+tutorial: [Using C++ and R code Together with Rcpp](http://www.mjdenny.com/Rcpp_Intro.html). 
+You will likely need to install either `Xcode` or `Rtools` depending on whether 
+you are using a Mac or Windows machine before you can install the GERGM package 
+via GitHub, since it makes use of C++ code to speed up inference. That said, the
+development version often has additional functionality not found in the CRAN 
+release.
+
+```{r eval=FALSE} 
+install.packages("devtools")
+```    
+Now we can install from Github using the following line:
+```{r eval=FALSE} 
+devtools::install_github("matthewjdenny/GERGM")
+```
+I have had success installing this way on most major operating systems with R 
+3.3.1+ installed, but if you do not have the latest version of R installed, or 
+run into some install errors (please email if you do), it should work as long 
+as you install the dependencies first with the following block of code:
+```{r eval=FALSE} 
+install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods",
+    "stringr","igraph", "plyr", "parallel", "coda", "vegan", "scales",
+	  "RcppParallel","slackr"), dependencies = TRUE) 
+```
+Once the `GERGM` package is installed, you may access its functionality as you 
+would any other package by calling:
+```{r eval=FALSE} 
+library(GERGM)
+```
+If all went well, check out the `vignette("getting_started")` which will pull up 
+this vignette!
+
+## Basic Usage
+We begin by loading in some example network data. In our case, these data are 
+(logged) aggregate public and private lending volumes between 17 large 
+countries from 2005. The data are included in the GERGM package and were used in
+the Wilson et. al. study listed at the beginning of this vignette. In addition 
+to the network (a square matrix) we are also going to load in some node-level 
+covariate data, and a network covariate: the normalized net exports between 
+these countries in 2005. WE will make use of this data in fitting our example 
+GERGM model. 
+
+The GERGM package provides a `plot_network()` function, which we 
+can use to visualize the network as follows:
+```{r eval=TRUE, fig.width=6, fig.height=6, fig.align ='center'}     
+library(GERGM)
+set.seed(12345)
+data("lending_2005")
+data("covariate_data_2005")
+data("net_exports_2005")
+plot_network(lending_2005) 
+```
+Alternatively, if we prefer a white background, and no legend, we can select 
+options for this as well. Typing `?plot_network` into the console will pull up a 
+manual for this function. 
+
+Having plotted the raw network data, we can now proceed to model it using the 
+`gergm()` function. Detailed documentation for this function (along with a 
+large number of advanced options) can be accessed by typing `?gergm` into the 
+console. We are going to focus on a simpler version of the application from the 
+Wilson et. al. paper, that will highlight creating a formula object with node 
+and network level covariates, as well as endogenous (network) effects. While 
+this model will not provide a perfect fit to the data, it serves to illustrate
+a number of key concepts. If we look at the first couple of rows of the 
+`covariate_data_2005` object, we can see that it include information about each
+country's log GDP and whether it was a member of the G8. 
+
+```{r eval=TRUE, fig.width=7, fig.height=5.5}     
+head(covariate_data_2005)
+```
+
+To model this network, we are gong to include an `edges` term, which functions 
+similarly to an intercept term in a regression model and parameterizes the
+density of the network. We are also going to include `sender` and `receiver` 
+effects for a country's GDP. These effects are designed to capture the effects 
+of having a large economy on the amount of lending a borrowing a country does.
+We are also going to include a `Nodemix` term to capture the propensity for 
+members and non-members of the G8 to lend to each other, compared to the base 
+case of non-G8 to non-G8 member lending. The final covariate effect we are going
+to include in the model is a `netcov`, or network covariate term, capturing the
+effect of the structure of the international trade network on the international 
+lending network. Finally, we are going to include one endogenous statistic in 
+the model, to capture the degree of reciprocal lending in the network. For this
+endogenous statistic, we are also going to include an exponential down-weight. 
+this means that when the value of the network statistic is calculated, it will
+then be raised to the power of (in this case) 0.8. This will have the effect of 
+reducing its value, but more importantly of smoothing out statistic values as 
+the GERGM parameter controlling the propensity for mutual dyads in the network
+carries. Practically, this can make it easier to get starting values for the
+mutual dyads parameter that are in the right ball park, aiding in the estimation
+process. The formula object is defined below:
+```{r eval=TRUE, echo=TRUE, fig.width=7, fig.height=3.5, results='hide', message=FALSE}   
+formula <- lending_2005 ~ edges + mutual(alpha = 0.8) + sender("log_GDP") + 
+  receiver("log_GDP") + nodemix("G8", base = "No") + netcov(net_exports_2005) 
+```
+Note that the terms used in GERGM formulas are analogous to those used in the
+`ergm` package, and are documented in greater detail in the `?gergm` help file.
+
+If you are interested in experimenting, try setting `alpha = 1` and rerunning
+the model. You will see lots of error messages, and output indicating that your
+parameter estimates have zoomed off to infinity. If you are familiar with ERGMs 
+(for binary network data), you may have heard of an issue these models can run 
+into called "degeneracy", which can make certain models impossible to estimate.
+In this particular example, as with all GERGM specifications we have tried so 
+far, the GERGM does not seem to suffer from this issue. However, as the 
+experiment described above can attest, GERGMs can still be difficult to estimate.
+This is primarily due to challenges in getting good starting values for our 
+model parameters. The current implementation of the GERGM software does so using
+maximum pseudo likelihood (MPLE), which does a pretty good job in many cases. 
+However, in some cases, such as the example here, it can be enough off the mark 
+that the initial parameter guesses from MPLE simulate networks that look a lot
+different from the observed network. This can cause the optimizer in R (which is
+used to update our estimates of the model parameters) to zoom off to infinity.
+
+If this happens to you, do not (immediately) panic! This usually means you are 
+dealing with a tricky network, or a tricky specification (typically one with
+lots of endogenous statistics included). The first thing to do is try to use
+alpha weighting. A good rule of thumb is to set `alpha = 0.8` for all of the 
+endogenous statistics included in the model. Note that these currently include:
+`out2stars`, `in2stars`, `ctriads`, `mutual`, and  `ttriads` (or just `twostars`
+and `ttriads` if your network is undirected). If this does not work, you can try
+cranking down the weights to around 0.5. IF this still does not work, you will
+need to explore the `theta_grid_optimization_list` option in the `gergm` 
+documentation, which should always work if given enough time (although this 
+could be weeks, depending on how complex your model is). A fuller example is 
+provided at the end of this vignette. 
+
+Having addressed the challenges that come with estimating a GERGM model, lets
+try and example!
+```{r eval=TRUE, echo=TRUE, fig.width=8, fig.height=3.5, results='hide', message=FALSE, fig.align ='center'} 
+test <- gergm(formula,
+              covariate_data = covariate_data_2005,
+	            number_of_networks_to_simulate = 40000,
+	            thin = 1/100,
+	            proposal_variance = 0.05,
+	            MCMC_burnin = 10000,
+	            seed = 456,
+	            convergence_tolerance = 0.5)
+```
+The output displayed in this vignette only includes diagnostic plots, and not 
+all of the information that would be spit out by the `gergm()` function if you 
+were to run this code on your computer. All of that output is meant to help you
+track the estimation process (which can take days or weeks for larger networks),
+and diagnose issues with the estimation. Note that if you wish to tweak some of
+the parameters in the diagnostic and estimate plots, you may do so and 
+regenerate the plots after estimation is complete using the following functions:
+```{r eval=FALSE}  
+# Generate Estimate Plot
+Estimate_Plot(test)
+# Generate GOF Plot
+GOF(test)
+# Generate Trace Plot
+Trace_Plot(test)
+```  
+In particular, we might want to make a nicer looking estimate plot. We can do
+this using the following block of code, where we leave out the intercept 
+estimate, and provide a custom list of parameter names to produce a publication
+quality plot: 
+```{r eval=TRUE, echo=TRUE, fig.width=6.5, fig.height=3, results='hide', message=FALSE, fig.align ='center'} 
+Estimate_Plot(test,
+              coefficients_to_plot = "both",
+              coefficient_names = c("Mutual Dyads",
+                                    "log(GDP) Sender",
+                                    "log(GDP) Receiver",
+                                    "Non-G8 Sender, G8 Receiver",
+                                    "G8 Sender, Non-G8 Receiver",
+                                    "G8 Sender, G8 Receiver",
+                                    "intercept",
+                                    "Normalized Net Exports",
+                                    "Dispersion Parameter"),
+              leave_out_coefficients = "intercept")
+```
+
+In order to verify the claim made earlier in this vignette that the current 
+model is not degenerate, just hard to fit, we can generate a hysteresis plot
+for this model using the `hysteresis()` function. This function simulates large 
+numbers of networks at parameter values around the estimated parameter values 
+and plots the mean network density at each of these values to examine whether 
+the model becomes degenerate due to small deviations in the parameter estimates. 
+See the following reference for details:
+
+* Snijders, Tom AB, et al. "New specifications for exponential random graph models." Sociological methodology 36.1 (2006): 99-153.
+
+So long as we see a smooth upward sloping series of points, we have strong 
+evidence that the specification is not degenerate.
+```{r eval=TRUE, echo=TRUE, fig.width=5, fig.height=5, results='hide', message=FALSE, fig.align ='center'}
+# Generate Hysteresis plots for all structural parameter estimates
+hysteresis_results <- hysteresis(test,
+                                 networks_to_simulate = 1000,
+                                 burnin = 300,
+                                 range = 8,
+                                 steps = 20,
+                                 simulation_method = "Metropolis",
+                                 proposal_variance = 0.05)
+```									 
+As we can see this specification does not display signs of degeneracy, even 
+though we needed to use exponential down-weighting in order to fit the model. 
+
+
+### Edge Prediction
+
+Following on from the example above, we can also predict individual edge values, 
+conditioning on the rest of the observed edges and estimated parameters. We can
+then calculate the mean edgewise mean squared error (MSE) for these predictions,
+and compare it against the MSE from a null model with no parameters included. 
+First we generate the conditional edge predictions:
+
+```{r eval=TRUE, echo=TRUE, results='hide', message=FALSE}	
+test2 <- conditional_edge_prediction(
+  GERGM_Object = test,
+  number_of_networks_to_simulate = 100,
+  thin = 1,
+  proposal_variance = 0.05,
+  MCMC_burnin = 100,
+  seed = 123)
+```
+Next we can calculate the MSE of these predictions and compare it to the null
+model predictions. 
+```{r eval=TRUE}
+MSE_results <- conditional_edge_prediction_MSE(test2)
+```	
+As we can see, this model does significantly better in terms of conditional 
+edgewise predictive performance than the null model.
+
+## Bonus: A More Complex Model
+Here we have included code to run the full model which appears in the Wilson et
+al. paper. It requires a 30 core machine to run as currently specified, and can 
+take several days to weeks to run, depending on your computer setup. We include 
+this more complex specification to highlight the flexibility the GERGM package 
+gives users to deal with more difficult to model data. These more advanced 
+features are covered in the `?gergm` documentation, and will be the subject of
+future vignettes.
+```{r eval=FALSE}  
+formula <- net ~  mutual(0.8) + ttriads(0.8) + out2stars(0.8) + 
+  sender("log_GDP") + netcov(net_exports) + 
+  receiver("log_GDP") + nodemix("G8", base = "No")
+
+
+result <- gergm(formula,
+              covariate_data = covariate_data_2005,
+              number_of_networks_to_simulate = 400000,
+              thin = 1/100,
+              proposal_variance = 0.05,
+              MCMC_burnin = 200000,
+              seed = 456,
+              convergence_tolerance = 0.8,
+              hyperparameter_optimization = TRUE,
+              target_accept_rate = 0.25,
+              weighted_MPLE = TRUE,
+              theta_grid_optimization_list = list(grid_steps = 2,
+                                                  step_size = 0.1,
+                                                  cores = 30,
+                                                  iteration_fraction = 1))
+```
+
+
+
+
