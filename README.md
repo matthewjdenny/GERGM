@@ -47,7 +47,7 @@ I have had success installing this way on most major operating systems with R 3.
 
     install.packages( pkgs = c("BH","RcppArmadillo","ggplot2","methods",
     "stringr","igraph", "plyr", "parallel", "coda", "vegan", "scales",
-	"RcppParallel","slackr"), dependencies = TRUE) 
+	"RcppParallel","slackr"), dependencies = TRUE)
 
 Once the `GERGM` package is installed, you may access its functionality as you would any other package by calling:
 
@@ -155,37 +155,37 @@ Following on from the example above, we can also predict individual edge values,
 	                                             xlim = c(-10,10),
 	                                             ylim = c(-10,10))
 
-### Parallel GERGM Specification Fitting 
+### Parallel GERGM Specification Fitting
     
 There is also now functionality to run multiple `gergm()` model specifications in parallel using the `parallel_gergm()` function. This can come in very handy if the user wishes to specify the same model but for a large number of networks, or multiple models for the same network. Another useful (experimental) feature that can now be turned out is `hyperparameter_optimization = TRUE`, which will seek to automatically optimize the number of networks simulated during MCMC, the burnin, the Metropolis Hastings proposal variance and will seek to address any issues with model degeneracy that arise during estimation by reducing exponential weights if using Metropolis Hastings. This feature is generally meant to make it easier and less time intensive to find a model that fits the data well.  
 
-	set.seed(12345)
-	net <- matrix(runif(100,0,1),10,10)
-	colnames(net) <- rownames(net) <- letters[1:10]
-	node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
-	                                    Height = c(70,70,67,58,65,67,64,74,76,80),
-	                                    Type = c("A","B","B","A","A","A","B","B","C","C"))
-	rownames(node_level_covariates) <- letters[1:10]
-	network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
+    set.seed(12345)
+    net <- matrix(runif(100,0,1),10,10)
+    colnames(net) <- rownames(net) <- letters[1:10]
+    node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                               Height = c(70,70,67,58,65,67,64,74,76,80),
+                               Type = c("A","B","B","A","A","A","B","B","C","C"))
+    rownames(node_level_covariates) <- letters[1:10]
+    network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
 
-	network_data_list <- list(network_covariate = network_covariate)
+    network_data_list <- list(network_covariate = network_covariate)
 
-	formula <- net ~ edges +netcov("network_covariate") + nodematch("Type",base = "A")
-	formula2 <- net ~ edges + sender("Age") +
-	  netcov("network_covariate") + nodemix("Type",base = "A")
+    formula <- net ~ edges + netcov("network_covariate") + nodematch("Type",base = "A")
+    formula2 <- net ~ edges + sender("Age") +
+      netcov("network_covariate") + nodemix("Type",base = "A")
 
-	form_list <- list(f1 = formula,
-	                  f2 = formula2)
+    form_list <- list(f1 = formula,
+                      f2 = formula2)
 
-	testp <- parallel_gergm(formula_list = form_list,
-	                        observed_network_list = net,
-	                        covariate_data_list = node_level_covariates,
-	                        network_data_list = network_data_list,
-	                        cores = 2,
-	                        number_of_networks_to_simulate = 10000,
-	                        thin = 1/10,
-	                        proposal_variance = 0.1,
-	                        MCMC_burnin = 5000)
+    testp <- parallel_gergm(formula_list = form_list,
+                            observed_network_list = net,
+                            covariate_data_list = node_level_covariates,
+                            network_data_list = network_data_list,
+                            cores = 2,
+                            number_of_networks_to_simulate = 10000,
+                            thin = 1/100,
+                            proposal_variance = 0.1,
+                            MCMC_burnin = 5000)
 
 Finally, if you specified an `output_directory` and `output_name`, you will want to check the `output_directory` which will contain a number of .pdf's which can aide in assessing model fit and in determining the statistical significance of theta parameter estimates.
 
@@ -218,6 +218,7 @@ The GERGM package incorporates a number of advanced features that are designed t
 			 iteration_fraction = 0.5). 
 			 
     grid_steps indicates the number of steps out the grid search will perform, step_size indicates the fraction of the MPLE theta estimate that each grid search step will change by, cores indicates the number of cores to be used for parallel optimization, and iteration_fraction indicates the fraction of the number of MCMC iterations that will be used for each grid point (should be set less than 1 to speed up optimization). In general grid_steps should be smaller the more structural parameters the user wishes to specify. For example, with 5 structural parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5 = 16807 parameter grid search. Again this feature is highly experimental and should only be used as a last resort (after playing with exponential downweighting and the MPLE_gain_factor).
+* **beta_correlation_model** -- Option specifying whether the input network is a correlation network. If set to TRUE, then beta regression and a Harry-joe transform are used to model the correlation structure. Works just like any other (undirected) GERGM specification.  
 * **weighted_MPLE** -- Logical indicating whether the estimation routine should use MPLE with weights on statistic values (via numerical approximation). This is recommended if the user is specifying `alpha` weights on any endogenous statistics that are less than 1. It will tend to slow down MPLE, but is optimized for parallelization, so it can take advantage of the `parallel` option. 
 * **parallel** -- Logical indicating whether any operations that are "embarrassingly parallel" should be calculated in parallel acros a number of cores specified by the `cores` parameter. Since the operations governed by this parameter are easy to parallelize, it is possible to realize a significant speedup in their calculation, particularly when using weighted MPLE for large networks. 
 * **parallel_statistic_calculation** -- This option turns on or off parallelization via threading in the endogenous statistic calculation for the Metropolis Hastings procedure. This will only really show a significant speedup in large graphs, when the user has specified several endogenous terms to be calculated, as each will be calculated in parallel. This option will actually slow down estimation when used for networks smaller than about 40-50 nodes, as threading requires some computational overhead. 
@@ -233,6 +234,9 @@ The GERGM package incorporates a number of advanced features that are designed t
                 incoming_webhook_url = "https://hooks.slack.com/services/XX/YY/ZZ")
 	
     Note that the `model_name` is a way to distinguish multiple models that can simultaneously post information to the same slack channel if you so desire, because `model_name` will appear as the name of the poster on the slack channel. If all goes well, and the computer you are running the GERGM estimation on has internet access, your slack channel will receive updates when you start estimation, after each lambda/theta parameter update, if the model becomes degenerate, and when it completes running. This feature is still in development. 
+
+
+
 
 ## Testing
             
