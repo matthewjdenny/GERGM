@@ -5,7 +5,7 @@
 \title{A Function generate a scatter plot of observed vs predicted edge values.}
 \usage{
 conditional_edge_prediction_correlation_plot(edge_prediction_results,
-  xlim = NULL, ylim = NULL)
+  xlim = NULL, ylim = NULL, plot_max_entropy_predictions = FALSE)
 }
 \arguments{
 \item{edge_prediction_results}{A list object returned by the
@@ -16,6 +16,9 @@ numeric vector of the form c(lower,upper) for observed edge values.}
 
 \item{ylim}{Defaults to NULL, but can be set by the user if desired to a
 numeric vector of the form c(lower,upper) for predicted edge values.}
+
+\item{plot_max_entropy_predictions}{Defaults to FALSE, can be set to TRUE to
+show maximum entropy edge predictions as red X's.}
 }
 \value{
 Saves a PDF plot to the current working directory

@@ -8,12 +8,15 @@
 #' numeric vector of the form c(lower,upper) for observed edge values.
 #' @param ylim Defaults to NULL, but can be set by the user if desired to a
 #' numeric vector of the form c(lower,upper) for predicted edge values.
+#' @param plot_max_entropy_predictions Defaults to FALSE, can be set to TRUE to
+#' show maximum entropy edge predictions as red X's.
 #' @return Saves a PDF plot to the current working directory
 #' @export
 conditional_edge_prediction_correlation_plot <- function(
   edge_prediction_results,
   xlim = NULL,
-  ylim = NULL) {
+  ylim = NULL,
+  plot_max_entropy_predictions = FALSE) {
 
   # make diagnoal NA's
   diag(edge_prediction_results$predicted_edge_values) <- NA
@@ -26,6 +29,39 @@ conditional_edge_prediction_correlation_plot <- function(
   # calculate correlation coefficient
   corcoef <- cor(predicted_vals, observed_vals, use = "complete.obs")
 
+  # now calculate the average correlation coefficient across all simulated
+  # networks
+  num_sim <- length(edge_prediction_results$edge_predictions[,,1])
+  predicted_corcoef <- rep(0, num_sim)
+  for (i in 1:num_sim) {
+    cur <- edge_prediction_results$edge_predictions[,,i]
+    diag(cur) <- NA
+    cur_predicted_vals <- c(cur)
+    predicted_corcoef[i] <- cor(cur_predicted_vals,
+                                observed_vals,
+                                use = "complete.obs")
+  }
+  #summary(predicted_corcoef)
+
+  if (plot_max_entropy_predictions) {
+    diag(edge_prediction_results$max_ent_predicted_edge_values) <- NA
+    max_ent_predicted_vals <- c(edge_prediction_results$max_ent_predicted_edge_values)
+    corcoef2 <- cor(max_ent_predicted_vals, observed_vals, use = "complete.obs")
+
+    num_sim <- length(edge_prediction_results$max_ent_edge_predictions[,,1])
+    predicted_corcoef2 <- rep(0, num_sim)
+    for (i in 1:num_sim) {
+      cur <- edge_prediction_results$max_ent_edge_predictions[,,i]
+      diag(cur) <- NA
+      cur_predicted_vals <- c(cur)
+      predicted_corcoef2[i] <- cor(cur_predicted_vals,
+                                  observed_vals,
+                                  use = "complete.obs")
+    }
+    summary(predicted_corcoef2)
+
+  }
+
   # deal with NULL x and y limits
   if (is.null(xlim)) {
     xlim <- c(min(observed_vals, na.rm = TRUE),
@@ -34,20 +70,47 @@ conditional_edge_prediction_correlation_plot <- function(
   if (is.null(ylim)) {
     ylim <- c(min(predicted_vals, na.rm = TRUE),
               max(predicted_vals, na.rm = TRUE))
+    if (plot_max_entropy_predictions) {
+      ylim <- c(min(c(predicted_vals,max_ent_predicted_vals), na.rm = TRUE),
+                max(c(predicted_vals,max_ent_predicted_vals), na.rm = TRUE))
+    }
   }
 
   UMASS_BLUE <- rgb(51,51,153,155,maxColorValue = 255)
-  UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
+  UMASS_RED <- rgb(153,0,51,150,maxColorValue = 255)
 
-  plot(y = predicted_vals,
-       x = observed_vals,
-       pch = 19,
-       col = UMASS_BLUE,
-       xlab = "Observed Edge Value",
-       ylab = "Predicted Edge Value",
-       xlim = xlim, ylim = ylim,
-       main = paste("Correlation Coefficient:",round(corcoef,4)))
-  abline(a = 0, b = 1, lwd = 2, col = UMASS_RED)
+  # reset pars
+  par(mfrow = c(1,1))
 
+  if (plot_max_entropy_predictions) {
+    plot(y = predicted_vals,
+         x = observed_vals,
+         pch = 19,
+         col = UMASS_BLUE,
+         xlab = "Observed Edge Value",
+         ylab = "Predicted Edge Value",
+         xlim = xlim, ylim = ylim,
+         main = paste("Correlation Coefficient -- predicted values:",
+                      round(corcoef,4),
+                      " -- average of simulations:", round(mean(predicted_corcoef),4),
+                      "\nMax Entropy Corr. Coef. -- predicted values:",
+                      round(corcoef2,4),
+                      " -- average of simulations:", round(mean(predicted_corcoef2),4)))
+    points(x = observed_vals,
+           y = max_ent_predicted_vals,
+           pch = 4,
+           col = UMASS_RED)
+    abline(a = 0, b = 1, lwd = 2)
+  } else {
+    plot(y = predicted_vals,
+         x = observed_vals,
+         pch = 19,
+         col = UMASS_BLUE,
+         xlab = "Observed Edge Value",
+         ylab = "Predicted Edge Value",
+         xlim = xlim, ylim = ylim,
+         main = paste("Correlation Coefficient:",round(corcoef,4)))
+    abline(a = 0, b = 1, lwd = 2)
+  }
 }
 
