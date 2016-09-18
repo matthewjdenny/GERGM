@@ -53,7 +53,21 @@ calculate_additional_GOF_statistics <- function(GERGM_Object,
     return(mod)
   }
 
-  
+  if (GERGM_Object@beta_correlation_model) {
+    # if we are working in the correlation space, then intensities should
+    # be the absolute value of demeaned simulated values so that both large
+    # positive and negative values will count as stronger ties.
+
+    # calculate average intensity
+    intensities <-  abs(networks - mean_value)
+
+    # get the intensity of each simulated network
+    simulated_intensities <- apply(intensities,3,mean_without_diagonal)
+
+    # get the observed intensity
+    observed_intensity <- mean(abs(bounded_network - mean_value), na.rm = TRUE)
+
+  } else {
     # if we are not working in the correlation space, then intensities should
     # just be the demeaned simulated values.
 
@@ -66,7 +80,7 @@ calculate_additional_GOF_statistics <- function(GERGM_Object,
     # get the observed intensity
     observed_intensity <- mean(bounded_network - mean_value, na.rm = TRUE)
 
- 
+  }
 
   # get the degree distributions on the simulated support
   simulated_odegrees <- apply(networks,3,get_odegrees)
@@ -79,7 +93,17 @@ calculate_additional_GOF_statistics <- function(GERGM_Object,
 
   if (!is.null(modularity_group_memberships)) {
 
-   
+    if (GERGM_Object@beta_correlation_model) {
+      simulated_modularities <- apply(intensities,
+                                      3,
+                                      get_modularity,
+                                      mode = mode,
+                                      memberships = modularity_group_memberships)
+      observed_modularities <- get_modularity(observed_intensity,
+                                              mode,
+                                              modularity_group_memberships)
+
+    } else {
       # have to use raw simulated networks since weights have to be positive
       simulated_modularities <- apply(networks,
                                       3,
@@ -89,7 +113,7 @@ calculate_additional_GOF_statistics <- function(GERGM_Object,
       observed_modularities <- get_modularity(bounded_network,
                                               mode,
                                               modularity_group_memberships)
-    
+    }
 
     intensity <- c(0,observed_intensity)
     modularity <- c(0,observed_modularities)

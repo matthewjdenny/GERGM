@@ -19,12 +19,21 @@ log.l <- function(thetas,
     z <- hsnet %*% (theta - ltheta)
   }
 
+  if(GERGM_Object@is_correlation_network){
+    #this will calculate the h statistics on the original network as desired
+    temp <- h.corr(possible.stats,
+                   alpha,
+                   theta = theta,
+                   together = together,
+                   GERGM_Object)[1, ]
+  }else{
     temp <- calculate_h_statistics(
       GERGM_Object,
       GERGM_Object@statistic_auxiliary_data,
       all_weights_are_one = FALSE,
       calculate_all_statistics = FALSE,
       use_constrained_network = TRUE)
+  }
   ret <- rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z))))
   return(ret)
 }
