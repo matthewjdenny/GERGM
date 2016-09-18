@@ -9,7 +9,7 @@ test_that("Simple model with no covariates runs", {
   colnames(net) <- rownames(net) <- letters[1:10]
 
   # three parameter model
-  formula <- net ~  edges +  mutual +  ttriads
+  formula <- net ~  edges + mutual +  ttriads
 
   test <- gergm(formula,
                 normalization_type = "division",
