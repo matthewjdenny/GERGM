@@ -218,6 +218,64 @@ using std::pow;
 using std::exp;
 using std::sqrt;
 
+// add in the functions I wrote for correlation networks
+arma::mat partials_to_correlations(arma::mat partial_correlations){
+  int nrow = partial_correlations.n_rows;
+  arma::mat correlations = arma::ones(nrow,nrow);
+  correlations.diag(1) = partial_correlations.diag(1);
+  correlations.diag(-1) = partial_correlations.diag(-1);
+
+  for (int k = 2; k < (nrow); ++k) {
+    for (int i = 1; i < (nrow - k + 1); ++i) {
+      arma::mat R2 = correlations.submat(i,i,(i + k -2),(i + k -2));
+      arma::mat R2_ones = arma::ones(R2.n_cols,R2.n_cols);
+      arma::rowvec r1 = correlations(i-1,arma::span(i,(i + k -2)));
+      arma::rowvec r3 =  correlations((i + k -1),arma::span(i,(i + k- 2)));
+      arma::mat R2_solved = arma::inv(R2);
+
+      arma::mat temp1 = 1 - r1 * R2_solved * r1.t();
+      arma::mat temp2 =  1 - r3 * R2_solved * r3.t();
+      arma::mat D =  sqrt(temp1 * temp2);
+      arma::mat temp3 = r1 * R2_solved * r3.t() + partial_correlations(i -1, i + k-1)*D;
+      correlations((i-1), (i + k-1)) = temp3(0,0);
+      correlations((i + k-1), (i-1)) = correlations(i-1, i + k-1);
+    }
+  }
+  return correlations;
+}
+
+
+arma::mat bounded_to_correlations(arma::mat bounded_network){
+  //transform back to the partial space
+  arma::mat partials = 2 * bounded_network -1;
+  int temp = partials.n_rows;
+  partials.diag() = arma::ones(temp);
+  //transform to correlation space
+  arma::mat correlations =  gergm::partials_to_correlations(partials);
+  return correlations;
+}
+
+
+double jacobian(arma::mat partial_correlations){
+  int nrow = partial_correlations.n_rows;
+  arma::vec corrs_1 = partial_correlations.diag(1);
+  arma::vec temp = pow(corrs_1,2);
+  arma::vec temp2 = pow((1 - temp),(nrow -2));
+  double prod_1 =  arma::prod(temp2);
+  double prod_2 = 1;
+
+  for (int k = 2; k < (nrow -1); ++k) {
+    for (int i = 0; i < (nrow - k); ++i) {
+      double temp3 = pow(partial_correlations(i,(i + k)),2);
+      prod_2 = prod_2 * pow((1 - temp3),(nrow - 1 - k));
+    }
+  }
+
+  double temp4 = pow(prod_1,(nrow - 2));
+  double result = pow(temp4*prod_2,0.5);
+  return result;
+}
+
 // Function to calculate the number of out 2-stars
 double Out2Star(arma::mat net,
                 arma::mat triples,
@@ -1274,6 +1332,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
                                   int together,
                                   int seed,
                                   int number_of_samples_to_store,
+                                  int using_correlation_network,
                                   int undirect_network,
                                   bool parallel,
                                   arma::umat use_selected_rows,
@@ -1328,6 +1387,12 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     arma::Mat<double> temp2 = random_dyad_sample_list[random_triad_sample_counter];
     random_dyad_samples = temp2;
     random_triad_sample_counter += 1;
+  }
+
+  // deal with the case where we have a correlation network.
+  if(using_correlation_network == 1){
+    current_edge_weights.diag() = arma::ones(number_of_nodes);
+    undirect_network = 1;
   }
 
 
@@ -1456,6 +1521,42 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     }
     triad_sample_update_counter += 1;
 
+    if(using_correlation_network == 1){
+      arma::mat corr_proposed_edge_weights = gergm::bounded_to_correlations(proposed_edge_weights);
+      arma::mat corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+      proposed_addition = gergm::CalculateNetworkStatistics(
+        corr_proposed_edge_weights,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        parallel,
+        use_selected_rows,
+        rows_to_use,
+        non_base_statistic_indicator,
+        random_triad_samples,
+        random_dyad_samples,
+        use_triad_sampling);
+
+      current_addition = gergm::CalculateNetworkStatistics(
+        corr_current_edge_weights,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        parallel,
+        use_selected_rows,
+        rows_to_use,
+        non_base_statistic_indicator,
+        random_triad_samples,
+        random_dyad_samples,
+        use_triad_sampling);
+
+    }else{
       proposed_addition = gergm::CalculateNetworkStatistics(
         proposed_edge_weights,
         statistics_to_use,
@@ -1493,7 +1594,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
           use_triad_sampling);
         previous_h_function_value = current_addition ;
       }
-    
+    }
 
     // store some additional diagnostics h value is the last entry
     P_Ratios[n] = p_ratio_multaplicative_factor * (proposed_addition -
@@ -1510,6 +1611,13 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     // downsampling
     log_prob_accept += p_ratio_multaplicative_factor * (proposed_addition -
       current_addition);
+
+    if(using_correlation_network == 1){
+      // now add in the bit about Jacobians
+      double numerator = log(gergm::jacobian(2*proposed_edge_weights-1));
+      double denominator = log(gergm::jacobian(2*current_edge_weights-1));
+      log_prob_accept += numerator - denominator;
+    }
 
     double rand_num = uniform_distribution(generator);
     double lud = 0;
@@ -1540,6 +1648,25 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     // Save network statistics
     if (Storage_Counter == take_sample_every) {
       //Rcpp::Rcout << "Iteration: " << n << std::endl;
+      if(using_correlation_network == 1){
+        arma::mat corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+        arma::vec save_stats = gergm::save_network_statistics(
+          corr_current_edge_weights,
+          statistics_to_use,
+          base_statistics_to_save,
+          base_statistic_alphas,
+          triples,
+          pairs,
+          alphas,
+          together,
+          save_statistics_selected_rows_matrix,
+          rows_to_use,
+          num_non_base_statistics,
+          non_base_statistic_indicator);
+        for (int m = 0; m < statistics_to_save; ++m) {
+          Save_H_Statistics(MH_Counter, m) = save_stats[m];
+        }
+      }else{
         arma::vec save_stats = gergm::save_network_statistics(
           current_edge_weights,
           statistics_to_use,
@@ -1556,16 +1683,28 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
         for (int m = 0; m < statistics_to_save; ++m) {
           Save_H_Statistics(MH_Counter, m) = save_stats[m];
         }
-		
+      }
+
+
       double mew = 0;
+      if(using_correlation_network == 1){
+        corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+      }
 
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
           if (i != j) {
+            if(using_correlation_network == 1){
+              //we use this trick to break the referencing
+              double temp = corr_current_edge_weights(i, j);
+              Network_Samples(i, j, MH_Counter) = temp;
+              mew += temp;
+            }else{
               //we use this trick to break the referencing
               double temp = current_edge_weights(i, j);
               Network_Samples(i, j, MH_Counter) = temp;
               mew += temp;
+            }
           }
         }
       }
@@ -1737,6 +1876,7 @@ List Individual_Edge_Conditional_Prediction (
     int together,
     int seed,
     int number_of_samples_to_store,
+    int using_correlation_network,
     int undirect_network,
     bool parallel,
     arma::umat use_selected_rows,
@@ -1794,6 +1934,13 @@ List Individual_Edge_Conditional_Prediction (
     random_dyad_samples = temp2;
     random_triad_sample_counter += 1;
   }
+
+  // deal with the case where we have a correlation network.
+  if(using_correlation_network == 1){
+    current_edge_weights.diag() = arma::ones(number_of_nodes);
+    undirect_network = 1;
+  }
+
 
   // Set RNG and define uniform distribution
   boost::mt19937 generator(seed);
@@ -1907,6 +2054,42 @@ List Individual_Edge_Conditional_Prediction (
     }
     triad_sample_update_counter += 1;
 
+    if(using_correlation_network == 1){
+      arma::mat corr_proposed_edge_weights = gergm::bounded_to_correlations(proposed_edge_weights);
+      arma::mat corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+      proposed_addition = gergm::CalculateNetworkStatistics(
+        corr_proposed_edge_weights,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        parallel,
+        use_selected_rows,
+        rows_to_use,
+        non_base_statistic_indicator,
+        random_triad_samples,
+        random_dyad_samples,
+        use_triad_sampling);
+
+      current_addition = gergm::CalculateNetworkStatistics(
+        corr_current_edge_weights,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        parallel,
+        use_selected_rows,
+        rows_to_use,
+        non_base_statistic_indicator,
+        random_triad_samples,
+        random_dyad_samples,
+        use_triad_sampling);
+
+    }else{
       proposed_addition = gergm::CalculateNetworkStatistics(
         proposed_edge_weights,
         statistics_to_use,
@@ -1944,7 +2127,7 @@ List Individual_Edge_Conditional_Prediction (
           use_triad_sampling);
         previous_h_function_value = current_addition ;
       }
-    
+    }
 
     // store some additional diagnostics h value is the last entry
     P_Ratios[n] = p_ratio_multaplicative_factor * (proposed_addition -
@@ -1961,6 +2144,13 @@ List Individual_Edge_Conditional_Prediction (
     // downsampling
     log_prob_accept += p_ratio_multaplicative_factor * (proposed_addition -
       current_addition);
+
+    if(using_correlation_network == 1){
+      // now add in the bit about Jacobians
+      double numerator = log(gergm::jacobian(2*proposed_edge_weights-1));
+      double denominator = log(gergm::jacobian(2*current_edge_weights-1));
+      log_prob_accept += numerator - denominator;
+    }
 
     double rand_num = uniform_distribution(generator);
     double lud = 0;
@@ -1991,6 +2181,25 @@ List Individual_Edge_Conditional_Prediction (
     // Save network statistics
     if (Storage_Counter == take_sample_every) {
       //Rcpp::Rcout << "Iteration: " << n << std::endl;
+      if(using_correlation_network == 1){
+        arma::mat corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+        arma::vec save_stats = gergm::save_network_statistics(
+          corr_current_edge_weights,
+          statistics_to_use,
+          base_statistics_to_save,
+          base_statistic_alphas,
+          triples,
+          pairs,
+          alphas,
+          together,
+          save_statistics_selected_rows_matrix,
+          rows_to_use,
+          num_non_base_statistics,
+          non_base_statistic_indicator);
+        for (int m = 0; m < statistics_to_save; ++m) {
+          Save_H_Statistics(MH_Counter, m) = save_stats[m];
+        }
+      }else{
         arma::vec save_stats = gergm::save_network_statistics(
           current_edge_weights,
           statistics_to_use,
@@ -2007,16 +2216,28 @@ List Individual_Edge_Conditional_Prediction (
         for (int m = 0; m < statistics_to_save; ++m) {
           Save_H_Statistics(MH_Counter, m) = save_stats[m];
         }
+      }
+
 
       double mew = 0;
+      if(using_correlation_network == 1){
+        corr_current_edge_weights = gergm::bounded_to_correlations(current_edge_weights);
+      }
 
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
           if (i != j) {
+            if(using_correlation_network == 1){
+              //we use this trick to break the referencing
+              double temp = corr_current_edge_weights(i, j);
+              Network_Samples(i, j, MH_Counter) = temp;
+              mew += temp;
+            }else{
               //we use this trick to break the referencing
               double temp = current_edge_weights(i, j);
               Network_Samples(i, j, MH_Counter) = temp;
               mew += temp;
+            }
           }
         }
       }
