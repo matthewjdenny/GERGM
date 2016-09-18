@@ -97,40 +97,182 @@ conditional_edge_prediction <- function(
   # get samples of each edge value and store them in an array.
   for (i in 1:GERGM_Object@num_nodes) {
     for (j in 1:GERGM_Object@num_nodes) {
-      if (i != j) {
-        cat("Predicting edge:",counter, "of",num_combinations,"...\n")
-        counter <- counter + 1
-        #now simulate from last update of theta parameters
-        temp <- Simulate_GERGM(GERGM_Object,
-                                       seed1 = seed,
-                                       possible.stats = possible_structural_terms,
-                                       predict_conditional_edges = TRUE,
-                                       i = i,
-                                       j = j)
+      if (network_is_directed) {
+        if (i != j) {
+          cat("Predicting edge:",counter, "of",num_combinations,"...\n")
+          counter <- counter + 1
+          temp <- Simulate_GERGM(GERGM_Object,
+                                 seed1 = seed,
+                                 possible.stats = possible_structural_terms,
+                                 predict_conditional_edges = TRUE,
+                                 i = i,
+                                 j = j)
+          simulated_scale <- temp@MCMC_output$Networks[i,j,]
+          # covert back to observed scale (so we incorporate in covariate effects)
+          temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+          obs_scale <- temp2@MCMC_output$Networks[i,j,]
+          #now get and save the edge sample
+          edge_values <- temp2@MCMC_output$Networks[i,j,]
 
-        simulated_scale <- temp@MCMC_output$Networks[i,j,]
+          max_ent_values <- runif(length(simulated_scale))
+          # put the edges in the GERGM object
+          temp@MCMC_output$Networks[i,j,] <- max_ent_values
+          # covert back to observed scale (so we incorporate in covariate effects)
+          temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+          #now get and save the edge sample
+          max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
 
-        # covert back to observed scale (so we incorporate in covariate effects)
-        temp <- Convert_Simulated_Networks_To_Observed_Scale(temp)
 
-        #now get and save the edge sample
-        edge_values <- temp@MCMC_output$Networks[i,j,]
 
-        # initialize this way to make sure we get dimensions right
-        if (is.null(Edge_Predictions)) {
-          
-            Edge_Predictions <- array(0,dim = c(GERGM_Object@num_nodes,
-                                                GERGM_Object@num_nodes,
-                                                length(edge_values)))
-            edge_predictions_bounded_scale <- array(0,dim = c(GERGM_Object@num_nodes,
-                                                              GERGM_Object@num_nodes,
-                                                              length(edge_values)))
-          
+          # initialize this way to make sure we get dimensions right
+          if (is.null(Edge_Predictions)) {
+              Edge_Predictions <- array(0,dim = c(GERGM_Object@num_nodes,
+                                                  GERGM_Object@num_nodes,
+                                                  length(edge_values)))
+              edge_predictions_bounded_scale <- array(0,dim = c(GERGM_Object@num_nodes,
+                                                                GERGM_Object@num_nodes,
+                                                                length(edge_values)))
+            # for the max ent predictions
+            Max_Ent_Edge_Predictions <- Edge_Predictions
+          }
+
+          # fill in the spot in the array
+          Edge_Predictions[i,j,] <- edge_values
+          edge_predictions_bounded_scale[i,j,] <- simulated_scale
+          Max_Ent_Edge_Predictions[i,j,] <- max_ent_observed_scale
+
         }
+      } else {
+        # undirected network
+        if (j < i) {
+          cat("Predicting edge:",counter, "of",num_combinations/2,"...\n")
+          counter <- counter + 1
 
-        # fill in the spot in the array
-        Edge_Predictions[i,j,] <- edge_values
-        edge_predictions_bounded_scale[i,j,] <- simulated_scale
+          # now get max entropy conditional corr values
+          if (GERGM_Object@beta_correlation_model) {
+            max_ent_observed_scale <- draw_max_entropy_conditional_uniform_corr(
+              GERGM_Object@network,
+              i,
+              j,
+              n = number_of_networks_to_simulate,
+              increment = .0001)
+
+            sampling_weights <- rep(0,number_of_networks_to_simulate)
+            exp_theta_h <- rep(0,number_of_networks_to_simulate)
+            pdf_term <- rep(0,number_of_networks_to_simulate)
+
+            statistic_auxiliary_data <- GERGM_Object@statistic_auxiliary_data
+            # save this since we are going to alter it
+            bounded_net <- GERGM_Object@bounded.network
+            # #figure out which term we are dealing with in the lower diagonal
+            P <- matrix(1:(GERGM_Object@num_nodes^2),
+                        nrow = GERGM_Object@num_nodes,
+                        ncol = GERGM_Object@num_nodes)
+            inds <- P[lower.tri(P, diag = FALSE)]
+            lower_diag_index <- which(inds == P[i,j])
+            for (n in 1:number_of_networks_to_simulate) {
+              #create the current network
+              net <- GERGM_Object@network
+              net[i,j] <- max_ent_observed_scale[n]
+              net[j,i] <- max_ent_observed_scale[n]
+              # transform to [0,1]
+              GERGM_Object@bounded.network <- pbt(net,
+                                                  GERGM_Object@mu,
+                                                  GERGM_Object@phi)
+              h_stats <- calculate_h_statistics(GERGM_Object,
+                                                statistic_auxiliary_data)
+              # h_stats <- h_stats[statistic_auxiliary_data$specified_statistic_indexes_in_full_statistics]
+              numerator_term <- exp(sum(GERGM_Object@theta.coef[1,]*h_stats))
+              product_term <- dbt(net,
+                                  GERGM_Object@mu,
+                                  GERGM_Object@phi)[lower_diag_index]
+
+              sampling_weights[n] <- numerator_term * product_term
+              exp_theta_h[n] <- numerator_term
+              pdf_term[n] <- product_term
+            }
+            cat("Summary of sampling weights\n")
+            print(summary(sampling_weights/sum(sampling_weights)))
+
+            # par(mfrow = c(3,1))
+            # plot(x = max_ent_observed_scale,
+            #      y = sampling_weights)
+            # abline(v = GERGM_Object@network[i,j],
+            #        col = "blue")
+            # plot(x = max_ent_observed_scale,
+            #      y = exp_theta_h)
+            # abline(v = GERGM_Object@network[i,j],
+            #        col = "blue")
+            # plot(x = max_ent_observed_scale,
+            #      y = pdf_term)
+            # abline(v = GERGM_Object@network[i,j],
+            #        col = "blue")
+            # par(mfrow = c(1,1))
+
+            edge_values <- sample(x = max_ent_observed_scale,
+                                  size = number_of_networks_to_simulate,
+                                  replace = TRUE,
+                                  prob = sampling_weights)
+            # make simulated and observed scale the same for correlation networks.
+            simulated_scale <- edge_values
+
+            GERGM_Object@bounded.network <- bounded_net
+
+          } else {
+            temp <- Simulate_GERGM(GERGM_Object,
+                                   seed1 = seed,
+                                   possible.stats = possible_structural_terms,
+                                   predict_conditional_edges = TRUE,
+                                   i = i,
+                                   j = j)
+            simulated_scale <- temp@MCMC_output$Networks[i,j,]
+            # covert back to observed scale (so we incorporate in covariate effects)
+            temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+            obs_scale <- temp2@MCMC_output$Networks[i,j,]
+            #now get and save the edge sample
+            edge_values <- temp2@MCMC_output$Networks[i,j,]
+
+            max_ent_values <- runif(length(simulated_scale))
+            # put the edges in the GERGM object
+            temp@MCMC_output$Networks[i,j,] <- max_ent_values
+            # covert back to observed scale (so we incorporate in covariate effects)
+            temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+            #now get and save the edge sample
+            max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
+          }
+
+
+          # initialize this way to make sure we get dimensions right
+          if (is.null(Edge_Predictions)) {
+            if (GERGM_Object@beta_correlation_model) {
+              # make sure the diagonal is 1's
+              Edge_Predictions <- array(1,dim = c(GERGM_Object@num_nodes,
+                                                  GERGM_Object@num_nodes,
+                                                  length(edge_values)))
+              edge_predictions_bounded_scale <- array(1,dim = c(GERGM_Object@num_nodes,
+                                                                GERGM_Object@num_nodes,
+                                                                length(edge_values)))
+            } else {
+              Edge_Predictions <- array(0,dim = c(GERGM_Object@num_nodes,
+                                                  GERGM_Object@num_nodes,
+                                                  length(edge_values)))
+              edge_predictions_bounded_scale <- array(0,dim = c(GERGM_Object@num_nodes,
+                                                                GERGM_Object@num_nodes,
+                                                                length(edge_values)))
+            }
+            # for the max ent predictions
+            Max_Ent_Edge_Predictions <- Edge_Predictions
+          }
+
+          # fill in the spot in the array
+          Edge_Predictions[i,j,] <- edge_values
+          edge_predictions_bounded_scale[i,j,] <- simulated_scale
+          Max_Ent_Edge_Predictions[i,j,] <- max_ent_observed_scale
+          Edge_Predictions[j,i,] <- edge_values
+          edge_predictions_bounded_scale[j,i,] <- simulated_scale
+          Max_Ent_Edge_Predictions[j,i,] <- max_ent_observed_scale
+
+        }
       }
     }
   }
@@ -139,6 +281,10 @@ conditional_edge_prediction <- function(
   sim_sds <- apply(edge_predictions_bounded_scale,c(1,2),sd)
   means <- apply(Edge_Predictions,c(1,2),mean)
   sds <- apply(Edge_Predictions,c(1,2),sd)
+
+  # get the maximum entropy prediction means
+  max_ent_means <- apply(Max_Ent_Edge_Predictions,c(1,2),mean)
+
 
   # calculate the precentage of edges in CI
   in_ci <- rep(0,num_combinations)
@@ -168,21 +314,28 @@ conditional_edge_prediction <- function(
     "proportion of observed edges in predicted",
     "edge 95% confidence intervals is:", mean(in_ci),"\n\n")
 
-  
+  if (GERGM_Object@beta_correlation_model) {
+    cat("Average confidence interval coverage is ",
+        round(100*mean(average_ci_coverage),2),
+        "% of the correlation space... \n",sep = "")
+  } else {
     cat("Average confidence interval coverage is ",
         round(100*mean(average_sim_ci_coverage),2),
         "% of the possible simulated network space... \n",sep = "")
-  
+  }
 
 
   # now lets do some comparison work.
   # GERGM_Object@bounded.network
 
   return(list(edge_predictions = Edge_Predictions,
+              max_ent_edge_predictions = Max_Ent_Edge_Predictions ,
               observed_network = GERGM_Object@network,
               predicted_edge_values = means,
               predicted_edge_sds = sds,
               proportion_in_ci = mean(in_ci),
               average_ci_coverage = 100*mean(average_ci_coverage),
-              edge_predictions_bounded_scale = edge_predictions_bounded_scale))
+              edge_predictions_bounded_scale = edge_predictions_bounded_scale,
+              max_ent_predicted_edge_values = max_ent_means))
+
 }
