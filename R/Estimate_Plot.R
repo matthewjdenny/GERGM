@@ -48,6 +48,8 @@ Estimate_Plot <- function(
   #define colors
   UMASS_BLUE <- rgb(51,51,153,255,maxColorValue = 255)
   UMASS_RED <- rgb(153,0,51,255,maxColorValue = 255)
+  UMASS_GREEN <- rgb(0,102,102,195,maxColorValue = 255)
+
   Model <- Variable <- Coefficient <- SE <- Coefficient_Type <- NULL
 
   # if we are only using the one model, proceed as normal.
@@ -58,22 +60,23 @@ Estimate_Plot <- function(
                                             coefficient_names,
                                             leave_out_coefficients,
                                             "Model 1")
-
+    data$Variable <- factor(data$Variable , levels = rev(data$Variable))
     # Plot
     if (length(GERGM_Object@lambda.coef[,1]) > 0 &
         coefficients_to_plot == "covariate") {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
-        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED,UMASS_GREEN)) +
         ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
     } else if (length(GERGM_Object@lambda.coef[,1]) > 0 &
                 coefficients_to_plot == "both") {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
-        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED,UMASS_GREEN)) +
         ggplot2::theme(axis.text = ggplot2::element_text(size = text_size,
           angle = 90, hjust = 1)) +
-        ggplot2::facet_grid(~ Coefficient_Type,
-                            scales = "free",
-                            space = "free_x")
+        ggplot2::coord_flip()
+        # ggplot2::facet_grid(~ Coefficient_Type,
+        #                     scales = "free",
+        #                     space = "free_x")
         # ggplot2::facet_wrap(~ Coefficient_Type, ncol = 1)
     } else {
       zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Coefficient_Type)) +
@@ -105,8 +108,7 @@ Estimate_Plot <- function(
           coefficients_to_plot == "both") {
         zp1 <- zp1  + ggplot2::theme_bw() +
           ggplot2::theme(legend.position = "none",
-                         axis.text = ggplot2::element_text(size = text_size,
-                                                      angle = 90, hjust = 1),
+                         axis.text = ggplot2::element_text(size = text_size),
                          strip.background = ggplot2::element_blank(),
                          strip.text = ggplot2::element_blank())
       } else {
@@ -134,12 +136,12 @@ Estimate_Plot <- function(
                                              model_names[2])
 
     data <- rbind(data1, data2)
-
+    data$Variable <- factor(data$Variable , levels = rev(data$Variable))
     print(data)
     # Plot
 
     zp1 <- ggplot2::ggplot(data, ggplot2::aes(colour = Model)) +
-        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED)) +
+        ggplot2::scale_color_manual(values = c(UMASS_BLUE,UMASS_RED,UMASS_GREEN)) +
       ggplot2::theme(axis.text = ggplot2::element_text(size = text_size))
 
     zp1 <- zp1 + ggplot2::geom_hline(yintercept = 0,
