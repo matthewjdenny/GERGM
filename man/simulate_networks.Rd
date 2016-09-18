@@ -11,7 +11,8 @@ simulate_networks(formula, thetas, simulation_method = c("Metropolis",
   GERGM_Object = NULL, return_constrained_networks = FALSE,
   optimize_proposal_variance = FALSE, target_accept_rate = 0.25,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 1,
-  covariate_data = NULL, lambdas = NULL, ...)
+  beta_correlation_model = FALSE, covariate_data = NULL, lambdas = NULL,
+  ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
@@ -80,6 +81,10 @@ HIGHLY EXPERIMENTAL!}
 
 \item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
 approximation, defaults to 0.25}
+
+\item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
+correlation model is estiamted. A correlation network must be provided, but
+all covariates and undirected statistics may be supplied as normal.}
 
 \item{covariate_data}{A data frame containing node level covariates the user
 wished to transform into sender or reciever effects. It must have row names
