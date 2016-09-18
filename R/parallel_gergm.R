@@ -144,6 +144,10 @@
 #' should only be used as a last resort (after playing with exponential
 #' downweighting and the MPLE_gain_factor).  SPECIFY SINGLE VALUE, MUST BE
 #' CONSTANT ACROSS SPECIFICATIONS.
+#' @param beta_correlation_model Defaults to FALSE. If TRUE, then the beta
+#' correlation model is estiamted. A correlation network must be provided, but
+#' all covariates and undirected statistics may be supplied as normal.  SPECIFY
+#' SINGLE VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.
 #' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
 #' specifying statistics with alpha downweighting. Tends to provide better
 #' initialization when downweight_statistics_together = FALSE. SPECIFY SINGLE
@@ -190,9 +194,9 @@
 #'
 #' network_data_list <- list(network_covariate = network_covariate)
 #'
-#' formula <- net ~ edges +
+#' formula <- net ~ edges + sender("Age") +
 #'   netcov("network_covariate") + nodematch("Type",base = "A")
-#' formula2 <- net ~ edges + sender("Age") +
+#' formula2 <- net ~ edges +
 #'   netcov("network_covariate") + nodemix("Type",base = "A")
 #'
 #' form_list <- list(f1 = formula,
@@ -204,7 +208,8 @@
 #'                         network_data_list = network_data_list,
 #'                         cores = 2,
 #'                         number_of_networks_to_simulate = 10000,
-#'                         thin = 1/10,
+#'                         thin = 1/100,
+#'                         proposal_variance = 0.1,
 #'                         MCMC_burnin = 5000)
 #' }
 #' @export
@@ -240,6 +245,7 @@ parallel_gergm <- function(
   stop_for_degeneracy = FALSE,
   target_accept_rate = 0.25,
   theta_grid_optimization_list = NULL,
+  beta_correlation_model = FALSE,
   weighted_MPLE = FALSE,
   fine_grained_pv_optimization = FALSE,
   parallel = FALSE,
@@ -324,6 +330,7 @@ parallel_gergm <- function(
     stop_for_degeneracy = stop_for_degeneracy,
     target_accept_rate = target_accept_rate,
     theta_grid_optimization_list = theta_grid_optimization_list,
+    beta_correlation_model = beta_correlation_model,
     weighted_MPLE = weighted_MPLE,
     fine_grained_pv_optimization = fine_grained_pv_optimization,
     parallel = parallel,
