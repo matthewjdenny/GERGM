@@ -17,7 +17,14 @@ run_mple <- function(GERGM_Object,
   }
   GERGM_Object <- store_console_output(GERGM_Object,"Estimating Initial Values for Theta via MPLE... \n")
 
-  if (GERGM_Object@weighted_MPLE) {
+  if (GERGM_Object@is_correlation_network) {
+    theta.init <- mple.corr(GERGM_Object@network,
+                            GERGM_Object@bounded.network,
+                            statistics = GERGM_Object@stats_to_use,
+                            directed = GERGM_Object@directed_network,
+                            alphas = rep(1, length(possible.stats)),
+                            together = 1)
+  } else if (GERGM_Object@weighted_MPLE) {
     # if we are using weighted MPLE with integration over edge weights then
     # allow exponential weighting in MPLE objective
 
@@ -50,7 +57,20 @@ run_mple <- function(GERGM_Object,
     paste("\nMPLE Thetas: ", theta.init$par, "\n"))
   num.nodes <- GERGM_Object@num_nodes
   triples <- t(combn(1:num.nodes, 3))
-  
+  if (GERGM_Object@is_correlation_network) {
+    init.statistics <- calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = TRUE,
+      use_constrained_network = FALSE)
+    obs.stats <- calculate_h_statistics(
+      GERGM_Object,
+      GERGM_Object@statistic_auxiliary_data,
+      all_weights_are_one = FALSE,
+      calculate_all_statistics = FALSE,
+      use_constrained_network = FALSE)
+  } else {
     init.statistics <- calculate_h_statistics(
       GERGM_Object,
       GERGM_Object@statistic_auxiliary_data,
@@ -63,7 +83,7 @@ run_mple <- function(GERGM_Object,
       all_weights_are_one = FALSE,
       calculate_all_statistics = FALSE,
       use_constrained_network = TRUE)
-  
+  }
 
 
   #cat("Observed Values of Selected Statistics:", "\n", obs.stats, "\n")
