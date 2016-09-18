@@ -137,7 +137,7 @@ test_that("That weighted MPLE works", {
                 force_x_theta_updates = 1,
                 weighted_MPLE = TRUE)
 
-  check_against <- c(4.100, -0.732)
+  check_against <- c(4.122, -0.731)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
