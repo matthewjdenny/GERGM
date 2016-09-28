@@ -5,7 +5,7 @@
 \title{Generate Goodness Of Fit plot from a GERGM object.}
 \usage{
 GOF(GERGM_Object, column_names = NULL, modularity_group_memberships = NULL,
-  return_GERGM_Object = FALSE, ...)
+  return_GERGM_Object = FALSE, observed_support = FALSE, ...)
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
@@ -22,6 +22,9 @@ modularities.}
 was passed in, but now with additional GOF statistics such as modularity
 included in the `@simulated_statistics_for_GOF` and `@additional_stats`
 fields}
+
+\item{observed_support}{logical indicating whether GOF plots should use
+observed support. Defaults to FALSE.}
 
 \item{...}{Additional Arguments can be passed in. Included for eventual
 compatibility with XERGM package.}
