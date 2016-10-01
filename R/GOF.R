@@ -58,6 +58,9 @@ GOF <- function(GERGM_Object,
     temp <- GERGM_Object@simulated_statistics_for_GOF
     stats <- GERGM_Object@stats[2,]
   }
+  # thin chain for accurate t-test stats
+  temp <- Thin_Statistic_Samples(temp)
+
   cat("\nStatistics used in comparison:\n")
   print(stats)
   cat("\nMean statistic values from simulated networks:\n")
