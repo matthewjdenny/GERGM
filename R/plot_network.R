@@ -562,19 +562,23 @@ plot_network <- function(sociomatrix,
       print(max_bin)
       if (white_background) {
         text(layout,labels = rownames(sociomatrix), col = "black")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c(negcolors[min_bin - 1],
-                        poscolors[max_bin - 1]),
-               horiz = T, bg = "white",text.col = "black",
-               box.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "black",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c(negcolors[min_bin - 1],
+                          poscolors[max_bin - 1]),
+                 horiz = T, bg = "white",text.col = "black",
+                 box.col = "white")
+        }
       } else {
         text(layout,labels = rownames(sociomatrix), col = "white")
-        legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
-               legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
-               fill = c(negcolors[min_bin - 1],
-                        poscolors[max_bin - 1]),
-               horiz = T, bg = "black",text.col = "white")
+        if (show_legend) {
+          legend("bottom", inset = 0, title = "Edge Values",title.col = "white",
+                 legend = c(round(min(sociomatrix),2), round(max(sociomatrix),2)),
+                 fill = c(negcolors[min_bin - 1],
+                          poscolors[max_bin - 1]),
+                 horiz = T, bg = "black",text.col = "white")
+        }
       }
 
       # now for the comparison network
