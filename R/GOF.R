@@ -69,12 +69,19 @@ GOF <- function(GERGM_Object,
   # calculate t-test statistics
   t_stats <- stats
   for (i in 1:length(stats)) {
+    t_stats[i] <- as.numeric(t.test(temp[,i], mu = stats[i])$statistic)
+  }
+
+  cat("t-statistics for difference of simulated mean from observed statistic...\n")
+  print(t_stats)
+
+  for (i in 1:length(stats)) {
     mn <- mean(temp[,i])
     ste <- sd(temp[,i])
     t_stats[i] <- (stats[i] - mn)/ste
   }
 
-  cat("t-statistics for difference of observed statistic from simulated mean...\n")
+  cat("t-statistics for test of whether observed statistic is an outlier with respect to simulated statistics...\n")
   print(t_stats)
 
 
