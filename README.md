@@ -3,6 +3,8 @@ An R package to estimate Generalized Exponential Random Graph Models. To get sta
 
 **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
 
+Please note that the correlation network estimation functionality in this package is protected from unlicensed commercial use under a provisional pattent. Please contact <mdenny@psu.edu> for more information if your company is interested in commercial applications of this functionality. 
+
 ## News
 
 **[09/17/16]** A major update to the package has been pushed to the public GERGM repo and will shortly be up on CRAN. Here are some highlights:
