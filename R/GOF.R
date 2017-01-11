@@ -34,8 +34,7 @@ GOF <- function(GERGM_Object,
 
   GERGM_Object <- calculate_additional_GOF_statistics(
     GERGM_Object,
-    modularity_group_memberships,
-    observed_support = observed_support)
+    modularity_group_memberships)
 
   if (observed_support) {
     temp <- GERGM_Object@simulated_statistics_for_GOF
