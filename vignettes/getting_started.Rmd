@@ -19,7 +19,7 @@ formulations in the weighted case. The relevant papers detailing the model can b
 found at the links below:
 
 * Bruce A. Desmarais, and Skyler J. Cranmer,  (2012). "Statistical inference for valued-edge networks: the generalized exponential random graph model". PloS One. [[Available Here](http://dx.plos.org/10.1371/journal.pone.0030136)]
-* James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2015). "Stochastic Weighted Graphs: Flexible Model Specification and Simulation". [[Available Here](http://arxiv.org/abs/1505.04015)]
+* James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2017). "Stochastic weighted graphs: Flexible model specification and simulation". Social Networks, 49, 37–47. [[Available Here](http://doi.org/10.1016/j.socnet.2016.11.002)]
 * Matthew J. Denny (2016). "The Importance of Generative Models for Assessing Network Structure". [[Available Here](http://ssrn.com/abstract=2798493)]
 
 ## Installation

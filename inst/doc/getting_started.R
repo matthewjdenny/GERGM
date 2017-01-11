@@ -67,7 +67,7 @@ hysteresis_results <- hysteresis(test,
                                  simulation_method = "Metropolis",
                                  proposal_variance = 0.05)
 
-## ----eval=TRUE, echo=TRUE, results='hide', message=FALSE-----------------
+## ----eval=TRUE, echo=TRUE, results='hide', message=FALSE----
 test2 <- conditional_edge_prediction(
   GERGM_Object = test,
   number_of_networks_to_simulate = 100,
@@ -76,10 +76,10 @@ test2 <- conditional_edge_prediction(
   MCMC_burnin = 100,
   seed = 123)
 
-## ----eval=TRUE-----------------------------------------------------------
+## ----eval=TRUE---------------------------------------------
 MSE_results <- conditional_edge_prediction_MSE(test2)
 
-## ----eval=FALSE----------------------------------------------------------
+## ----eval=FALSE--------------------------------------------
 #  formula <- net ~  mutual(0.8) + ttriads(0.8) + out2stars(0.8) +
 #    sender("log_GDP") + netcov(net_exports) +
 #    receiver("log_GDP") + nodemix("G8", base = "No")
