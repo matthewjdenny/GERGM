@@ -40,11 +40,11 @@ the user wishes to include an intercept
 (strongly recommended). The user may select the "regression" method
 (default) to include an intercept in the lambda transformation of the
 network, or "endogenous" to include the intercept as in a traditional ERGM
-model.  To use exponential downweighting for any of the network level terms,
+model.  To use exponential down-weighting for any of the network level terms,
 simply specify a value for alpha less than 1. The `(alpha = 1)` term may be
 omitted from the structural terms if no exponential downweighting is
 required. In this case, the terms may be provided as: `out2star`, `in2star`,
-`ctriads`, `recip`, `ttriads`. If the network is undirected the user may only
+`ctriads`, `mutual`, `ttriads`. If the network is undirected the user may only
 specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,
 `absdiff(covariate = "MyCov")`,
 `sender(covariate = "MyCov")`, `nodematch(covariate)`,
@@ -62,19 +62,19 @@ the statistic. This can be a useful option if the user believes that a
 network property varies with some property of nodes.}
 
 \item{covariate_data}{A data frame containing node level covariates the user
-wished to transform into sender or reciever effects. It must have row names
+wished to transform into sender or receiver effects. It must have row names
 that match every entry in colnames(raw_network), should have descriptive
-column names.  If left NULL, then no sender or reciever effects will be
+column names.  If left NULL, then no sender or receiver effects will be
 added.}
 
 \item{normalization_type}{If only a raw_network is provided the function
 will automatically check to determine if all edges fall in the [0,1] interval.
 If edges are determined to fall outside of this interval, then a trasformation
 onto the interval may be specified. If "division" is selected, then the data
-will have a value added to them such that the minimum value is atleast zero
+will have a value added to them such that the minimum value is at least zero
 (if necessary) and then all edge values will be divided by the maximum to
 ensure that the maximum value is in [0,1]. If "log" is selected, then the data
-will have a value added to them such that the minimum value is atleast zero
+will have a value added to them such that the minimum value is at least zero
 (if necessary), then 1 will be added to all edge values before they are logged
 and then divided by the largest value, again ensuring that the resulting
 network is on [0,1]. Defaults to "log" and need not be set to NULL if
@@ -88,7 +88,7 @@ likelihood estimates should be obtained. In this case, no simulations will be
 performed. Default is FALSE.}
 
 \item{transformation_type}{Specifies how covariates are transformed onto the
-raw network. When working with heavly tailed data that are not strictly
+raw network. When working with heavy tailed data that are not strictly
 positive, select "Cauchy" to transform the data using a Cauchy distribution.
 If data are strictly positive and heavy tailed (such as financial data) it is
 suggested the user select "LogCauchy" to perform a Log-Cauchy transformation
@@ -157,14 +157,14 @@ model is not degenerate but simulated statistics do not match observed network
 well when algorithm stops after first y updates.}
 
 \item{output_directory}{The directory where you would like output generated
-by the GERGM estimation proceedure to be saved (if output_name is specified).
+by the GERGM estimation procedure to be saved (if output_name is specified).
 This includes, GOF, trace, and parameter estimate plots, as well as a summary
-of the estimation proceedure and an .Rdata file containing the GERGM object
+of the estimation procedure and an .Rdata file containing the GERGM object
 returned by this function. May be left as NULL if the user would prefer all
 plots be printed to the graphics device.}
 
 \item{output_name}{The common name stem you would like to assign to all
-objects output by the gergm function. Default value of NULL will not save any
+objects output by the gergm() function. Default value of NULL will not save any
 output directly to .pdf files, it will be printed to the console instead. Must
 be a character string or NULL. For example, if "Test" is supplied as the
 output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estim
@@ -213,14 +213,14 @@ parameters the user wishes to specify. For example, with 5 structural
 parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
 = 16807 parameter grid search. Again this feature is highly experimental and
 should only be used as a last resort (after playing with exponential
-downweighting and the MPLE_gain_factor).}
+down weighting and the MPLE_gain_factor).}
 
 \item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
-correlation model is estiamted. A correlation network must be provided, but
+correlation model is estimated. A correlation network must be provided, but
 all covariates and undirected statistics may be supplied as normal.}
 
 \item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
-specifying statistics with alpha downweighting. Tends to provide better
+specifying statistics with alpha down weighting. Tends to provide better
 initialization when downweight_statistics_together = FALSE.}
 
 \item{fine_grained_pv_optimization}{Logical indicating whether fine grained
@@ -229,7 +229,7 @@ proposal variance optimization, but may provide better results. Highly
 recommended if running a correlation model.}
 
 \item{parallel}{Logical indicating whether the weighted MPLE objective and any
-other operations that can be easily paralllelized should be calculated in
+other operations that can be easily parallelized should be calculated in
 parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
 may be possible.}
 
@@ -240,11 +240,11 @@ larger networks.}
 
 \item{cores}{Numeric value defaulting to 1. Can be set to any number up to the
 number of threads/cores available on your machine. Will be used to speed up
-computations if parllel = TRUE.}
+computations if parallel = TRUE.}
 
 \item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
 to the h statistics should be used under Metropolis Hastings in-between
-thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+thinned samples. This may dramatically speed up estimation. Defaults to FALSE.
 HIGHLY EXPERIMENTAL!}
 
 \item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
