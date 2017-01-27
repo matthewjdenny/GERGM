@@ -3,8 +3,6 @@ An R package to estimate Generalized Exponential Random Graph Models. To get sta
 
 **PLEASE REPORT ANY BUGS OR ERRORS TO <mdenny@psu.edu>**. 
 
-Please note that the correlation network estimation functionality in this package is protected from unlicensed commercial use under a provisional pattent. Please contact <mdenny@psu.edu> for more information if your company is interested in commercial applications of this functionality. 
-
 ## News
 
 **[09/17/16]** A major update to the package has been pushed to the public GERGM repo and will shortly be up on CRAN. Here are some highlights:
@@ -31,6 +29,8 @@ An R package which implements the Generalized Exponential Random Graph Model (GE
 * Bruce A. Desmarais, and Skyler J. Cranmer,  (2012). "Statistical inference for valued-edge networks: the generalized exponential random graph model". PloS One. [[Available Here](http://dx.plos.org/10.1371/journal.pone.0030136)]
 * James D. Wilson, Matthew J. Denny, Shankar Bhamidi, Skyler Cranmer, and Bruce Desmarais (2017). "Stochastic weighted graphs: Flexible model specification and simulation". Social Networks, 49, 37–47. [[Available Here](http://doi.org/10.1016/j.socnet.2016.11.002)]
 * Matthew J. Denny (2016). "The Importance of Generative Models for Assessing Network Structure". [[Available Here](http://ssrn.com/abstract=2798493)]
+
+To maximize translation across related methods, we have followed many naming conventions used in the [statnet](https://CRAN.R-project.org/package=statnet) suite of packages, and in the [ergm](https://CRAN.R-project.org/package=ergm) package particularly.
 
 ## Installation
 
@@ -245,8 +245,9 @@ The GERGM package incorporates a number of advanced features that are designed t
     Note that the `model_name` is a way to distinguish multiple models that can simultaneously post information to the same slack channel if you so desire, because `model_name` will appear as the name of the poster on the slack channel. If all goes well, and the computer you are running the GERGM estimation on has internet access, your slack channel will receive updates when you start estimation, after each lambda/theta parameter update, if the model becomes degenerate, and when it completes running. This feature is still in development. 
 
 
-
-
 ## Testing
             
 So far, this package has been tested successfully on OSX, CentOS 7, Ubuntu and Windows 7. Please email me at <mdenny@psu.edu> if you have success on another OS or run into any problems.
+
+## Intellectual Property
+Please note that the use of the correlation network estimation functionality in this package is protected from unlicensed commercial use in neuroimaging applications under a provisional pattent. The software itself is completely open source, and you are free to copy, modify it, and use it in other applications. Please contact <mdenny@psu.edu> for more information if your company is interested in commercial neuroimaging applications using the GERGM. 
