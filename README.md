@@ -250,4 +250,4 @@ The GERGM package incorporates a number of advanced features that are designed t
 So far, this package has been tested successfully on OSX, CentOS 7, Ubuntu and Windows 7. Please email me at <mdenny@psu.edu> if you have success on another OS or run into any problems.
 
 ## Intellectual Property
-Please note that the use of the correlation network estimation functionality in this package is protected from unlicensed commercial use in neuroimaging applications under a provisional pattent. The software itself is completely open source, and you are free to copy, modify it, and use it in other applications. Please contact <mdenny@psu.edu> for more information if your company is interested in commercial neuroimaging applications using the GERGM. 
+Please note that the use of the correlation network estimation functionality in this package is protected from unlicensed commercial use in neuroimaging applications under a provisional pattent. Please contact <mdenny@psu.edu> for more information if your company is interested in commercial neuroimaging applications using the GERGM. 
