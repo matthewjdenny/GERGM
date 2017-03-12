@@ -5,7 +5,12 @@ An R package to estimate Generalized Exponential Random Graph Models. To get sta
 
 ## News
 
-**[09/17/16]** A major update to the package has been pushed to the public GERGM repo and will shortly be up on CRAN. Here are some highlights:
+**[03/12/17]** A number of minor updates to the GERGM package (mostly in the documentation) and bump to version 0.11.0 on CRAN:
+
+* The **["getting started with GERGM" vignette](http://www.mjdenny.com/getting_started_with_GERGM.html)** has been updated to include an example using for correlation matrix estimation and well as a section addressing several common errors users tend to encounter. Please check out this section before you email the maintainers with estimation issues.
+* A number of corections and updates have been made to the function documentation. 
+
+**[09/17/16]** A major update to the package has been pushed to the public GERGM repo. Here are some highlights:
 
 * **correlation networks**: We have added functionality to estimate GERGMS on correlation networks via the `beta_correlation_model` parameter. 
 * **updated conditional edge prediction** The package now offers updated functions for conditional edge prediction and comparison to a null model in terms of edgewise MSE. 
