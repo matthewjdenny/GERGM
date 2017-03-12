@@ -2,8 +2,8 @@ Package: GERGM
 Type: Package
 Title: Estimation and Fit Diagnostics for Generalized Exponential Random Graph
     Models 
-Version: 0.10.5
-Date: 2016-09-18
+Version: 0.11.0
+Date: 2017-03-12
 Author: Matthew J. Denny <mdenny@psu.edu>, James D. Wilson
     <jdwilson1212@gmail.com>, Skyler Cranmer <cranmer.12@osu.edu >, Bruce A.
     Desmarais <bdesmarais@psu.edu>, Shankar Bhamidi <bhamidi@email.unc.edu>
@@ -22,17 +22,17 @@ Imports:
     plyr,     
     parallel,
     coda,
-	vegan,
-	scales,
-	RcppParallel,
-	slackr,
-	matrixcalc
+    vegan,
+    scales,
+    RcppParallel,
+    slackr,
+    matrixcalc
 Depends:
     R (>= 3.2.0)
 LinkingTo: BH,
     Rcpp,
     RcppArmadillo,
-	RcppParallel
+    RcppParallel
 RoxygenNote: 5.0.1
 Suggests:
     testthat,
