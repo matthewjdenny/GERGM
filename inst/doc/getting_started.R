@@ -67,7 +67,7 @@ hysteresis_results <- hysteresis(test,
                                  simulation_method = "Metropolis",
                                  proposal_variance = 0.05)
 
-## ----eval=TRUE, echo=TRUE, results='hide', message=FALSE----
+## ----eval=TRUE, echo=TRUE, results='hide', message=FALSE-----------------
 test2 <- conditional_edge_prediction(
   GERGM_Object = test,
   number_of_networks_to_simulate = 100,
@@ -76,10 +76,53 @@ test2 <- conditional_edge_prediction(
   MCMC_burnin = 100,
   seed = 123)
 
-## ----eval=TRUE---------------------------------------------
+## ----eval=TRUE-----------------------------------------------------------
 MSE_results <- conditional_edge_prediction_MSE(test2)
 
-## ----eval=FALSE--------------------------------------------
+## ----eval=FALSE----------------------------------------------------------
+#    set.seed(12345)
+#    # Function to generating a random positive-definite matrix with user-specified
+#    # positive eigenvalues. If eigenvalues are not specified, they are generated
+#    # from a uniform distribution.
+#    Posdef <- function (n, ev = runif(n, 0, 10)) {
+#      Z <- matrix(ncol=n, rnorm(n^2))
+#      decomp <- qr(Z)
+#      Q <- qr.Q(decomp)
+#      R <- qr.R(decomp)
+#      d <- diag(R)
+#      ph <- d / abs(d)
+#      O <- Q %*% diag(ph)
+#      Z <- t(O) %*% diag(ev) %*% O
+#      return(Z)
+#    }
+#  
+#    # Generate eignevalues
+#    x <- rnorm(10)
+#    # generate a positive definite matrix
+#    pdmat <- Posdef(n = 10)
+#    # transform to correlations
+#    correlations <- pdmat / max(abs(pdmat))
+#    diag(correlations) <- 1
+#    net <- (correlations + t(correlations)) / 2
+#  
+#    # add in node names
+#    colnames(net) <- rownames(net) <- letters[1:10]
+#  
+#    # correlation GERGM specification
+#    formula <- net ~ edges + ttriads
+#  
+#    # model should run in under a minute
+#    test <- gergm(formula,
+#                  estimation_method = "Metropolis",
+#                  number_of_networks_to_simulate = 100000,
+#                  thin = 1/100,
+#                  proposal_variance = 0.2,
+#                  MCMC_burnin = 100000,
+#                  seed = 456,
+#                  convergence_tolerance = 0.5,
+#                  beta_correlation_model = TRUE)
+
+## ----eval=FALSE----------------------------------------------------------
 #  formula <- net ~  mutual(0.8) + ttriads(0.8) + out2stars(0.8) +
 #    sender("log_GDP") + netcov(net_exports) +
 #    receiver("log_GDP") + nodemix("G8", base = "No")
