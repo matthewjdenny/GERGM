@@ -273,16 +273,7 @@ gergm <- function(formula,
                   ){
 
   # pass in experimental features through elipsis
-  using_correlation_network <- FALSE
   object <- as.list(substitute(list(...)))[-1L]
-  if (length(object) > 0) {
-    if (!is.null(object$using_correlation_network)) {
-      if (object$using_correlation_network) {
-        using_correlation_network <- TRUE
-        cat("Using experimental correlation network feature...\n")
-      }
-    }
-  }
 
   # record start time for estimation
   start_time <- Sys.time()
@@ -297,6 +288,20 @@ gergm <- function(formula,
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
                                             "edges")
+
+  # set the number of threads to use with parallel
+  if (parallel) {
+    RcppParallel::setThreadOptions(numThreads = cores)
+  }
+
+  # if we are using a correlation network, then the network must be undirected.
+  if (beta_correlation_model) {
+    if (network_is_directed) {
+      cat("Setting network_is_directed to FALSE for correlation network...\n")
+    }
+    network_is_directed <- FALSE
+  }
+
   if (network_is_directed) {
     possible_structural_term_indices <- 1:6
   } else {
@@ -316,23 +321,6 @@ gergm <- function(formula,
                                 "gaussian",
                                 "lognormal")
 
-
-  if (using_correlation_network & beta_correlation_model) {
-    stop("You may only specify one of: using_correlation_network (Harry-Joe) or beta_correlation_model.")
-  }
-
-  # set the number of threads to use with parallel
-  if (parallel) {
-    RcppParallel::setThreadOptions(numThreads = cores)
-  }
-
-  # if we are using a correlation network, then the network must be undirected.
-  if (using_correlation_network | beta_correlation_model) {
-    if (network_is_directed) {
-      cat("Setting network_is_directed to FALSE for correlation network...\n")
-    }
-    network_is_directed <- FALSE
-  }
 
   # check terms for undirected network
   if (!network_is_directed) {
@@ -395,7 +383,7 @@ gergm <- function(formula,
      possible_network_terms,
      covariate_data = covariate_data,
      normalization_type = normalization_type,
-     is_correlation_network = using_correlation_network,
+     is_correlation_network = FALSE,
      is_directed = network_is_directed,
      beta_correlation_model = beta_correlation_model)
 
@@ -418,7 +406,7 @@ gergm <- function(formula,
      transform.data = data_transformation,
      lambda.coef = NULL,
      transformation_type = transformation_type,
-     is_correlation_network = using_correlation_network,
+     is_correlation_network = FALSE,
      is_directed = network_is_directed,
      beta_correlation_model = beta_correlation_model,
      covariate_data = covariate_data,
@@ -450,7 +438,7 @@ gergm <- function(formula,
   }
 
   # if we are using a correlation network then set field to TRUE.
-  GERGM_Object@is_correlation_network <- using_correlation_network
+  GERGM_Object@is_correlation_network <- FALSE # deprecated
   GERGM_Object@beta_correlation_model <- beta_correlation_model
 
   # record the various optimizations we are using so that they can be used in
