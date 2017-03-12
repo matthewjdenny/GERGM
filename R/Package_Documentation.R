@@ -44,7 +44,7 @@ NULL
 #' @importFrom utils combn write.table
 NULL
 
-#' @useDynLib GERGM
+#' @useDynLib GERGM, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel RcppParallelLibs
 NULL
