@@ -1,5 +1,6 @@
 test_that("That gergm with exponential downweighting works", {
   skip_on_cran()
+  skip("For time")
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
 
@@ -89,6 +90,7 @@ test_that("That gergm with exponential downweighting works", {
 
 test_that("That weighted MPLE works", {
   skip_on_cran()
+  skip("For time")
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
 

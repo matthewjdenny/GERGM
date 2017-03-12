@@ -1,5 +1,6 @@
 test_that("Hyperparameter optimization works", {
   skip_on_cran()
+  skip("Skipping test that takes too long.")
 
   set.seed(12345)
   net <- matrix(runif(100,0,1),10,10)
@@ -42,7 +43,7 @@ test_that("Hyperparameter optimization works", {
 
 test_that("Model works for correlation networks", {
   skip_on_cran()
-  skip("Skipping test as it can only be run in the global environment.")
+  skip("Skipping test as it takes a while.")
 
   set.seed(12345)
   #Function to generating a random positive-definite matrix with user-specified positive

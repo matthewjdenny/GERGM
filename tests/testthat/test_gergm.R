@@ -1,5 +1,6 @@
 test_that("Simple model with no covariates runs", {
   skip_on_cran()
+  skip("For time")
   ########################### 1. No Covariates #############################
   # Preparing an unbounded network without covariates for gergm estimation #
   #skip("Skipping test as it can only be run in the global environment.")
