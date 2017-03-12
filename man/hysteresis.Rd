@@ -102,4 +102,3 @@ hysteresis_results <- hysteresis(
     proposal_variance = 0.5)
 }
 }
-

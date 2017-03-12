@@ -282,4 +282,3 @@ testl <- parallel_gergm(formula_list = form_list,
                         MCMC_burnin = 5000)
 }
 }
-

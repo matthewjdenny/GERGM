@@ -299,4 +299,3 @@ test <- gergm(formula,
               force_x_theta_updates = 4)
 }
 }
-

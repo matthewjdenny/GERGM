@@ -24,4 +24,3 @@ A simulated network (as a matrix object).
 \description{
 Find an example simulated network that is the minimum Frobenius  distance from the observed network.
 }
-

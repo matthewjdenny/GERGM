@@ -16,4 +16,3 @@ hysteresis_plot(hysteresis_output, text_size = 12, ...)
 \description{
 Generate hysteresis plots for theta parameter estimates
 }
-

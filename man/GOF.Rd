@@ -40,4 +40,3 @@ statistics.
 \description{
 Generate Goodness Of Fit plot from a GERGM object.
 }
-

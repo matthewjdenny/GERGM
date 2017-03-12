@@ -133,4 +133,3 @@ test <- simulate_networks(
  MCMC_burnin = 1000,
  seed = 456)
 }
-

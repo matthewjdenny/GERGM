@@ -16,4 +16,3 @@ A trace plot of network density.
 \description{
 Generate trace plot of network density from a GERGM object.
 }
-

@@ -60,4 +60,3 @@ sociomatrix <- matrix(rnorm(400,0,20),20,20)
 colnames(sociomatrix) <- rownames(sociomatrix) <- letters[1:20]
 plot_network(sociomatrix)
 }
-

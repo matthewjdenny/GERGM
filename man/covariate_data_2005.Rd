@@ -16,4 +16,3 @@ Metadata for each country in "lending_2005", including GDP, logged GDP, and
 a G8 membership indicator.
 }
 \keyword{datasets}
-

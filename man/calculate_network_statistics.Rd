@@ -26,4 +26,3 @@ Calculates out2stars, in2stars, ctriads, mutual, ttriads, and
 edges statistics (with or without exponential down weighting) for a
 real-valued network.
 }
-

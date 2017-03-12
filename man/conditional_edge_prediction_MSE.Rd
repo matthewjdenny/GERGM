@@ -16,4 +16,3 @@ A list of MSE's.
 \description{
 Calculates mean edgewise MSE for predicted edge values.
 }
-

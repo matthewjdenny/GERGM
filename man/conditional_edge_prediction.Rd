@@ -65,4 +65,3 @@ A list object containing simulated networks.
 \description{
 Performs edgewise predictions from a GERGM model fit.
 }
-

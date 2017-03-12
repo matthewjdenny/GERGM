@@ -49,4 +49,3 @@ A parameter estimate plot.
 \description{
 Generate parameter estimate plot with 95 percent CI's from a GERGM object.
 }
-
