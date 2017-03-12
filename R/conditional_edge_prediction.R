@@ -2,12 +2,12 @@
 #' @description Performs edgewise predictions from a GERGM model fit.
 #'
 #' @param GERGM_Object A GERGM object output by the gergm() estimation function.
-#' The folowing terms must still be specified: number_of_networks_to_simulate,
+#' The following terms must still be specified: number_of_networks_to_simulate,
 #' thin, and MCMC_burnin. proposal_variance may also be specified, or if set
 #' equal to NULL, then the proposal variance from parameter estimation will be
 #' instead (this option is likely preferred in most situations).
 #' @param simulation_method Default is "Metropolis" which allows for exponential
-#' downweighting, can also be "Gibbs".
+#' down weighting, can also be "Gibbs".
 #' @param number_of_networks_to_simulate Number of simulations generated for
 #' estimation via MCMC. Default is 500.
 #' @param thin The proportion of samples that are kept from each simulation. For
@@ -32,7 +32,7 @@
 #' Metropolis Hastings simulations.
 #' @param use_stochastic_MH A logical indicating whether a stochastic approximation
 #' to the h statistics should be used under Metropolis Hastings in-between
-#' thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+#' thinned samples. This may dramatically speed up estimation. Defaults to FALSE.
 #' HIGHLY EXPERIMENTAL!
 #' @param stochastic_MH_proportion Percentage of dyads/triads to use for
 #' approximation, defaults to 0.25

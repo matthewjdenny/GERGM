@@ -12,7 +12,7 @@
 covariate_data_2005
 }
 \description{
-Metadata for each country in "lending_2005", in cluding GDP, logged GDP, and
+Metadata for each country in "lending_2005", including GDP, logged GDP, and
 a G8 membership indicator.
 }
 \keyword{datasets}

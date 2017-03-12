@@ -3,7 +3,7 @@
 #' @param GERGM_Object The object returned by the estimation procedure using the
 #' GERGM function.
 #' @param normalize_coefficients Defaults to FALSE, if TRUE then parameter
-#' estimates will be converted be deivided by their standard deviations with
+#' estimates will be converted be divided by their standard deviations with
 #' and displayed with 95 percent confidence intervals. These coefficients will
 #' no longer be comparable, but make graphical interpretation of significance
 #' and sign easier.
@@ -11,7 +11,7 @@
 #' parameters to plot. Can be one of "both","covariate", or "structural". Useful
 #' for creating separate parameter plots for covariates and structural
 #' parameters when these parameters are on very different scales.
-#' @param coefficient_names Defualts to NULL. Can be a string vector of names
+#' @param coefficient_names Defaults to NULL. Can be a string vector of names
 #' for coefficients to be used in making publication quality plots.
 #' @param leave_out_coefficients Defaults to NULL. Can be a string vector of
 #' coefficient names as they appear in the plot. These coefficients will be

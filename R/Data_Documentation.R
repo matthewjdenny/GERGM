@@ -10,7 +10,7 @@
 
 #' GDP and G8 membership data for 17 large countries from 2005.
 #'
-#' Metadata for each country in "lending_2005", in cluding GDP, logged GDP, and
+#' Metadata for each country in "lending_2005", including GDP, logged GDP, and
 #' a G8 membership indicator.
 #'
 #' @format A data frame with 17 rows and 3 columns

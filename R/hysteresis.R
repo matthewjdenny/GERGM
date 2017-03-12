@@ -12,7 +12,7 @@
 #' will be discarded before drawing the samples used for hysteresis plots.
 #' Default is 500.
 #' @param range The magnitude of the interval over which theta parameter
-#' values will be varried for the hysteresis plots. The actual range will be
+#' values will be varied for the hysteresis plots. The actual range will be
 #' vary from a minimum of theta_value - range * theta_std_error to a maximum of
 #' theta_value + range * theta_std_error so the actual parameter ranges will be
 #' scaled to the magnitude of the parameter estimate standard errors. Defaults to 4.
@@ -39,8 +39,8 @@
 #' and plots will only be plotted to the graphics device.
 #' @param parallel Logical indicating whether hysteresis plots for each theta
 #' parameter should be simulated in parallel. Can greatly reduce runtime, but
-#' the computer must have atleast as many cores as theta parameters.
-#' Defauts to FALSE.
+#' the computer must have at least as many cores as theta parameters.
+#' Defaults to FALSE.
 #' @return A list object containing network densities for simulated networks.
 #' @examples
 #' \dontrun{

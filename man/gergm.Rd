@@ -42,7 +42,7 @@ the user wishes to include an intercept
 network, or "endogenous" to include the intercept as in a traditional ERGM
 model.  To use exponential down-weighting for any of the network level terms,
 simply specify a value for alpha less than 1. The `(alpha = 1)` term may be
-omitted from the structural terms if no exponential downweighting is
+omitted from the structural terms if no exponential down weighting is
 required. In this case, the terms may be provided as: `out2star`, `in2star`,
 `ctriads`, `mutual`, `ttriads`. If the network is undirected the user may only
 specify the following terms: `twostars(alpha = 1)`,  `ttriads(alpha = 1)`,

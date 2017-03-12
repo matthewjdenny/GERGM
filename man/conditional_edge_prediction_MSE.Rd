@@ -2,7 +2,7 @@
 % Please edit documentation in R/conditional_edge_prediction_MSE.R
 \name{conditional_edge_prediction_MSE}
 \alias{conditional_edge_prediction_MSE}
-\title{A Function to calcualte Mean Edgewise MSE to evaluate edge predictions.}
+\title{A Function to calculate Mean Edgewise MSE to evaluate edge predictions.}
 \usage{
 conditional_edge_prediction_MSE(edge_prediction_results)
 }

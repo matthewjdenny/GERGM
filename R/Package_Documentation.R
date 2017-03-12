@@ -9,8 +9,8 @@
 #' "reciever(covariate)", "nodematch(covariate)", "nodemix(covariate)",
 #' "netcov(network_covariate)". The gergm() function provides all of the basic
 #' estimation and diagnostic functionality and the parameters of this function
-#' can be querried by typing ?gergm into the R console. If you wish to access
-#' additional fit and degeneracy diagnostic functionaly, the GOF(),
+#' can be queried by typing ?gergm into the R console. If you wish to access
+#' additional fit and degeneracy diagnostic functionality, the GOF(),
 #' Estimate_Plot(), Trace_Plot() and hysteresis() functions can be accessed
 #' directly by the user.  You may also plot the initial network using
 #' plot_network() and simulate networks for given structural parameters using

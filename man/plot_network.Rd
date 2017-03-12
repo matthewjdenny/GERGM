@@ -11,11 +11,11 @@ plot_network(sociomatrix, threshold = 0.5, save_pdf = FALSE,
   identical_node_positions = FALSE)
 }
 \arguments{
-\item{sociomatrix}{A square numeric matrix (socimatrix) with real valued edges
+\item{sociomatrix}{A square numeric matrix (sociomatrix) with real valued edges
 (no NA's).}
 
 \item{threshold}{The threshold for removing edges from the network in order to
-calculate the positions for the nodes using the futcherman reingold algorithm.
+calculate the positions for the nodes using the Futcherman-Reingold algorithm.
 The value is multiplied against max(abs(sociomatrix)) to determine the
 threshold. Defaults to 0.5.}
 
@@ -28,10 +28,10 @@ include a ".pdf" extension.}
 PDF if save_pdf == TRUE.}
 
 \item{comparison_network}{An optional argument providing a second square
-numeric matrix (socimatrix) with real valued edges '(no NA's) to be visually
+numeric matrix (sociomatrix) with real valued edges (no NA's) to be visually
 compared to sociomatrix. The second network will be Procrustes transformed so
-that it appears most similar without chaning hte relativel positions of
-nodes. Defualts to NULL.}
+that it appears most similar without changing the relativel positions of
+nodes. Defaults to NULL.}
 
 \item{comparison_names}{An optional string vector of length two providing
 titles for each of the two networks to be compared. Defaults to NULL.}
@@ -44,12 +44,12 @@ but can be a positive integer (eg. 12345).}
 on a white background with black lettering.}
 
 \item{show_legend}{Logical indicating whether a legend with extremal edge
-values should be shown. Defualts to TRUE.}
+values should be shown. Defaults to TRUE.}
 
 \item{title}{The title we wish to give our plot.}
 
 \item{identical_node_positions}{Logical indicating whether node positions
-should be fixed to be the same when comparing networks. Defualts to FALSE.}
+should be fixed to be the same when comparing networks. Defaults to FALSE.}
 }
 \description{
 Generates a visualization of a value-edged network.

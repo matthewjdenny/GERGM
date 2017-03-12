@@ -1,4 +1,4 @@
-#' @title A Function to calcualte Mean Edgewise MSE to evaluate edge predictions.
+#' @title A Function to calculate Mean Edgewise MSE to evaluate edge predictions.
 #' @description Calculates mean edgewise MSE for predicted edge values.
 #'
 #' @param edge_prediction_results A list object returned by the

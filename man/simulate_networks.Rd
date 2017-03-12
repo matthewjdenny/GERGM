@@ -25,7 +25,7 @@ specified: c("edges", "out2stars", "in2stars",     "ctriads", "mutual",
 formula terms, which the user would like to use to parameterize the model.}
 
 \item{simulation_method}{Default is "Metropolis" which allows for exponential
-downweighting, can also be "Gibbs".}
+down weighting, can also be "Gibbs".}
 
 \item{network_is_directed}{Logical specifying whether or not the observed
 network is directed. Default is TRUE.}
@@ -53,10 +53,10 @@ will be discarded before drawing the samples used for estimation. Default is
 \item{seed}{Seed used for reproducibility. Default is 123.}
 
 \item{GERGM_Object}{Optional argument allowing the user to supply a GERGM
-object output by the gergm() estimation function in order to simualt further
+object output by the gergm() estimation function in order to simulate further
 networks. Defaults to NULL. If a GERGM object is provided, any user specified
 parameter values will be ignored and the final parameter estimates from the
-gergm() function will be used instead. When using this option, the folowing
+gergm() function will be used instead. When using this option, the following
 terms must still be specified: number_of_networks_to_simulate, thin, and
 MCMC_burnin. proposal_variance may also be specified, or if set equal to NULL,
 then the proposal variance from parameter estimation will be used instead (
@@ -76,20 +76,20 @@ Metropolis Hastings simulations.}
 
 \item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
 to the h statistics should be used under Metropolis Hastings in-between
-thinned samples. This may dramatically speed up estimation. Defualts to FALSE.
+thinned samples. This may dramatically speed up estimation. Defaults to FALSE.
 HIGHLY EXPERIMENTAL!}
 
 \item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
 approximation, defaults to 0.25}
 
 \item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
-correlation model is estiamted. A correlation network must be provided, but
+correlation model is estimated. A correlation network must be provided, but
 all covariates and undirected statistics may be supplied as normal.}
 
 \item{covariate_data}{A data frame containing node level covariates the user
-wished to transform into sender or reciever effects. It must have row names
+wished to transform into sender or receiver effects. It must have row names
 that match every entry in colnames(raw_network), should have descriptive
-column names.  If left NULL, then no sender or reciever effects will be
+column names.  If left NULL, then no sender or receiver effects will be
 added.}
 
 \item{lambdas}{A vector of lambda parameters given in the same order as the
@@ -101,7 +101,7 @@ Covariate effects should be specified after endogenous effects.}
 \value{
 A list object containing simulated networks and parameters used to
 specify the simulation. See the $MCMC_Output field for simulated networks. If
-GERGM_Object is provded, then a GERGM object will be returned instead.
+GERGM_Object is provided, then a GERGM object will be returned instead.
 }
 \description{
 Simulates networks from a GERGM for a given set of parameter values.

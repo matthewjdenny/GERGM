@@ -1,10 +1,10 @@
 #' @title Plots of value-edged networks.
 #' @description Generates a visualization of a value-edged network.
 #'
-#' @param sociomatrix A square numeric matrix (socimatrix) with real valued edges
+#' @param sociomatrix A square numeric matrix (sociomatrix) with real valued edges
 #'(no NA's).
 #' @param threshold The threshold for removing edges from the network in order to
-#' calculate the positions for the nodes using the futcherman reingold algorithm.
+#' calculate the positions for the nodes using the Futcherman-Reingold algorithm.
 #' The value is multiplied against max(abs(sociomatrix)) to determine the
 #' threshold. Defaults to 0.5.
 #' @param save_pdf Logical indicating whether the plot should be saved to a PDF.
@@ -13,10 +13,10 @@
 #' @param output_directory The directory where the user would like to output the
 #' PDF if save_pdf == TRUE.
 #' @param comparison_network An optional argument providing a second square
-#' numeric matrix (socimatrix) with real valued edges '(no NA's) to be visually
+#' numeric matrix (sociomatrix) with real valued edges (no NA's) to be visually
 #' compared to sociomatrix. The second network will be Procrustes transformed so
-#' that it appears most similar without chaning hte relativel positions of
-#' nodes. Defualts to NULL.
+#' that it appears most similar without changing the relativel positions of
+#' nodes. Defaults to NULL.
 #' @param comparison_names An optional string vector of length two providing
 #' titles for each of the two networks to be compared. Defaults to NULL.
 #' @param seed Optional argument to set the seed for the network layout
@@ -25,10 +25,10 @@
 #' @param white_background Defaults to FALSE. If TRUE, then network is plotted
 #' on a white background with black lettering.
 #' @param show_legend Logical indicating whether a legend with extremal edge
-#' values should be shown. Defualts to TRUE.
+#' values should be shown. Defaults to TRUE.
 #' @param title The title we wish to give our plot.
 #' @param identical_node_positions Logical indicating whether node positions
-#' should be fixed to be the same when comparing networks. Defualts to FALSE.
+#' should be fixed to be the same when comparing networks. Defaults to FALSE.
 #' @examples
 #' set.seed(12345)
 #' sociomatrix <- matrix(rnorm(400,0,20),20,20)

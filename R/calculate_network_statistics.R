@@ -1,18 +1,17 @@
 #' @title A Function to estimate calculate (weighted) network statistics
 #' @description Calculates out2stars, in2stars, ctriads, mutual, ttriads, and
-#' edges statistics (with or without exponential downweighting) for a
+#' edges statistics (with or without exponential down weighting) for a
 #' real-valued network.
 #'
 #' @param network A square numeric matrix (sociomatrix or adjacency matrix)
 #' representing the network.
 #' @param weights If you wish to provide your own weights, you must provide a
 #' vector of length 6 with terms corresponding to out2stars, in2stars, ctriads,
-#'mutual, ttriads, edges in that order.
+#' mutual, ttriads, edges in that order.
 #' @param downweight_statistics_together Logical indicating whether exponential
-#' downweighting should be done together or separately. Defaults to TRUE.
+#' down weighting should be done together or separately. Defaults to TRUE.
 #' @return A gergm object containing parameter estimates.
 #' @export
-
 calculate_network_statistics <- function(
   network,
   weights = NULL,

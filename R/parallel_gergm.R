@@ -1,6 +1,6 @@
 #' @title A Function to estimate a number of GERGMs in parallel, each with its own equation.
 #' @description Allows the user to run multiple specifications at once in
-#' parallel. All varaibles (excluding formula_list, observed_network_list,
+#' parallel. All variables (excluding formula_list, observed_network_list,
 #' covariate_data_list, network_data_list, cores and generate_plots) be be
 #' either specified as a single value or as a vector of values equal to the
 #' length of formula_list, if the user wishes to use different values for each
@@ -14,7 +14,7 @@
 #' @param covariate_data_list An optional list of covariate data frames (may
 #' include NULL entries if no covariates are needed in some specifications)
 #' @param network_data_list An optional list of of lists of network covariates
-#' to be included in each specification (one list per specification -- may also be left NULL for some specifications). THe list object corresponding to each
+#' to be included in each specification (one list per specification -- may also be left NULL for some specifications). The list object corresponding to each
 #' specification must have entries for network covariates named as they appear
 #' in the corresponding equation. For example if the user specified a
 #' 'netcov(distance)' term, the corresponding list object for that specification
@@ -24,10 +24,10 @@
 #' will automatically check to determine if all edges fall in the [0,1] interval.
 #' If edges are determined to fall outside of this interval, then a trasformation
 #' onto the interval may be specified. If "division" is selected, then the data
-#' will have a value added to them such that the minimum value is atleast zero
+#' will have a value added to them such that the minimum value is at least zero
 #' (if necessary) and then all edge values will be divided by the maximum to
 #' ensure that the maximum value is in [0,1]. If "log" is selected, then the data
-#' will have a value added to them such that the minimum value is atleast zero
+#' will have a value added to them such that the minimum value is at least zero
 #' (if necessary), then 1 will be added to all edge values before they are logged
 #' and then divided by the largest value, again ensuring that the resulting
 #' network is on [0,1]. Defaults to "log" and need not be set to NULL if
@@ -38,7 +38,7 @@
 #' likelihood estimates should be obtained. In this case, no simulations will be
 #' performed. Default is FALSE.
 #' @param transformation_type Specifies how covariates are transformed onto the
-#' raw network. When working with heavly tailed data that are not strictly
+#' raw network. When working with heavy tailed data that are not strictly
 #' positive, select "Cauchy" to transform the data using a Cauchy distribution.
 #' If data are strictly positive and heavy tailed (such as financial data) it is
 #' suggested the user select "LogCauchy" to perform a Log-Cauchy transformation
@@ -47,7 +47,7 @@
 #' The Default value is "Cauchy".
 #' @param estimation_method Simulation method for MCMC estimation. Default is
 #' "Gibbs" which will generally be faster with well behaved networks but will not
-#' allow for exponential downweighting.
+#' allow for exponential down weighting.
 #' @param maximum_number_of_lambda_updates Maximum number of iterations of outer
 #' MCMC loop which alternately estimates transform parameters and ERGM
 #' parameters. In the case that data_transformation = NULL, this argument is
@@ -91,9 +91,9 @@
 #' model is not degenerate but simulated statistics do not match observed network
 #' well when algorithm stops after first y updates.
 #' @param output_directory The directory where you would like output generated
-#' by the GERGM estimation proceedure to be saved (if output_name is specified).
+#' by the GERGM estimation procedure to be saved (if output_name is specified).
 #' This includes, GOF, trace, and parameter estimate plots, as well as a summary
-#' of the estimation proceedure and an .Rdata file containing the GERGM object
+#' of the estimation procedure and an .Rdata file containing the GERGM object
 #' returned by this function. May be left as NULL if the user would prefer all
 #' plots be printed to the graphics device.
 #' @param output_name The common name stem you would like to assign to all
@@ -103,7 +103,7 @@
 #' output_name, then 4 files will be output: "Test_GOF.pdf", "Test_Parameter_Estim
 #' ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
 #' "Test_Trace_Plot.pdf". Must be the same length as the number of specifications
-#' or specification_i will be automatically used to distinguich between
+#' or specification_i will be automatically used to distinguish between
 #' specifications.
 #' @param generate_plots Defaults to TRUE, if FALSE, then no diagnostic or
 #' parameter plots are generated.
@@ -142,14 +142,14 @@
 #' parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
 #' = 16807 parameter grid search. Again this feature is highly experimental and
 #' should only be used as a last resort (after playing with exponential
-#' downweighting and the MPLE_gain_factor).  SPECIFY SINGLE VALUE, MUST BE
+#' down weighting and the MPLE_gain_factor).  SPECIFY SINGLE VALUE, MUST BE
 #' CONSTANT ACROSS SPECIFICATIONS.
 #' @param beta_correlation_model Defaults to FALSE. If TRUE, then the beta
-#' correlation model is estiamted. A correlation network must be provided, but
+#' correlation model is estimated. A correlation network must be provided, but
 #' all covariates and undirected statistics may be supplied as normal.  SPECIFY
 #' SINGLE VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.
 #' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
-#' specifying statistics with alpha downweighting. Tends to provide better
+#' specifying statistics with alpha down weighting. Tends to provide better
 #' initialization when downweight_statistics_together = FALSE. SPECIFY SINGLE
 #' VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.
 #' @param fine_grained_pv_optimization Logical indicating whether fine grained
@@ -158,7 +158,7 @@
 #' recommended if running a correlation model.  SPECIFY SINGLE VALUE, MUST BE
 #' CONSTANT ACROSS SPECIFICATIONS.
 #' @param parallel Logical indicating whether the weighted MPLE objective and any
-#' other operations that can be easily paralllelized should be calculated in
+#' other operations that can be easily parallelized should be calculated in
 #' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
 #' may be possible.  SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS
 #' SPECIFICATIONS.
@@ -168,7 +168,7 @@
 #' larger networks. SPECIFY SINGLE VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.
 #' @param cores_per_model Numeric value defaulting to 1. Can be set to any
 #' number up to the number of threads/cores available on your machine. Will be
-#' used to speed up computations if parllel = TRUE. Note that this will be the
+#' used to speed up computations if parallel = TRUE. Note that this will be the
 #' number of croes requested by EACH model, so plan accordingly!  SPECIFY SINGLE
 #' VALUE, MUST BE CONSTANT ACROSS SPECIFICATIONS.
 #' @param use_stochastic_MH A logical indicating whether a stochastic approximation

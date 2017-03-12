@@ -16,14 +16,14 @@ vector of length 6 with terms corresponding to out2stars, in2stars, ctriads,
 mutual, ttriads, edges in that order.}
 
 \item{downweight_statistics_together}{Logical indicating whether exponential
-downweighting should be done together or separately. Defaults to TRUE.}
+down weighting should be done together or separately. Defaults to TRUE.}
 }
 \value{
 A gergm object containing parameter estimates.
 }
 \description{
 Calculates out2stars, in2stars, ctriads, mutual, ttriads, and
-edges statistics (with or without exponential downweighting) for a
+edges statistics (with or without exponential down weighting) for a
 real-valued network.
 }
 
