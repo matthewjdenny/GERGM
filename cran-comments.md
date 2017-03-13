@@ -1,3 +1,9 @@
+## Resubmission
+This is a resubmission. In this version I have:
+
+* Fixed the URL in the README file so that it is in canonical form.
+* Indicated the correction with a version bump to 0.11.1
+
 ## Test environments
 * local OS X install, R 3.3.3 and devel
 * local Windows 10 (devel and release)
