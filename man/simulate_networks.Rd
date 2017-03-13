@@ -107,6 +107,7 @@ GERGM_Object is provided, then a GERGM object will be returned instead.
 Simulates networks from a GERGM for a given set of parameter values.
 }
 \examples{
+\dontrun{
 set.seed(12345)
 net <- matrix(runif(100),10,10)
 diag(net) <- 0
@@ -132,4 +133,5 @@ test <- simulate_networks(
  proposal_variance = 0.5,
  MCMC_burnin = 100,
  seed = 456)
+ }
 }

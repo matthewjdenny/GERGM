@@ -65,6 +65,7 @@
 #' Covariate effects should be specified after endogenous effects.
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
+#' \dontrun{
 #' set.seed(12345)
 #' net <- matrix(runif(100),10,10)
 #' diag(net) <- 0
@@ -90,6 +91,7 @@
 #'  proposal_variance = 0.5,
 #'  MCMC_burnin = 100,
 #'  seed = 456)
+#'  }
 #' @return A list object containing simulated networks and parameters used to
 #' specify the simulation. See the $MCMC_Output field for simulated networks. If
 #' GERGM_Object is provided, then a GERGM object will be returned instead.
