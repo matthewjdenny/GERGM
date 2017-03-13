@@ -77,7 +77,7 @@
 #'  number_of_networks_to_simulate = 100,
 #'  thin = 1/10,
 #'  proposal_variance = 0.5,
-#'  MCMC_burnin = 1000,
+#'  MCMC_burnin = 100,
 #'  seed = 456)
 #'
 #' # preferred method for specifying a null model
@@ -85,10 +85,10 @@
 #' test <- simulate_networks(
 #'  formula,
 #'  thetas = 0,
-#'  number_of_networks_to_simulate = 1000,
+#'  number_of_networks_to_simulate = 100,
 #'  thin = 1/10,
 #'  proposal_variance = 0.5,
-#'  MCMC_burnin = 1000,
+#'  MCMC_burnin = 100,
 #'  seed = 456)
 #' @return A list object containing simulated networks and parameters used to
 #' specify the simulation. See the $MCMC_Output field for simulated networks. If
