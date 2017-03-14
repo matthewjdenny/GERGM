@@ -64,7 +64,7 @@ GOF <- function(GERGM_Object,
   print(stats)
   cat("\nMean statistic values from simulated networks:\n")
   print(colMeans(temp))
-
+  cat("\n")
   # calculate t-test statistics
   t_stats <- stats
   for (i in 1:length(stats)) {
@@ -79,10 +79,10 @@ GOF <- function(GERGM_Object,
     ste <- sd(temp[,i])
     t_stats[i] <- (stats[i] - mn)/ste
   }
-
+  cat("\n")
   cat("t-statistics for test of whether observed statistic is an outlier with respect to simulated statistics...\n")
   print(t_stats)
-
+  cat("\n")
 
   # check to see if user provided column names, if not, then generate them
   if (is.null(column_names)) {
