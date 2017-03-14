@@ -1,12 +1,12 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Fixed the clang-UBSAN memtest note.
+* Fixed the clang-UBSAN memtest note (to the best of my knowledge).
 * Indicated the correction with a version bump to 0.11.2
 
 ## Test environments
 * local OS X install, R 3.3.3 and devel
-* local Windows 10 (devel and release)
+* local Windows 10 (devel and release) and Winbuilder (devel and release)
 * Ubuntu precise 12.04.5 LTS (travis CI), R 3.3.2
 
 ## R CMD check results
