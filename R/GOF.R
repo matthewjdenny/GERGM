@@ -130,7 +130,7 @@ GOF <- function(GERGM_Object,
       sim <- GERGM_Object@additional_stats$simulated_in_degrees
       plot (density(sim),
             main = "In-Degree Distribution",
-            col = UMASS_RED,
+            col = UMASS_BLUE,
             lwd = 3,
             xlim = c(min(c(sim)), max(c(sim))),
             ylim = c(0, max(density(sim)$y)))
@@ -139,7 +139,7 @@ GOF <- function(GERGM_Object,
       sim <- GERGM_Object@additional_stats$simulated_out_degrees
       plot (density(sim),
             main = "Out-Degree Distribution",
-            col = UMASS_RED,
+            col = UMASS_BLUE,
             lwd = 3,
             xlim = c(min(c(sim)), max(c(sim))),
             ylim = c(0, max(density(sim)$y)))
