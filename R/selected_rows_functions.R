@@ -19,10 +19,11 @@ generate_selected_rows <- function(pairs,
   }
 
   if (!creating_node_sets) {
-    save_statistics_selected_rows_matrix <- matrix(0,
+    # set these to two so that we avoid uint conversion issues.
+    save_statistics_selected_rows_matrix <- matrix(2,
                                                    nrow = 2,
                                                    ncol = length(full_statistics))
-    rows_to_use <- rep(0, length(full_statistics))
+    rows_to_use <- rep(2, length(full_statistics))
   } else {
     # determine which entries in the
     max_length <- 0
