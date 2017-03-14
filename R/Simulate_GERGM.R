@@ -229,8 +229,6 @@ Simulate_GERGM <- function(GERGM_Object,
     h.statistics <- as.data.frame(h.statistics)
     colnames(h.statistics) <- GERGM_Object@full_theta_names
   }
-
-
   # if we are using MH, then return more diagnostics
   if (GERGM_Object@estimation_method == "Metropolis") {
     GERGM_Object@MCMC_output = list(Networks = nets,

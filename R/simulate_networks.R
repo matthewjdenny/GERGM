@@ -420,6 +420,7 @@ simulate_networks <- function(formula,
                         MCMC_Output = GERGM_Object@MCMC_output,
                         bounded_networks = GERGM_Object@simulated_bounded_networks_for_GOF)
     return(return_list)
+    # return(GERGM_Object)
   } else {
     return(GERGM_Object)
   }
