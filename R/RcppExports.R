@@ -25,6 +25,10 @@ Individual_Edge_Conditional_Prediction <- function(number_of_iterations, shape_p
     .Call('GERGM_Individual_Edge_Conditional_Prediction', PACKAGE = 'GERGM', number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j)
 }
 
+Distribution_Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, rowwise_distribution) {
+    .Call('GERGM_Distribution_Metropolis_Hastings_Sampler', PACKAGE = 'GERGM', number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, rowwise_distribution)
+}
+
 frobenius_norm <- function(mat1, mat2) {
     .Call('GERGM_frobenius_norm', PACKAGE = 'GERGM', mat1, mat2)
 }
