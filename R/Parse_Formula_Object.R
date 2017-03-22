@@ -2,6 +2,7 @@ Parse_Formula_Object <- function(formula,
                                  possible_structural_terms,
                                  possible_covariate_terms,
                                  possible_network_terms,
+                                 using_distribution_estimator = FALSE,
                                  raw_network = NULL,
                                  theta = NULL,
                                  terms_to_parse = "structural",
@@ -54,11 +55,19 @@ Parse_Formula_Object <- function(formula,
   regression_intercept <- FALSE
   include_intercept <- FALSE
   for (i in 1:length(rhs)){
-    if(rhs_term_names[i] == "edges"){
+    if (rhs_term_names[i] == "edges") {
       include_intercept <- TRUE
-      if(parsed_rhs[[i]]$method != "endogenous") {
-        remove_ind <- i
-        regression_intercept <- TRUE
+      # if we are using the distribtuion estimator, then make sure that we set
+      # the edges term to endogenous
+      if (using_distribution_estimator) {
+        if (parsed_rhs[[i]]$method != "endogenous") {
+          parsed_rhs[[i]]$method <- "endogenous"
+        }
+      } else {
+        if (parsed_rhs[[i]]$method != "endogenous") {
+          remove_ind <- i
+          regression_intercept <- TRUE
+        }
       }
     }
   }

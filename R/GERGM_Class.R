@@ -75,7 +75,8 @@ setClass(Class = "gergm",
            using_slackr_integration = "logical",
            start_time = "character",
            end_time = "character",
-           elapsed_time = "character"
+           elapsed_time = "character",
+           distribution_estimator = "character"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
