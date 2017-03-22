@@ -51,8 +51,11 @@
 #' "joint" to propose either row-wsie marginal distribtuions or joint
 #' distributions. If an option other than "none" is selected, the beta correlation
 #' model will be turned off, estimation will automatically be set to Metropolis,
-#' and no covariate data will be allowed. Furthermore, the network will be set to
-#' directed.
+#' no covariate data will be allowed, and the network will be set to
+#' directed. Furthermore, a "diagonal" statistic will be added to the model which
+#' simply records the sum of the diagonal of the network. The "mutual" statistic
+#' will also be adapted to include the diagonal elements. In the future, more
+#' statistics which take account of the network diagonal will be included.
 #' @param network_is_directed Logical specifying whether or not the observed
 #' network is directed. Default is TRUE.
 #' @param number_of_networks_to_simulate Number of simulations generated for
