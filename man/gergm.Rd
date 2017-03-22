@@ -4,25 +4,26 @@
 \alias{gergm}
 \title{A Function to estimate a GERGM.}
 \usage{
-gergm(formula, covariate_data = NULL, normalization_type = c("log",
-  "division"), network_is_directed = TRUE, use_MPLE_only = c(FALSE, TRUE),
-  transformation_type = c("Cauchy", "LogCauchy", "Gaussian", "LogNormal"),
-  estimation_method = c("Metropolis", "Gibbs"),
-  maximum_number_of_lambda_updates = 10,
-  maximum_number_of_theta_updates = 10,
-  number_of_networks_to_simulate = 500, thin = 1, proposal_variance = 0.1,
-  downweight_statistics_together = TRUE, MCMC_burnin = 100, seed = 123,
-  convergence_tolerance = 0.5, MPLE_gain_factor = 0,
-  acceptable_fit_p_value_threshold = 0.05, force_x_theta_updates = 1,
-  force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
-  generate_plots = TRUE, verbose = TRUE,
-  hyperparameter_optimization = FALSE, stop_for_degeneracy = FALSE,
-  target_accept_rate = 0.25, theta_grid_optimization_list = NULL,
-  beta_correlation_model = FALSE, weighted_MPLE = FALSE,
-  fine_grained_pv_optimization = FALSE, parallel = FALSE,
+gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
+  distribution_estimator = c("none", "rowwise-marginal", "joint"),
+  network_is_directed = TRUE, number_of_networks_to_simulate = 500,
+  MCMC_burnin = 100, thin = 1, proposal_variance = 0.1,
+  target_accept_rate = 0.25, seed = 123,
+  hyperparameter_optimization = FALSE, theta_grid_optimization_list = NULL,
+  weighted_MPLE = FALSE, parallel = FALSE,
   parallel_statistic_calculation = FALSE, cores = 1,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 0.25,
-  estimate_model = TRUE, slackr_integration_list = NULL, ...)
+  slackr_integration_list = NULL, convergence_tolerance = 0.5,
+  MPLE_gain_factor = 0, acceptable_fit_p_value_threshold = 0.05,
+  normalization_type = c("log", "division"),
+  transformation_type = c("Cauchy", "LogCauchy", "Gaussian", "LogNormal"),
+  estimation_method = c("Metropolis", "Gibbs"),
+  downweight_statistics_together = TRUE, force_x_theta_updates = 1,
+  force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
+  generate_plots = TRUE, verbose = TRUE,
+  fine_grained_pv_optimization = FALSE, use_MPLE_only = c(FALSE, TRUE),
+  stop_for_degeneracy = FALSE, maximum_number_of_lambda_updates = 10,
+  maximum_number_of_theta_updates = 10, estimate_model = TRUE, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -67,49 +68,29 @@ that match every entry in colnames(raw_network), should have descriptive
 column names.  If left NULL, then no sender or receiver effects will be
 added.}
 
-\item{normalization_type}{If only a raw_network is provided the function
-will automatically check to determine if all edges fall in the [0,1] interval.
-If edges are determined to fall outside of this interval, then a trasformation
-onto the interval may be specified. If "division" is selected, then the data
-will have a value added to them such that the minimum value is at least zero
-(if necessary) and then all edge values will be divided by the maximum to
-ensure that the maximum value is in [0,1]. If "log" is selected, then the data
-will have a value added to them such that the minimum value is at least zero
-(if necessary), then 1 will be added to all edge values before they are logged
-and then divided by the largest value, again ensuring that the resulting
-network is on [0,1]. Defaults to "log" and need not be set to NULL if
-providing covariates as it will be ignored.}
+\item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
+correlation model is estimated. A correlation network must be provided, but
+all covariates and undirected statistics may be supplied as normal.}
+
+\item{distribution_estimator}{Provides an option to estimate the structure of
+row-wise marginal and joint distribtuions using a uniform-dirichlet proposal
+distribution. THIS FEATURE IS EXPERIMENTAL. Defaults to "none", in which case
+a normal GERGM is estimated, but can be set to one of "rowwise-marginal" and
+"joint" to propose either row-wsie marginal distribtuions or joint
+distributions. If an option other than "none" is selected, the beta correlation
+model will be turned off, estimation will automatically be set to Metropolis,
+and no covariate data will be allowed. Furthermore, the network will be set to
+directed.}
 
 \item{network_is_directed}{Logical specifying whether or not the observed
 network is directed. Default is TRUE.}
 
-\item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo
-likelihood estimates should be obtained. In this case, no simulations will be
-performed. Default is FALSE.}
-
-\item{transformation_type}{Specifies how covariates are transformed onto the
-raw network. When working with heavy tailed data that are not strictly
-positive, select "Cauchy" to transform the data using a Cauchy distribution.
-If data are strictly positive and heavy tailed (such as financial data) it is
-suggested the user select "LogCauchy" to perform a Log-Cauchy transformation
-of the data. For a tranformation of the data using a Gaussian distribution,
-select "Gaussian" and for strictly positive raw networks, select "LogNormal".
-The Default value is "Cauchy".}
-
-\item{estimation_method}{Simulation method for MCMC estimation. Default is
-"Metropolis", which allows for the most flexible model specifications, but
-may also be set to "Gibbs", if the user wishes to use Gibbs sampling.}
-
-\item{maximum_number_of_lambda_updates}{Maximum number of iterations of outer
-MCMC loop which alternately estimates transform parameters and ERGM
-parameters. In the case that data_transformation = NULL, this argument is
-ignored. Default is 10.}
-
-\item{maximum_number_of_theta_updates}{Maximum number of iterations within the
-MCMC inner loop which estimates the ERGM parameters. Default is 100.}
-
 \item{number_of_networks_to_simulate}{Number of simulations generated for
 estimation via MCMC. Default is 500.}
+
+\item{MCMC_burnin}{Number of samples from the MCMC simulation procedure that
+will be discarded before drawing the samples used for estimation.
+Default is 100.}
 
 \item{thin}{The proportion of samples that are kept from each simulation. For
 example, thin = 1/200 will keep every 200th network in the overall simulated
@@ -120,15 +101,81 @@ simulation method. This parameter is inversely proportional to the average
 acceptance rate of the M-H sampler and should be adjusted so that the average
 acceptance rate is approximately 0.25. Default is 0.1.}
 
-\item{downweight_statistics_together}{Logical specifying whether or not the
-weights should be applied inside or outside the sum. Default is TRUE and user
-should not select FALSE under normal circumstances.}
-
-\item{MCMC_burnin}{Number of samples from the MCMC simulation procedure that
-will be discarded before drawing the samples used for estimation.
-Default is 100.}
+\item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
+Defaults to 0.25}
 
 \item{seed}{Seed used for reproducibility. Default is 123.}
+
+\item{hyperparameter_optimization}{Logical indicating whether automatic
+hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
+the algorithm will automatically seek to find an optimal burnin and number of
+networks to simulate, and if using Metropolis Hasings, will attempt to select
+a proposal variance that leads to a acceptance rate within +-0.05 of
+target_accept_rate. Furthermore, if degeneracy is detected, the algorithm
+will attempt to adress the issue automatically. WARNING: This feature is
+experimental, and may greatly increase runtime. Please monitor console
+output!}
+
+\item{theta_grid_optimization_list}{Defaults to NULL. This highly
+experimental feature may allow the user to address model degeneracy arising
+from a suboptimal theta initialization. It performs a grid search around the
+theta values calculated via MPLE to select a potentially improved
+initialization. The runtime complexity of this feature grows exponentially in
+the size of the grid and number of parameters -- use with great care. This
+feature may only be used if hyperparameter_optimization = TRUE, and if a list
+object of the following form is provided: list(grid_steps = 2,
+step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
+the number of steps out the grid search will perform, step_size indicates the
+fraction of the MPLE theta estimate that each grid search step will change by,
+cores indicates the number of cores to be used for parallel optimization, and
+iteration_fraction indicates the fraction of the number of MCMC iterations
+that will be used for each grid point (should be set less than 1 to speed up
+optimization). In general grid_steps should be smaller the more structural
+parameters the user wishes to specify. For example, with 5 structural
+parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+= 16807 parameter grid search. Again this feature is highly experimental and
+should only be used as a last resort (after playing with exponential
+down weighting and the MPLE_gain_factor).}
+
+\item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
+specifying statistics with alpha down weighting. Tends to provide better
+initialization when downweight_statistics_together = FALSE.}
+
+\item{parallel}{Logical indicating whether the weighted MPLE objective and any
+other operations that can be easily parallelized should be calculated in
+parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
+may be possible.}
+
+\item{parallel_statistic_calculation}{Logical indicating whether network
+statistics should be calculated in parallel. This will tend to be slower for
+networks with les than ~30 nodes but may provide a substantial speedup for
+larger networks.}
+
+\item{cores}{Numeric value defaulting to 1. Can be set to any number up to the
+number of threads/cores available on your machine. Will be used to speed up
+computations if parallel = TRUE.}
+
+\item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
+to the h statistics should be used under Metropolis Hastings in-between
+thinned samples. This may dramatically speed up estimation. Defaults to FALSE.
+HIGHLY EXPERIMENTAL!}
+
+\item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
+approximation, defaults to 0.25.}
+
+\item{slackr_integration_list}{An optional list object that contains
+information necessary to provide updates about model fitting progress to a
+Slack channel (https://slack.com/). This can be useful if models take a long
+time to run, and you wish to receive updates on their progress (or if they
+become degenerate). The list object must be of the following form:
+list(model_name = "descriptive model name", channel = "#yourchannelname",
+ incoming_webhook_url = "https://hooks.slack.com/services/XX/YY/ZZ"). You
+ will need to set up incoming webhook integration for your slack channel and
+ then paste in the URL you get from slack into the incoming_webhook_url field.
+ If all goes well, and the computer you are running the GERGM estimation on
+ has internet access, your slack channel will receive updates when you start
+ estimation, after each lambda/theta parameter update, if the model becomes
+ degenerate, and when it completes running.}
 
 \item{convergence_tolerance}{Threshold designated for stopping criterion. If
 the difference of parameter estimates from one iteration to the next all have
@@ -145,6 +192,36 @@ suggested to use a value of 0.10. Default is 0.}
 statistics of observed network conform to statistics of networks simulated
 from GERGM parameterized by converged final parameter estimates. Default value
 is 0.05.}
+
+\item{normalization_type}{If only a raw_network is provided the function
+will automatically check to determine if all edges fall in the [0,1] interval.
+If edges are determined to fall outside of this interval, then a trasformation
+onto the interval may be specified. If "division" is selected, then the data
+will have a value added to them such that the minimum value is at least zero
+(if necessary) and then all edge values will be divided by the maximum to
+ensure that the maximum value is in [0,1]. If "log" is selected, then the data
+will have a value added to them such that the minimum value is at least zero
+(if necessary), then 1 will be added to all edge values before they are logged
+and then divided by the largest value, again ensuring that the resulting
+network is on [0,1]. Defaults to "log" and need not be set to NULL if
+providing covariates as it will be ignored.}
+
+\item{transformation_type}{Specifies how covariates are transformed onto the
+raw network. When working with heavy tailed data that are not strictly
+positive, select "Cauchy" to transform the data using a Cauchy distribution.
+If data are strictly positive and heavy tailed (such as financial data) it is
+suggested the user select "LogCauchy" to perform a Log-Cauchy transformation
+of the data. For a tranformation of the data using a Gaussian distribution,
+select "Gaussian" and for strictly positive raw networks, select "LogNormal".
+The Default value is "Cauchy".}
+
+\item{estimation_method}{Simulation method for MCMC estimation. Default is
+"Metropolis", which allows for the most flexible model specifications, but
+may also be set to "Gibbs", if the user wishes to use Gibbs sampling.}
+
+\item{downweight_statistics_together}{Logical specifying whether or not the
+weights should be applied inside or outside the sum. Default is TRUE and user
+should not select FALSE under normal circumstances.}
 
 \item{force_x_theta_updates}{Defaults to 1 where theta estimation is not
 allowed to converge until thetas have updated for x iterations . Useful when
@@ -177,96 +254,30 @@ parameter plots are generated.}
 \item{verbose}{Defaults to TRUE (providing lots of output while model is
 running). Can be set to FALSE if the user wishes to see less output.}
 
-\item{hyperparameter_optimization}{Logical indicating whether automatic
-hyperparameter optimization should be used. Defaults to FALSE. If TRUE, then
-the algorithm will automatically seek to find an optimal burnin and number of
-networks to simulate, and if using Metropolis Hasings, will attempt to select
-a proposal variance that leads to a acceptance rate within +-0.05 of
-target_accept_rate. Furthermore, if degeneracy is detected, the algorithm
-will attempt to adress the issue automatically. WARNING: This feature is
-experimental, and may greatly increase runtime. Please monitor console
-output!}
-
-\item{stop_for_degeneracy}{When TRUE, automatically stops estimation when
-degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
-Defaults to FALSE.}
-
-\item{target_accept_rate}{The target Metropolis Hastings acceptance rate.
-Defaults to 0.25}
-
-\item{theta_grid_optimization_list}{Defaults to NULL. This highly
-experimental feature may allow the user to address model degeneracy arising
-from a suboptimal theta initialization. It performs a grid search around the
-theta values calculated via MPLE to select a potentially improved
-initialization. The runtime complexity of this feature grows exponentially in
-the size of the grid and number of parameters -- use with great care. This
-feature may only be used if hyperparameter_optimization = TRUE, and if a list
-object of the following form is provided: list(grid_steps = 2,
-step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
-the number of steps out the grid search will perform, step_size indicates the
-fraction of the MPLE theta estimate that each grid search step will change by,
-cores indicates the number of cores to be used for parallel optimization, and
-iteration_fraction indicates the fraction of the number of MCMC iterations
-that will be used for each grid point (should be set less than 1 to speed up
-optimization). In general grid_steps should be smaller the more structural
-parameters the user wishes to specify. For example, with 5 structural
-parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
-= 16807 parameter grid search. Again this feature is highly experimental and
-should only be used as a last resort (after playing with exponential
-down weighting and the MPLE_gain_factor).}
-
-\item{beta_correlation_model}{Defaults to FALSE. If TRUE, then the beta
-correlation model is estimated. A correlation network must be provided, but
-all covariates and undirected statistics may be supplied as normal.}
-
-\item{weighted_MPLE}{Defaults to FALSE. Should be used whenever the user is
-specifying statistics with alpha down weighting. Tends to provide better
-initialization when downweight_statistics_together = FALSE.}
-
 \item{fine_grained_pv_optimization}{Logical indicating whether fine grained
 proposal variance optimization should be used. This will often slow down
 proposal variance optimization, but may provide better results. Highly
 recommended if running a correlation model.}
 
-\item{parallel}{Logical indicating whether the weighted MPLE objective and any
-other operations that can be easily parallelized should be calculated in
-parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
-may be possible.}
+\item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo
+likelihood estimates should be obtained. In this case, no simulations will be
+performed. Default is FALSE.}
 
-\item{parallel_statistic_calculation}{Logical indicating whether network
-statistics should be calculated in parallel. This will tend to be slower for
-networks with les than ~30 nodes but may provide a substantial speedup for
-larger networks.}
+\item{stop_for_degeneracy}{When TRUE, automatically stops estimation when
+degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
+Defaults to FALSE.}
 
-\item{cores}{Numeric value defaulting to 1. Can be set to any number up to the
-number of threads/cores available on your machine. Will be used to speed up
-computations if parallel = TRUE.}
+\item{maximum_number_of_lambda_updates}{Maximum number of iterations of outer
+MCMC loop which alternately estimates transform parameters and ERGM
+parameters. In the case that data_transformation = NULL, this argument is
+ignored. Default is 10.}
 
-\item{use_stochastic_MH}{A logical indicating whether a stochastic approximation
-to the h statistics should be used under Metropolis Hastings in-between
-thinned samples. This may dramatically speed up estimation. Defaults to FALSE.
-HIGHLY EXPERIMENTAL!}
-
-\item{stochastic_MH_proportion}{Percentage of dyads/triads to use for
-approximation, defaults to 0.25.}
+\item{maximum_number_of_theta_updates}{Maximum number of iterations within the
+MCMC inner loop which estimates the ERGM parameters. Default is 100.}
 
 \item{estimate_model}{Logical indicating whether a model should be estimated.
 Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
 a GERGM object containing the model specification. Useful for debugging.}
-
-\item{slackr_integration_list}{An optional list object that contains
-information necessary to provide updates about model fitting progress to a
-Slack channel (https://slack.com/). This can be useful if models take a long
-time to run, and you wish to receive updates on their progress (or if they
-become degenerate). The list object must be of the following form:
-list(model_name = "descriptive model name", channel = "#yourchannelname",
- incoming_webhook_url = "https://hooks.slack.com/services/XX/YY/ZZ"). You
- will need to set up incoming webhook integration for your slack channel and
- then paste in the URL you get from slack into the incoming_webhook_url field.
- If all goes well, and the computer you are running the GERGM estimation on
- has internet access, your slack channel will receive updates when you start
- estimation, after each lambda/theta parameter update, if the model becomes
- degenerate, and when it completes running.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }
