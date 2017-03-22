@@ -2261,3 +2261,284 @@ List Individual_Edge_Conditional_Prediction (
   to_return[8] = Current_Density;
   return to_return;
 }
+
+
+
+
+// [[Rcpp::export]]
+List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
+                                           double shape_parameter,
+                                           int number_of_nodes,
+                                           arma::vec statistics_to_use,
+                                           arma::mat initial_network,
+                                           int take_sample_every,
+                                           arma::vec thetas,
+                                           arma::Mat<double> triples,
+                                           arma::Mat<double> pairs,
+                                           arma::vec alphas,
+                                           int together,
+                                           int seed,
+                                           int number_of_samples_to_store,
+                                           bool parallel,
+                                           arma::umat use_selected_rows,
+                                           arma::umat save_statistics_selected_rows_matrix,
+                                           arma::vec rows_to_use,
+                                           arma::vec base_statistics_to_save,
+                                           arma::vec base_statistic_alphas,
+                                           int num_non_base_statistics,
+                                           arma::vec non_base_statistic_indicator,
+                                           double p_ratio_multaplicative_factor,
+                                           Rcpp::List random_triad_sample_list,
+                                           Rcpp::List random_dyad_sample_list,
+                                           bool use_triad_sampling,
+                                           int num_unique_random_triad_samples,
+                                           bool rowwise_distribution) {
+
+  // Allocate variables and data structures
+  double variance = shape_parameter;
+  // the list we will put stuff in to return it to R
+  int list_length = 9;
+  List to_return(list_length);
+  // this is the number of statistics we will be saving (all selected base + non base)
+  int statistics_to_save = num_non_base_statistics +
+    base_statistics_to_save.n_elem;
+
+  int MH_Counter = 0;
+  int Storage_Counter = 0;
+  bool network_did_not_change = false;
+  double previous_h_function_value = 0;
+  arma::vec Accept_or_Reject = arma::zeros (number_of_iterations);
+  arma::vec Log_Prob_Accept = arma::zeros (number_of_iterations);
+  arma::vec P_Ratios = arma::zeros (number_of_iterations);
+  arma::vec Q_Ratios = arma::zeros (number_of_iterations);
+  arma::vec Proposed_Density = arma::zeros (number_of_iterations);
+  arma::vec Current_Density = arma::zeros (number_of_iterations);
+  arma::cube Network_Samples = arma::zeros (number_of_nodes, number_of_nodes,
+                                            number_of_samples_to_store);
+  arma::vec Mean_Edge_Weights = arma::zeros (number_of_samples_to_store);
+  arma::mat Save_H_Statistics = arma::zeros (number_of_samples_to_store,
+                                             statistics_to_save);
+  arma::mat current_edge_weights = initial_network;
+  arma::mat corr_current_edge_weights = arma::zeros (number_of_nodes, number_of_nodes);
+
+  // values for stochastic MH
+  arma::Mat<double> random_triad_samples(2,2);
+  arma::Mat<double> random_dyad_samples(2,2);
+  int update_triad_samples_every = 10;
+  int triad_sample_update_counter = 0;
+  int random_triad_sample_counter = 0;
+  if (use_triad_sampling) {
+    arma::Mat<double> temp = random_triad_sample_list[random_triad_sample_counter];
+    random_triad_samples = temp;
+    arma::Mat<double> temp2 = random_dyad_sample_list[random_triad_sample_counter];
+    random_dyad_samples = temp2;
+    random_triad_sample_counter += 1;
+  }
+
+  // Set RNG and define uniform distribution
+  boost::mt19937 generator(seed);
+  boost::uniform_01<double> uniform_distribution;
+  // Outer loop over the number of samples
+  for (int n = 0; n < number_of_iterations; ++n) {
+    //Rcpp::Rcout << "Iteration: " << n << std::endl;
+    double log_prob_accept = 0;
+    arma::mat proposed_edge_weights = current_edge_weights;
+
+    // int counter =  0;
+    // Run loop to sample new edge weights
+    for (int i = 0; i < number_of_nodes; ++i) {
+      for (int j = 0; j < number_of_nodes; ++j) {
+        if (i != j) {
+          double log_probability_of_current_under_new = 0;
+          double log_probability_of_new_under_current = 0;
+          //draw a new edge value centered at the old edge value
+          double current_edge_value = current_edge_weights(i,j);
+          //draw from a truncated normal
+          gergm::normal_distribution<double> proposal(current_edge_value,variance);
+          int in_zero_one = 0;
+          //NumericVector new_edge_value = 0.5;
+          double new_edge_value = 0.5;
+          while(in_zero_one == 0){
+            new_edge_value = proposal(generator);
+            if(new_edge_value > 0 & new_edge_value < 1){
+              in_zero_one = 1;
+            }
+          }
+
+          // calculate the probability of the new edge under current beta dist
+          double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+          double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+          double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
+          double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+
+          // calculate the probability of the current edge under new beta dist
+          lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+          upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+          raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
+          double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+          //save everything
+          proposed_edge_weights(i,j) = new_edge_value;
+          log_probability_of_new_under_current = log(prob_new_edge_under_old);
+          log_probability_of_current_under_new = log(prob_old_edge_under_new);
+
+          // Calculate acceptance probability
+          log_prob_accept += (log_probability_of_current_under_new
+                                - log_probability_of_new_under_current);
+        }
+      }
+    }
+
+
+    double proposed_addition = 0;
+    double current_addition = 0;
+
+    // if we are using random triad sampling, then extract the appropriate
+    // triples and pairs matrices
+    if (update_triad_samples_every == triad_sample_update_counter) {
+      if (use_triad_sampling) {
+        arma::Mat<double> temp = random_triad_sample_list[random_triad_sample_counter];
+        random_triad_samples = temp;
+        arma::Mat<double> temp2 = random_dyad_sample_list[random_triad_sample_counter];
+        random_dyad_samples = temp2;
+      }
+      triad_sample_update_counter = 0;
+      // increment the random sample counter
+      random_triad_sample_counter += 1;
+      // if it is equal to the number of different samples we are working with,
+      // then reset it
+      if (num_unique_random_triad_samples == random_triad_sample_counter) {
+        random_triad_sample_counter = 0;
+      }
+    }
+    triad_sample_update_counter += 1;
+
+    proposed_addition = gergm::CalculateNetworkStatistics(
+      proposed_edge_weights,
+      statistics_to_use,
+      thetas,
+      triples,
+      pairs,
+      alphas,
+      together,
+      parallel,
+      use_selected_rows,
+      rows_to_use,
+      non_base_statistic_indicator,
+      random_triad_samples,
+      random_dyad_samples,
+      use_triad_sampling);
+    // only calculate the h function if we updated the network last round
+    // otherwise use the cached value.
+    if (network_did_not_change) {
+      current_addition = previous_h_function_value;
+    } else {
+      current_addition = gergm::CalculateNetworkStatistics(
+        current_edge_weights,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        parallel,
+        use_selected_rows,
+        rows_to_use,
+        non_base_statistic_indicator,
+        random_triad_samples,
+        random_dyad_samples,
+        use_triad_sampling);
+      previous_h_function_value = current_addition ;
+    }
+
+
+    // store some additional diagnostics h value is the last entry
+    P_Ratios[n] = p_ratio_multaplicative_factor * (proposed_addition -
+      current_addition);
+    Q_Ratios[n] = log_prob_accept;
+
+    double total_edges = double(number_of_nodes * (number_of_nodes - 1));
+    double temp1 = arma::accu(proposed_edge_weights);
+    Proposed_Density[n] = temp1/total_edges;
+    double temp2 = arma::accu(current_edge_weights);
+    Current_Density[n] = temp2/total_edges;
+
+    // now we add in a p-ratio multaplicative factor incase we are randomly
+    // downsampling
+    log_prob_accept += p_ratio_multaplicative_factor * (proposed_addition -
+      current_addition);
+
+    double rand_num = uniform_distribution(generator);
+    double lud = 0;
+    lud = log(rand_num);
+
+    double accept_proportion = 0;
+    // Accept or reject the new proposed positions
+    if (log_prob_accept < lud) {
+      accept_proportion +=0;
+      network_did_not_change = true;
+    } else {
+      accept_proportion +=1;
+      network_did_not_change = false;
+      for (int i = 0; i < number_of_nodes; ++i) {
+        for (int j = 0; j < number_of_nodes; ++j) {
+          double temp = proposed_edge_weights(i, j);
+          current_edge_weights(i, j) = temp;
+        }
+      }
+    }
+
+    Log_Prob_Accept[n] = log_prob_accept;
+    Accept_or_Reject[n] = accept_proportion;
+    Storage_Counter += 1;
+
+    // Save network statistics
+    if (Storage_Counter == take_sample_every) {
+
+      arma::vec save_stats = gergm::save_network_statistics(
+        current_edge_weights,
+        statistics_to_use,
+        base_statistics_to_save,
+        base_statistic_alphas,
+        triples,
+        pairs,
+        alphas,
+        together,
+        save_statistics_selected_rows_matrix,
+        rows_to_use,
+        num_non_base_statistics,
+        non_base_statistic_indicator);
+      for (int m = 0; m < statistics_to_save; ++m) {
+        Save_H_Statistics(MH_Counter, m) = save_stats[m];
+      }
+
+      double mew = 0;
+
+      for (int i = 0; i < number_of_nodes; ++i) {
+        for (int j = 0; j < number_of_nodes; ++j) {
+          //we use this trick to break the referencing
+          double temp = current_edge_weights(i, j);
+          Network_Samples(i, j, MH_Counter) = temp;
+          mew += temp;
+        }
+      }
+
+      mew = mew / double(number_of_nodes * number_of_nodes);
+      Mean_Edge_Weights[MH_Counter] = mew;
+      Storage_Counter = 0;
+      MH_Counter += 1;
+    }
+  }
+
+  // Save the data and then return
+  to_return[0] = Accept_or_Reject;
+  to_return[1] = Network_Samples;
+  to_return[2] = Save_H_Statistics;
+  to_return[3] = Mean_Edge_Weights;
+  to_return[4] = Log_Prob_Accept;
+  to_return[5] = P_Ratios;
+  to_return[6] = Q_Ratios;
+  to_return[7] = Proposed_Density;
+  to_return[8] = Current_Density;
+  return to_return;
+}

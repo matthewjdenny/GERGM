@@ -136,36 +136,77 @@ Simulate_GERGM <- function(GERGM_Object,
         i = i - 1,
         j = j - 1)
     } else {
-      # take samples using MH
-      samples <- Extended_Metropolis_Hastings_Sampler(
-        number_of_iterations = nsim,
-        shape_parameter = GERGM_Object@proposal_variance,
-        number_of_nodes = num.nodes,
-        statistics_to_use = GERGM_Object@stats_to_use - 1,
-        initial_network = GERGM_Object@bounded.network,
-        take_sample_every = sample_every,
-        thetas = thetas,
-        triples = triples - 1,
-        pairs = pairs - 1,
-        alphas = GERGM_Object@weights,
-        together = dw,
-        seed = seed1,
-        number_of_samples_to_store = store,
-        using_correlation_network = is_correlation_network,
-        undirect_network = undirect_network,
-        parallel = parallel,
-        use_selected_rows = sad$specified_selected_rows_matrix - 1,
-        save_statistics_selected_rows_matrix = sad$full_selected_rows_matrix - 1,
-        rows_to_use = rows_to_use,
-        base_statistics_to_save = sad$full_base_statistics_to_save - 1,
-        base_statistic_alphas = sad$full_base_statistic_alphas,
-        num_non_base_statistics = num_non_base_statistics,
-        non_base_statistic_indicator = GERGM_Object@non_base_statistic_indicator,
-        p_ratio_multaplicative_factor = p_ratio_multaplicative_factor,
-        random_triad_sample_list = random_triad_samples,
-        random_dyad_sample_list = random_dyad_samples,
-        use_triad_sampling = GERGM_Object@use_stochastic_MH,
-        num_unique_random_triad_samples = num_unique_random_triad_samples)
+      # if we are not using the distribtuion estimator
+      if (GERGM_Object@distribution_estimator == "none") {
+        # take samples using MH
+        samples <- Extended_Metropolis_Hastings_Sampler(
+          number_of_iterations = nsim,
+          shape_parameter = GERGM_Object@proposal_variance,
+          number_of_nodes = num.nodes,
+          statistics_to_use = GERGM_Object@stats_to_use - 1,
+          initial_network = GERGM_Object@bounded.network,
+          take_sample_every = sample_every,
+          thetas = thetas,
+          triples = triples - 1,
+          pairs = pairs - 1,
+          alphas = GERGM_Object@weights,
+          together = dw,
+          seed = seed1,
+          number_of_samples_to_store = store,
+          using_correlation_network = is_correlation_network,
+          undirect_network = undirect_network,
+          parallel = parallel,
+          use_selected_rows = sad$specified_selected_rows_matrix - 1,
+          save_statistics_selected_rows_matrix = sad$full_selected_rows_matrix - 1,
+          rows_to_use = rows_to_use,
+          base_statistics_to_save = sad$full_base_statistics_to_save - 1,
+          base_statistic_alphas = sad$full_base_statistic_alphas,
+          num_non_base_statistics = num_non_base_statistics,
+          non_base_statistic_indicator = GERGM_Object@non_base_statistic_indicator,
+          p_ratio_multaplicative_factor = p_ratio_multaplicative_factor,
+          random_triad_sample_list = random_triad_samples,
+          random_dyad_sample_list = random_dyad_samples,
+          use_triad_sampling = GERGM_Object@use_stochastic_MH,
+          num_unique_random_triad_samples = num_unique_random_triad_samples)
+      } else {
+        # if we are using the distribution estimator
+        # take samples using MH
+
+        # if FALSE, then we use the joint distribtuion sampler
+        rowwise_distribution <- FALSE
+        if (GERGM_Object@distribution_estimator == "rowwise-marginal") {
+          rowwise_distribution <- TRUE
+        }
+        samples <- Distribution_Metropolis_Hastings_Sampler(
+          number_of_iterations = nsim,
+          shape_parameter = GERGM_Object@proposal_variance,
+          number_of_nodes = num.nodes,
+          statistics_to_use = GERGM_Object@stats_to_use - 1,
+          initial_network = GERGM_Object@bounded.network,
+          take_sample_every = sample_every,
+          thetas = thetas,
+          triples = triples - 1,
+          pairs = pairs - 1,
+          alphas = GERGM_Object@weights,
+          together = dw,
+          seed = seed1,
+          number_of_samples_to_store = store,
+          parallel = parallel,
+          use_selected_rows = sad$specified_selected_rows_matrix - 1,
+          save_statistics_selected_rows_matrix = sad$full_selected_rows_matrix - 1,
+          rows_to_use = rows_to_use,
+          base_statistics_to_save = sad$full_base_statistics_to_save - 1,
+          base_statistic_alphas = sad$full_base_statistic_alphas,
+          num_non_base_statistics = num_non_base_statistics,
+          non_base_statistic_indicator = GERGM_Object@non_base_statistic_indicator,
+          p_ratio_multaplicative_factor = p_ratio_multaplicative_factor,
+          random_triad_sample_list = random_triad_samples,
+          random_dyad_sample_list = random_dyad_samples,
+          use_triad_sampling = GERGM_Object@use_stochastic_MH,
+          num_unique_random_triad_samples = num_unique_random_triad_samples,
+          rowwise_distribution = rowwise_distribution)
+      }
+
     }
 
     # keep only the networks after the burnin
