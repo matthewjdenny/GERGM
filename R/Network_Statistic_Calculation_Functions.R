@@ -244,7 +244,19 @@ undirected_triads = function(net, triples, alpha = 1, together) {
                   net[triples[, c(1, 3)]])
       return(stat^alpha)
     }
+}
+
+#undirected statistic for triads
+diagonal <- function(net, alpha = 1, together) {
+  if(together == 0){
+    stat <- sum(diag(net)^alpha)
+    return(stat)
   }
+  if(together == 1){
+    stat <- sum(diag(net))
+    return(stat^alpha)
+  }
+}
 
 #-------------------------------------------------------
 
@@ -259,13 +271,14 @@ h <- function(possible.stats,
   thresholds <- GERGM_Object@thresholds
   num.nodes <- GERGM_Object@num_nodes
   statistics <- GERGM_Object@stats_to_use
-  triples = t(combn(1:num.nodes, 3))
+  triples <- GERGM_Object@statistic_auxiliary_data$triples
   temp <- c(out2star(net, triples, alphas[1], together),
             in2star(net, triples, alphas[2], together),
             ctriads(net, triples, alphas[3], together),
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
-            edgeweight(net, alphas[6], together))
+            edgeweight(net, alphas[6], together),
+            diagonal(net, alphas[7], together))
   # check to make sure we did not mess things up
   if(length(temp) != length(statistics)){
     stop("Development ERROR! Please email mdenny@psu.edu! The h() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
@@ -288,13 +301,14 @@ h.corr <- function(possible.stats,
   thresholds <- GERGM_Object@thresholds
   num.nodes <- GERGM_Object@num_nodes
   statistics <- GERGM_Object@stats_to_use
-  triples = t(combn(1:num.nodes, 3))
+  triples = GERGM_Object@statistic_auxiliary_data$triples
   temp <- c(out2star(net, triples, alphas[1], together),
             in2star(net, triples, alphas[2], together),
             ctriads(net, triples, alphas[3], together),
             recip(net, alphas[4], together),
             ttriads(net, triples, alphas[5], together),
-            edgeweight(net, alphas[6], together))
+            edgeweight(net, alphas[6], together),
+            diagonal(net, alphas[7], together))
   # check to make sure we did not mess things up
   if(length(temp) != length(statistics)){
     stop("Development ERROR! Please email mdenny@psu.edu! The h.corr() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
@@ -326,7 +340,8 @@ h2 <- function(net,
            ctriads(net, triples, alphas[3], together),
            recip(net, alphas[4], together),
            ttriads(net, triples, alphas[5], together),
-           edgeweight(net, alphas[6], together))
+           edgeweight(net, alphas[6], together),
+           diagonal(net, alphas[7], together))
   # check to make sure we did not mess things up
   if(length(temp) != length(statistics)){
     stop("Development ERROR! Please email mdenny@psu.edu! The h2() internal function in Network_Statistic_Calculation_Functions.R has been supplied an incorrect number of statistics.")
