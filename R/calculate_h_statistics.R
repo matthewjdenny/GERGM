@@ -10,8 +10,8 @@ calculate_h_statistics <- function(GERGM_Object,
   # extract parameters to be used by the c++ function
   num_non_base_statistics <- sum(GERGM_Object@non_base_statistic_indicator)
   num_nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num_nodes, 3))
-  pairs <- t(combn(1:num_nodes, 2))
+  triples <- GERGM_Object@statistic_auxiliary_data$triples
+  pairs <- GERGM_Object@statistic_auxiliary_data$pairs
 
   alphas <- GERGM_Object@weights
   if (all_weights_are_one) {
