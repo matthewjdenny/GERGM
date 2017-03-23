@@ -23,11 +23,9 @@ test_that("Simple model with no covariates runs", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 4)
+                convergence_tolerance = 0.5)
 
-  check_against <- c(-0.086)
+  check_against <- c(-0.091)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
   # three parameter model
