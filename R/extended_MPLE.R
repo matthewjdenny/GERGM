@@ -51,12 +51,22 @@ ex_net2xy <- function(GERGM_Object) {
   y <- NULL
   x <- NULL
   nodes <- GERGM_Object@num_nodes
-  for (i in 1:nodes) {
-    for (j in (1:nodes)[-i]) {
-      y <- c(y, net[i, j])
-      x <- rbind(x, ex_dh(GERGM_Object, i, j))
+  if (GERGM_Object@include_diagonal) {
+    for (i in 1:nodes) {
+      for (j in (1:nodes)) {
+        y <- c(y, net[i, j])
+        x <- rbind(x, ex_dh(GERGM_Object, i, j))
+      }
+    }
+  } else {
+    for (i in 1:nodes) {
+      for (j in (1:nodes)[-i]) {
+        y <- c(y, net[i, j])
+        x <- rbind(x, ex_dh(GERGM_Object, i, j))
+      }
     }
   }
+
   return(list(y = y, x = x))
 }
 
@@ -65,8 +75,13 @@ ex_net2xy <- function(GERGM_Object) {
 ex_din2star <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    others <- node_set[-c(i, j)]
-    val <- sum(net[cbind(others, j)])
+    if (i == j) {
+      others <- node_set[-j]
+    } else {
+      others <- node_set[-c(i, j)]
+    }
+    set <- cbind(others, j)
+    val <- sum(net[set])
   }
   return(val)
 }
@@ -75,8 +90,13 @@ ex_din2star <- function(i, j, net, node_set) {
 ex_dout2star <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    others <- node_set[-c(i, j)]
-    val <- sum((net[cbind(i, others)]))
+    if (i == j) {
+      others <- node_set[-i]
+    } else {
+      others <- node_set[-c(i, j)]
+    }
+    set <- cbind(i, others)
+    val <- sum((net[set]))
   }
   return(val)
 }
@@ -85,7 +105,9 @@ ex_dout2star <- function(i, j, net, node_set) {
 ex_dedgeweight <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    val <- 1
+    if (i != j) {
+      val <- 1
+    }
   }
   return(val)
 }
@@ -94,7 +116,9 @@ ex_dedgeweight <- function(i, j, net, node_set) {
 ex_drecip <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    val <- net[j, i]
+    if (i != j) {
+      val <- net[j, i]
+    }
   }
   return(val)
 }
@@ -103,7 +127,11 @@ ex_drecip <- function(i, j, net, node_set) {
 ex_dctriads <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    others <- node_set[-c(i, j)]
+    if (i == j) {
+      others <- node_set[-i]
+    } else {
+      others <- node_set[-c(i, j)]
+    }
     triples <- cbind(i, j, others)
     val <- sum(net[triples[, c(2, 3)]] * net[triples[, c(3, 1)]])
   }
@@ -114,12 +142,26 @@ ex_dctriads <- function(i, j, net, node_set) {
 ex_dttriads <- function(i, j, net, node_set) {
   val <- 0
   if (i %in% node_set & j %in% node_set) {
-    others <- node_set[-c(i, j)]
+    if (i == j) {
+      others <- node_set[-i]
+    } else {
+      others <- node_set[-c(i, j)]
+    }
     triples <- cbind(i, j, others)
     t2 <- sum(net[triples[, c(2, 3)]] * net[triples[, c(1, 3)]])
     t3 <- sum(net[triples[, c(3, 2)]] * net[triples[, c(3, 1)]])
     t4 <- sum(net[triples[, c(3, 2)]] * net[triples[, c(1, 3)]])
     val <- t2 + t3 + t4
+  }
+  return(val)
+}
+
+ex_ddiagonal <- function(i, j, net, node_set) {
+  val <- 0
+  if (i %in% node_set & j %in% node_set) {
+    if (i == j) {
+      val <- 1
+    }
   }
   return(val)
 }
@@ -159,6 +201,8 @@ ex_dh <- function(GERGM_Object, i, j, network = NULL) {
       value[k] <- ex_dttriads(i, j, net, node_set)
     } else if (stats_to_use[k] == 6) {
       value[k] <- ex_dedgeweight(i, j, net, node_set)
+    } else if (stats_to_use[k] == 7) {
+      value[k] <- ex_ddiagonal(i, j, net, node_set)
     } else {
       stop("MPLE is not currently implemented for this statistic.")
     }
