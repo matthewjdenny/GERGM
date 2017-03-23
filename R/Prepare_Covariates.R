@@ -6,8 +6,8 @@ Prepare_Network_and_Covariates <- function(formula,
                                     normalization_type = c("log","division"),
                                     is_correlation_network = FALSE,
                                     is_directed = FALSE,
-                                    beta_correlation_model = FALSE
-                                    ){
+                                    beta_correlation_model = FALSE,
+                                    include_diagonal = FALSE){
 
   node_covariates_list <- Parse_Formula_Object(formula = formula,
      possible_structural_terms = possible_structural_terms,
@@ -31,7 +31,10 @@ Prepare_Network_and_Covariates <- function(formula,
   node_names <- colnames(raw_network)
 
   # Make sure that the diagnoal terms in the network are zeros
-  diag(raw_network) <- 0
+  if (!include_diagonal) {
+    diag(raw_network) <- 0
+  }
+
 
   # Check if network is square
   if (nrow(raw_network) != ncol(raw_network)) {
@@ -112,18 +115,26 @@ Prepare_Network_and_Covariates <- function(formula,
                                                covariate_column,
                                                effect_type,
                                                level = NA,
-                                               level2 = NA){
+                                               level2 = NA,
+                                               include_diagonal = FALSE){
     return_matrix <- matrix(0,num_nodes,num_nodes)
     if(effect_type == "intercept"){
       return_matrix <- matrix(1,num_nodes,num_nodes)
-      diag(return_matrix) <- 0
+      if (!include_diagonal) {
+        diag(return_matrix) <- 0
+      }
     }
     if(effect_type == "sender"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             row <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             return_matrix[j,k] <- covariates[row,covariate_column]
+          } else {
+            if(j != k){
+              row <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+              return_matrix[j,k] <- covariates[row,covariate_column]
+            }
           }
         }
       }
@@ -131,9 +142,14 @@ Prepare_Network_and_Covariates <- function(formula,
     if(effect_type == "receiver"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             row <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             return_matrix[j,k] <- covariates[row,covariate_column]
+          } else {
+            if(j != k){
+              row <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+              return_matrix[j,k] <- covariates[row,covariate_column]
+            }
           }
         }
       }
@@ -141,10 +157,16 @@ Prepare_Network_and_Covariates <- function(formula,
     if(effect_type == "absdiff"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             return_matrix[j,k] <- abs(covariates[row1,covariate_column] - covariates[row2,covariate_column])
+          } else {
+            if(j != k){
+              row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+              row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+              return_matrix[j,k] <- abs(covariates[row1,covariate_column] - covariates[row2,covariate_column])
+            }
           }
         }
       }
@@ -152,10 +174,16 @@ Prepare_Network_and_Covariates <- function(formula,
     if(effect_type == "nodecov"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             return_matrix[j,k] <- covariates[row1,covariate_column] + covariates[row2,covariate_column]
+          } else {
+            if(j != k){
+              row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+              row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+              return_matrix[j,k] <- covariates[row1,covariate_column] + covariates[row2,covariate_column]
+            }
           }
         }
       }
@@ -163,7 +191,7 @@ Prepare_Network_and_Covariates <- function(formula,
     if(effect_type == "nodematch"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             # handle both numeric and categorical values
@@ -178,7 +206,25 @@ Prepare_Network_and_Covariates <- function(formula,
             if(check == 0){
               return_matrix[j,k] <- 1
             }
+          } else {
+            if(j != k){
+              row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+              row2 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+              # handle both numeric and categorical values
+              if(is.numeric(covariates[row1,covariate_column]) & is.numeric(covariates[row2,covariate_column])){
+                check <- abs(covariates[row1,covariate_column] - covariates[row2,covariate_column])
+              }else{
+                check <- 1
+                if(covariates[row1,covariate_column] == covariates[row2,covariate_column]){
+                  check <- 0
+                }
+              }
+              if(check == 0){
+                return_matrix[j,k] <- 1
+              }
+            }
           }
+
         }
       }
 
@@ -186,13 +232,23 @@ Prepare_Network_and_Covariates <- function(formula,
     if(effect_type == "nodemix"){
       for(j in 1:num_nodes){
         for(k in 1:num_nodes){
-          if(j != k){
+          if (include_diagonal) {
             col1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
             row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
             colval <- covariates[col1,covariate_column]
             rowval <- covariates[row1,covariate_column]
             if(level == colval & level2 == rowval){
               return_matrix[j,k] <- 1
+            }
+          } else {
+            if(j != k){
+              col1 <- which(toupper(rownames(covariates)) == toupper(node_names)[k])
+              row1 <- which(toupper(rownames(covariates)) == toupper(node_names)[j])
+              colval <- covariates[col1,covariate_column]
+              rowval <- covariates[row1,covariate_column]
+              if(level == colval & level2 == rowval){
+                return_matrix[j,k] <- 1
+              }
             }
           }
         }
@@ -264,7 +320,8 @@ Prepare_Network_and_Covariates <- function(formula,
                 covariate_column = col_index,
                 effect_type = "nodemix",
                 level = node_covariates_list[[i]]$levels[j],
-                level2 = node_covariates_list[[i]]$levels[k])
+                level2 = node_covariates_list[[i]]$levels[k],
+                include_diagonal = include_diagonal)
               #print(add)
               transformed_covariates[,,slice_counter] <- add
               slice_names[slice_counter] <- paste(
@@ -283,7 +340,8 @@ Prepare_Network_and_Covariates <- function(formula,
             node_names = node_names,
             covariates = covariate_data,
             covariate_column = col_index,
-            effect_type = node_covariates_list[[i]]$term)
+            effect_type = node_covariates_list[[i]]$term,
+            include_diagonal = include_diagonal)
         transformed_covariates[,,slice_counter] <- add
         if (node_covariates_list[[i]]$term == "intercept") {
           slice_names[slice_counter] <- "intercept"
@@ -366,8 +424,9 @@ Prepare_Network_and_Covariates <- function(formula,
         if (normalization_type[1] == "division") {
           network <- raw_network/max(raw_network)
         }
-
-        diag(network) <- 0
+        if (!include_diagonal) {
+          diag(network) <- 0
+        }
       } else {
         network <- raw_network
       }
