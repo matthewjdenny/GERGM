@@ -36,6 +36,15 @@ GOF <- function(GERGM_Object,
     GERGM_Object,
     modularity_group_memberships)
 
+  # deal with case where wer are not including the diagonal
+  if (!GERGM_Object@include_diagonal) {
+    rem <- which(colnames(GERGM_Object@simulated_statistics_for_GOF) == "diagonal")
+    if (length(rem) > 0) {
+      GERGM_Object@simulated_statistics_for_GOF <- GERGM_Object@simulated_statistics_for_GOF[,-rem]
+      GERGM_Object@stats <- GERGM_Object@stats[,-rem]
+    }
+  }
+
   if (observed_support) {
     temp <- GERGM_Object@simulated_statistics_for_GOF
     temp3 <- GERGM_Object@MCMC_output$Networks
@@ -68,8 +77,12 @@ GOF <- function(GERGM_Object,
   # calculate t-test statistics
   t_stats <- stats
   for (i in 1:length(stats)) {
-    t_stats[i] <- as.numeric(t.test(temp[,i], mu = stats[i])$statistic)
+    if (length(unique(temp[,i])) > 1) {
+      t_stats[i] <- as.numeric(t.test(temp[,i], mu = stats[i])$statistic)
+    }
   }
+
+
 
   cat("t-statistics for difference of simulated mean from observed statistic...\n")
   print(t_stats)
