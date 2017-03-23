@@ -142,8 +142,31 @@ generate_stochastic_MH_triples_pairs <- function(stochastic_MH_proportion,
 prepare_statistic_auxiliary_data <- function(GERGM_Object) {
 
   num_nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num_nodes, 3))
-  pairs <- t(combn(1:num_nodes, 2))
+
+  # deal with the case where we are including the diagonal or not
+  if (GERGM_Object@include_diagonal) {
+    triples <- t(combn(1:num_nodes, 3))
+    pairs <- t(combn(1:num_nodes, 2))
+    # now add in all triples that include the diagonal as pairs will just be
+    # captured in the "diagonal" term. These will just be of the form (i,i,j)
+    # there will therefore be
+    num_to_add <- num_nodes * (num_nodes - 1)
+    add <- matrix(0,nrow = num_to_add,ncol = 3)
+    add_counter <- 1
+    for (i in 1:num_nodes) {
+      for (j in 1:num_nodes) {
+        if (i != j) {
+          add[add_counter,] <- c(i,i,j)
+          add_counter <- add_counter + 1
+        }
+      }
+    }
+    triples <- rbind(triples, add)
+  } else {
+    triples <- t(combn(1:num_nodes, 3))
+    pairs <- t(combn(1:num_nodes, 2))
+  }
+
   endogenous_statistic_node_sets <- GERGM_Object@endogenous_statistic_node_sets
 
   # determine which statistics we are using when calculating
@@ -151,24 +174,24 @@ prepare_statistic_auxiliary_data <- function(GERGM_Object) {
     which(GERGM_Object@non_base_statistic_indicator == 1)]
   if (length(non_base_stats) > 0) {
     if (GERGM_Object@directed_network) {
-      full_statistics <- c(1:6,non_base_stats)
-      non_base_indicator <- c(rep(0,6), rep(1,length(non_base_stats)))
-      base_statistics_to_save <- 1:6
+      full_statistics <- c(1:7,non_base_stats)
+      non_base_indicator <- c(rep(0,7), rep(1,length(non_base_stats)))
+      base_statistics_to_save <- 1:7
 
     } else {
-      full_statistics <- c(2,5,6,non_base_stats)
-      non_base_indicator <- c(rep(0,3), rep(1,length(non_base_stats)))
-      base_statistics_to_save <- c(2,5,6)
+      full_statistics <- c(2,5,6,7,non_base_stats)
+      non_base_indicator <- c(rep(0,4), rep(1,length(non_base_stats)))
+      base_statistics_to_save <- c(2,5,6,7)
     }
   } else {
     if (GERGM_Object@directed_network) {
-      full_statistics <- c(1:6)
-      non_base_indicator <- rep(0,6)
-      base_statistics_to_save <- 1:6
+      full_statistics <- c(1:7)
+      non_base_indicator <- rep(0,7)
+      base_statistics_to_save <- 1:7
     } else {
-      full_statistics <- c(2,5,6)
-      non_base_indicator <- rep(0,3)
-      base_statistics_to_save <- c(2,5,6)
+      full_statistics <- c(2,5,6,7)
+      non_base_indicator <- rep(0,4)
+      base_statistics_to_save <- c(2,5,6,7)
     }
   }
 
@@ -242,6 +265,8 @@ prepare_statistic_auxiliary_data <- function(GERGM_Object) {
               specified_base_statistics_to_save = base_statistics_to_save2,
               specified_base_statistic_alphas = base_statistic_alphas2,
               specified_selected_rows_matrix = selected_rows_matrix2,
-              specified_rows_to_use = rows_to_use2))
+              specified_rows_to_use = rows_to_use2,
+              triples = triples,
+              pairs = pairs))
 }
 

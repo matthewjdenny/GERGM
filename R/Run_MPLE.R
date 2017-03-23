@@ -55,8 +55,7 @@ run_mple <- function(GERGM_Object,
   }
   GERGM_Object <- store_console_output(GERGM_Object,
     paste("\nMPLE Thetas: ", theta.init$par, "\n"))
-  num.nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num.nodes, 3))
+
   if (GERGM_Object@is_correlation_network) {
     init.statistics <- calculate_h_statistics(
       GERGM_Object,
