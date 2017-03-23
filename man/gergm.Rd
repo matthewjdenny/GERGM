@@ -6,9 +6,9 @@
 \usage{
 gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   distribution_estimator = c("none", "rowwise-marginal", "joint"),
-  network_is_directed = TRUE, number_of_networks_to_simulate = 500,
-  MCMC_burnin = 100, thin = 1, proposal_variance = 0.1,
-  target_accept_rate = 0.25, seed = 123,
+  network_is_directed = TRUE, include_diagonal = FALSE,
+  number_of_networks_to_simulate = 500, MCMC_burnin = 100, thin = 1,
+  proposal_variance = 0.1, target_accept_rate = 0.25, seed = 123,
   hyperparameter_optimization = FALSE, theta_grid_optimization_list = NULL,
   weighted_MPLE = FALSE, parallel = FALSE,
   parallel_statistic_calculation = FALSE, cores = 1,
@@ -87,6 +87,10 @@ statistics which take account of the network diagonal will be included.}
 
 \item{network_is_directed}{Logical specifying whether or not the observed
 network is directed. Default is TRUE.}
+
+\item{include_diagonal}{Logical indicating whether the diagonal should be
+included in the estimation proceedure. If TRUE, then a "diagonal" statistic
+is added to the model. Defaults to FALSE.}
 
 \item{number_of_networks_to_simulate}{Number of simulations generated for
 estimation via MCMC. Default is 500.}

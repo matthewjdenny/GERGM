@@ -58,6 +58,9 @@
 #' statistics which take account of the network diagonal will be included.
 #' @param network_is_directed Logical specifying whether or not the observed
 #' network is directed. Default is TRUE.
+#' @param include_diagonal Logical indicating whether the diagonal should be
+#' included in the estimation proceedure. If TRUE, then a "diagonal" statistic
+#' is added to the model. Defaults to FALSE.
 #' @param number_of_networks_to_simulate Number of simulations generated for
 #' estimation via MCMC. Default is 500.
 #' @param MCMC_burnin Number of samples from the MCMC simulation procedure that
@@ -248,6 +251,7 @@ gergm <- function(formula,
                   beta_correlation_model = FALSE,
                   distribution_estimator = c("none","rowwise-marginal","joint"),
                   network_is_directed = TRUE,
+                  include_diagonal = FALSE,
                   number_of_networks_to_simulate = 500,
                   MCMC_burnin = 100,
                   thin = 1,
@@ -297,7 +301,8 @@ gergm <- function(formula,
                                  "ctriads",
                                  "mutual",
                                  "ttriads",
-                                 "edges")
+                                 "edges",
+                                 "diagonal")
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
                                             "edges")
@@ -341,12 +346,20 @@ gergm <- function(formula,
       normalization_type <- "division"
       beta_correlation_model <- FALSE
       using_distribution_estimator <- TRUE
+      include_diagonal <- TRUE
     }
   } else {
     stop("distribution_estimator must be one of 'none','rowwise-marginal', or 'joint'")
   }
 
-
+  # add a diagonal term if requested.
+  if (include_diagonal) {
+    if (estimation_method == "Gibbs") {
+      cat("Gibbs sampling is currently not supported when include_diagonal == TRUE, changing to 'Metropolis'")
+      estimation_method <- "Metropolis"
+    }
+    formula <- add_diagonal_term(formula)
+  }
 
   # set the number of threads to use with parallel
   if (parallel) {
@@ -362,9 +375,9 @@ gergm <- function(formula,
   }
 
   if (network_is_directed) {
-    possible_structural_term_indices <- 1:6
+    possible_structural_term_indices <- 1:7
   } else {
-    possible_structural_term_indices <- c(2,5,6)
+    possible_structural_term_indices <- c(2,5,6,7)
   }
 
   # check terms for undirected network
@@ -421,7 +434,8 @@ gergm <- function(formula,
      normalization_type = normalization_type,
      is_correlation_network = FALSE,
      is_directed = network_is_directed,
-     beta_correlation_model = beta_correlation_model)
+     beta_correlation_model = beta_correlation_model,
+     include_diagonal = include_diagonal)
 
   data_transformation <- NULL
   if (!is.null(Transformed_Data$transformed_covariates)) {
@@ -478,6 +492,7 @@ gergm <- function(formula,
   GERGM_Object@is_correlation_network <- FALSE # deprecated
   GERGM_Object@beta_correlation_model <- beta_correlation_model
   GERGM_Object@distribution_estimator <- distribution_estimator
+  GERGM_Object@include_diagonal <- include_diagonal
 
   # record the various optimizations we are using so that they can be used in
   # the main algorithm
@@ -525,6 +540,8 @@ gergm <- function(formula,
   GERGM_Object@statistic_auxiliary_data <- prepare_statistic_auxiliary_data(
     GERGM_Object)
 
+  #GERGM_Object@statistic_auxiliary_data$triples
+  #GERGM_Object@statistic_auxiliary_data$pairs
   # record statistics on observed and bounded network
   h.statistics1 <- calculate_h_statistics(
     GERGM_Object,
@@ -617,9 +634,12 @@ gergm <- function(formula,
     # the newly simulated data with the original network
     statistic_test_p_values <- rep(NA,ncol(hsn.tot))
     for (i in 1:ncol(hsn.tot)) {
-      statistic_test_p_values[i] <- round(t.test(hsn.tot[, i],
-                                                 mu = init.statistics[i])$p.value,3)
+      if (length(unique(hsn.tot[,i])) > 1) {
+        statistic_test_p_values[i] <- round(t.test(hsn.tot[, i],
+                                                   mu = init.statistics[i])$p.value,3)
+      }
     }
+
 
     stats.data <- data.frame(Observed = init.statistics,
                              Simulated = colMeans(hsn.tot))
