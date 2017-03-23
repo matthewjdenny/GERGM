@@ -13,8 +13,8 @@ Simulate_GERGM <- function(GERGM_Object,
   sample_every <- floor(1/GERGM_Object@thin)
   thetas <- GERGM_Object@theta.par
   num.nodes <- GERGM_Object@num_nodes
-  triples <- t(combn(1:num.nodes, 3))
-  pairs <- t(combn(1:num.nodes, 2))
+  triples <- GERGM_Object@statistic_auxiliary_data$triples
+  pairs <- GERGM_Object@statistic_auxiliary_data$pairs
 
   # if we are dealing with an undirected network
   undirect_network <- 0
@@ -139,8 +139,7 @@ Simulate_GERGM <- function(GERGM_Object,
       # if we are not using the distribtuion estimator
       if (GERGM_Object@distribution_estimator == "none") {
         # take samples using MH
-        samples <- Extended_Metropolis_Hastings_Sampler(
-          number_of_iterations = nsim,
+        samples <- Extended_Metropolis_Hastings_Sampler(number_of_iterations = nsim,
           shape_parameter = GERGM_Object@proposal_variance,
           number_of_nodes = num.nodes,
           statistics_to_use = GERGM_Object@stats_to_use - 1,
@@ -167,7 +166,8 @@ Simulate_GERGM <- function(GERGM_Object,
           random_triad_sample_list = random_triad_samples,
           random_dyad_sample_list = random_dyad_samples,
           use_triad_sampling = GERGM_Object@use_stochastic_MH,
-          num_unique_random_triad_samples = num_unique_random_triad_samples)
+          num_unique_random_triad_samples = num_unique_random_triad_samples,
+          include_diagonal = GERGM_Object@include_diagonal)
       } else {
         # if we are using the distribution estimator
         # take samples using MH
@@ -179,7 +179,7 @@ Simulate_GERGM <- function(GERGM_Object,
         }
         samples <- Distribution_Metropolis_Hastings_Sampler(
           number_of_iterations = nsim,
-          shape_parameter = GERGM_Object@proposal_variance,
+          variance = GERGM_Object@proposal_variance,
           number_of_nodes = num.nodes,
           statistics_to_use = GERGM_Object@stats_to_use - 1,
           initial_network = GERGM_Object@bounded.network,
