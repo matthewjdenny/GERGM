@@ -90,13 +90,14 @@ test_that("Row-wise distribution model runs", {
                 network_is_directed = TRUE,
                 use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
-                number_of_networks_to_simulate = 40000,
-                thin = 1/40,
-                proposal_variance = 0.1,
+                number_of_networks_to_simulate = 200000,
+                thin = 1/100,
+                proposal_variance = 0.99,
                 downweight_statistics_together = TRUE,
-                MCMC_burnin = 10000,
+                MCMC_burnin = 100000,
                 seed = 456,
-                distribution_estimator = "rowwise-marginal")
+                distribution_estimator = "rowwise-marginal",
+                convergence_tolerance = 0.3)
 
   check_against <- c(-2.016,  1.626,  0.118, -0.534)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)

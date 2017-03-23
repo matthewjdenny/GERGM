@@ -2546,11 +2546,11 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
           log_probability_of_new_under_current = 0;
           log_probability_of_current_under_new = 0;
         } else if (old_in_new & !new_in_old) {
-          log_probability_of_new_under_current = variance;
-          log_probability_of_current_under_new = 1;
+          log_probability_of_new_under_current = log(variance);
+          log_probability_of_current_under_new = 0;
         } else if (!old_in_new & new_in_old) {
-          log_probability_of_new_under_current = 1;
-          log_probability_of_current_under_new = variance;
+          log_probability_of_new_under_current = 0;
+          log_probability_of_current_under_new = log(variance);
         } else {
           // the case where both are not also means we have a q ratio of 1;
           log_probability_of_new_under_current = 0;
@@ -2560,8 +2560,8 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
         //save everything
         proposed_edge_weights.row(i) = arma::conv_to<arma::rowvec>::from(new_edge_values);
         // Calculate acceptance probability
-        log_prob_accept += (log(log_probability_of_current_under_new)
-                              - log(log_probability_of_new_under_current));
+        log_prob_accept += (log_probability_of_current_under_new
+                              - log_probability_of_new_under_current);
       }
     } else {
       //we are working with whole joint distribution proposals
@@ -2589,11 +2589,11 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
         log_probability_of_new_under_current = 0;
         log_probability_of_current_under_new = 0;
       } else if (old_in_new & !new_in_old) {
-        log_probability_of_new_under_current = variance;
-        log_probability_of_current_under_new = 1;
+        log_probability_of_new_under_current = log(variance);
+        log_probability_of_current_under_new = 0;
       } else if (!old_in_new & new_in_old) {
-        log_probability_of_new_under_current = 1;
-        log_probability_of_current_under_new = variance;
+        log_probability_of_new_under_current = 0;
+        log_probability_of_current_under_new = log(variance);
       } else {
         // the case where both are not also means we have a q ratio of 1;
         log_probability_of_new_under_current = 0;
@@ -2610,8 +2610,8 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
       }
 
       // Calculate acceptance probability
-      log_prob_accept += (log(log_probability_of_current_under_new)
-                            - log(log_probability_of_new_under_current));
+      log_prob_accept += (log_probability_of_current_under_new
+                            - log_probability_of_new_under_current);
     }
 
     double proposed_addition = 0;
