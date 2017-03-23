@@ -5,7 +5,7 @@
 \title{A Function to estimate calculate (weighted) network statistics}
 \usage{
 calculate_network_statistics(network, weights = NULL,
-  downweight_statistics_together = TRUE)
+  downweight_statistics_together = TRUE, include_diagonal = FALSE)
 }
 \arguments{
 \item{network}{A square numeric matrix (sociomatrix or adjacency matrix)
@@ -17,6 +17,9 @@ mutual, ttriads, edges in that order.}
 
 \item{downweight_statistics_together}{Logical indicating whether exponential
 down weighting should be done together or separately. Defaults to TRUE.}
+
+\item{include_diagonal}{Logical indicating whether the diagonal should be
+included in the network statistics. Defaults to FALSE.}
 }
 \value{
 A gergm object containing parameter estimates.

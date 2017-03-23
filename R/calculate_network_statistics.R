@@ -11,11 +11,14 @@
 #' @param downweight_statistics_together Logical indicating whether exponential
 #' down weighting should be done together or separately. Defaults to TRUE.
 #' @return A gergm object containing parameter estimates.
+#' @param include_diagonal Logical indicating whether the diagonal should be
+#' included in the network statistics. Defaults to FALSE.
 #' @export
 calculate_network_statistics <- function(
   network,
   weights = NULL,
-  downweight_statistics_together = TRUE) {
+  downweight_statistics_together = TRUE,
+  include_diagonal = FALSE) {
 
 
   # hard coded possible stats
@@ -24,7 +27,8 @@ calculate_network_statistics <- function(
                       "ctriads",
                       "mutual",
                       "ttriads",
-                      "edges")
+                      "edges",
+                      "diagonal")
 
   #if no weights are provided, make them all 1's
   if (is.null(weights)){
@@ -44,7 +48,26 @@ calculate_network_statistics <- function(
   diag(network) <- 0
   # get the triples to pass in
   num.nodes <- nrow(network)
-  triples <- t(combn(1:num.nodes, 3))
+  if (include_diagonal) {
+    triples <- t(combn(1:num.nodes, 3))
+    # now add in all triples that include the diagonal as pairs will just be
+    # captured in the "diagonal" term. These will just be of the form (i,i,j)
+    # there will therefore be
+    num_to_add <- num.nodes * (num.nodes - 1)
+    add <- matrix(0,nrow = num_to_add,ncol = 3)
+    add_counter <- 1
+    for (i in 1:num.nodes) {
+      for (j in 1:num.nodes) {
+        if (i != j) {
+          add[add_counter,] <- c(i,i,j)
+          add_counter <- add_counter + 1
+        }
+      }
+    }
+    triples <- rbind(triples, add)
+  } else {
+    triples <- t(combn(1:num.nodes, 3))
+  }
 
   # calculate the statistics
   statistics <- h2(network,
@@ -60,6 +83,7 @@ calculate_network_statistics <- function(
                           mutual = statistics[4],
                           ttriads = statistics[5],
                           edges = statistics[6],
+                          diagonal = statistics[7],
                           stringsAsFactors = FALSE)
 
   return(to_return)
