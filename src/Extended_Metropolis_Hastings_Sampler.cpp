@@ -696,6 +696,16 @@ double calculate_individual_statistic(arma::mat current_network,
                               together);
     }
   }
+  if (base_statistic_index == 6) {
+    arma::vec d = arma::diagvec(current_network);
+    if (!use_all_rows) {
+      // may want to update this in the future
+      to_return = arma::sum(d);
+    } else {
+      // the base case for normal statistics
+      to_return = arma::sum(d);
+    }
+  }
 
   return to_return;
 }
@@ -1313,6 +1323,69 @@ double CalculateNetworkStatistics(arma::mat current_network,
 
   };
 
+  arma::vec rdirichlet(arma::vec alpha_m) {
+    // this example is drawn from:
+    // https://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation
+
+    int distribution_size = alpha_m.n_elem;
+    arma::vec distribution = arma::zeros(distribution_size);
+
+    // loop through the distribution and draw Gamma variables
+    for (int i = 0; i < distribution_size; ++i) {
+      double cur = R::rgamma(alpha_m[i],1.0);
+      distribution[i] = cur;
+    }
+
+    double gamma_sum = arma::sum(distribution);
+
+    for (int i = 0; i < distribution_size; ++i) {
+      double temp = distribution[i];
+      distribution[i] = temp/gamma_sum;
+    }
+
+    return distribution;
+  }
+
+  arma::vec uniform_dirichlet_draw(arma::vec current_edge_values,
+                                   double variance) {
+    int len = current_edge_values.n_elem;
+    arma::vec alpha_m = arma::ones(len);
+    // get a uniform dirichlet draw
+    arma::vec uniform_dir = gergm::rdirichlet(alpha_m);
+
+    // get a random uniform draw
+    double draw = R::runif(0,1);
+
+    arma::vec proposal = arma::zeros(len);
+    if (draw < variance) {
+      // if it is less than the variance, then our proposal is just the uniform
+      // dirichlet (unmixed).
+      proposal = uniform_dir;
+    } else {
+      // we mix the old position with the new one
+      proposal = variance * uniform_dir + (1 - variance) * current_edge_values;
+    }
+
+    return(proposal);
+  }
+
+  bool point_in_simplex(arma::vec current_edge_values,
+                        arma::vec new_edge_values,
+                        double variance) {
+
+    int len = current_edge_values.n_elem;
+    //loop over and check to see if there are any
+    bool in_simplex = true;
+    for (int i = 0; i < len; ++i) {
+      double cur = (new_edge_values[i] - (1 - variance) * current_edge_values[i])/variance;
+      if (cur < 0) {
+        in_simplex = false;
+        break;
+      }
+    }
+    return(in_simplex);
+  }
+
 
 } //end of gergm namespace
 
@@ -1346,7 +1419,8 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
                                   Rcpp::List random_triad_sample_list,
                                   Rcpp::List random_dyad_sample_list,
                                   bool use_triad_sampling,
-                                  int num_unique_random_triad_samples) {
+                                  int num_unique_random_triad_samples,
+                                  bool include_diagonal) {
 
   // Allocate variables and data structures
   double variance = shape_parameter;
@@ -1390,7 +1464,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
   }
 
   // deal with the case where we have a correlation network.
-  if(using_correlation_network == 1){
+  if (using_correlation_network == 1) {
     current_edge_weights.diag() = arma::ones(number_of_nodes);
     undirect_network = 1;
   }
@@ -1409,9 +1483,8 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     if(undirect_network == 1){
       // Run loop to sample new edge weights
       for (int i = 0; i < number_of_nodes; ++i) {
-        for (int j = 0; j < i; ++j) {
-          if (i != j) {
-
+        for (int j = 0; j <= i; ++j) {
+          if (include_diagonal) {
             double log_probability_of_current_under_new = 0;
             double log_probability_of_new_under_current = 0;
             //draw a new edge value centered at the old edge value
@@ -1446,7 +1519,44 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
             // Calculate acceptance probability
             log_prob_accept += (log_probability_of_current_under_new
                                   - log_probability_of_new_under_current);
+          } else {
+            if (i != j) {
+              double log_probability_of_current_under_new = 0;
+              double log_probability_of_new_under_current = 0;
+              //draw a new edge value centered at the old edge value
+              double current_edge_value = current_edge_weights(i,j);
+              //draw from a truncated normal
+              gergm::normal_distribution<double> proposal(current_edge_value,variance);
+              int in_zero_one = 0;
+              //NumericVector new_edge_value = 0.5;
+              double new_edge_value = 0.5;
+              while(in_zero_one == 0){
+                new_edge_value = proposal(generator);
+                if(new_edge_value > 0 & new_edge_value < 1){
+                  in_zero_one = 1;
+                }
+              }
+              // calculate the probability of the new edge under current beta dist
+              double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+              double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+              double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
+              double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+              // calculate the probability of the current edge under new beta dist
+              lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+              upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+              raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
+              double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+              //save everything
+              proposed_edge_weights(i,j) = new_edge_value;
+              proposed_edge_weights(j,i) = new_edge_value;
+              log_probability_of_new_under_current = log(prob_new_edge_under_old);
+              log_probability_of_current_under_new = log(prob_old_edge_under_new);
 
+              // Calculate acceptance probability
+              log_prob_accept += (log_probability_of_current_under_new
+                                    - log_probability_of_new_under_current);
+
+            }
           }
         }
       }
@@ -1456,7 +1566,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
       // Run loop to sample new edge weights
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
-          if (i != j) {
+          if (include_diagonal) {
             double log_probability_of_current_under_new = 0;
             double log_probability_of_new_under_current = 0;
             //draw a new edge value centered at the old edge value
@@ -1493,6 +1603,45 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
             // Calculate acceptance probability
             log_prob_accept += (log_probability_of_current_under_new
                                   - log_probability_of_new_under_current);
+          } else {
+            if (i != j) {
+              double log_probability_of_current_under_new = 0;
+              double log_probability_of_new_under_current = 0;
+              //draw a new edge value centered at the old edge value
+              double current_edge_value = current_edge_weights(i,j);
+              //draw from a truncated normal
+              gergm::normal_distribution<double> proposal(current_edge_value,variance);
+              int in_zero_one = 0;
+              //NumericVector new_edge_value = 0.5;
+              double new_edge_value = 0.5;
+              while(in_zero_one == 0){
+                new_edge_value = proposal(generator);
+                if(new_edge_value > 0 & new_edge_value < 1){
+                  in_zero_one = 1;
+                }
+              }
+
+              // calculate the probability of the new edge under current beta dist
+              double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+              double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+              double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
+              double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+
+              // calculate the probability of the current edge under new beta dist
+              lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+              upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+              raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
+              double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+              //save everything
+              proposed_edge_weights(i,j) = new_edge_value;
+              log_probability_of_new_under_current = log(prob_new_edge_under_old);
+              log_probability_of_current_under_new = log(prob_old_edge_under_new);
+
+              // Calculate acceptance probability
+              log_prob_accept += (log_probability_of_current_under_new
+                                    - log_probability_of_new_under_current);
+            }
           }
         }
       }
@@ -1602,6 +1751,9 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
     Q_Ratios[n] = log_prob_accept;
 
     double total_edges = double(number_of_nodes * (number_of_nodes - 1));
+    if (include_diagonal) {
+      total_edges = double(number_of_nodes * number_of_nodes);
+    }
     double temp1 = arma::accu(proposed_edge_weights);
     Proposed_Density[n] = temp1/total_edges;
     double temp2 = arma::accu(current_edge_weights);
@@ -1633,9 +1785,14 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
       network_did_not_change = false;
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
-          if (i != j) {
+          if (include_diagonal) {
             double temp = proposed_edge_weights(i, j);
             current_edge_weights(i, j) = temp;
+          } else {
+            if (i != j) {
+              double temp = proposed_edge_weights(i, j);
+              current_edge_weights(i, j) = temp;
+            }
           }
         }
       }
@@ -1693,7 +1850,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
 
       for (int i = 0; i < number_of_nodes; ++i) {
         for (int j = 0; j < number_of_nodes; ++j) {
-          if (i != j) {
+          if (include_diagonal) {
             if(using_correlation_network == 1){
               //we use this trick to break the referencing
               double temp = corr_current_edge_weights(i, j);
@@ -1705,11 +1862,29 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
               Network_Samples(i, j, MH_Counter) = temp;
               mew += temp;
             }
+          } else {
+            if (i != j) {
+              if(using_correlation_network == 1){
+                //we use this trick to break the referencing
+                double temp = corr_current_edge_weights(i, j);
+                Network_Samples(i, j, MH_Counter) = temp;
+                mew += temp;
+              }else{
+                //we use this trick to break the referencing
+                double temp = current_edge_weights(i, j);
+                Network_Samples(i, j, MH_Counter) = temp;
+                mew += temp;
+              }
+            }
           }
         }
       }
 
-      mew = mew / double(number_of_nodes * (number_of_nodes - 1));
+      if (include_diagonal) {
+        mew = mew / double(number_of_nodes * number_of_nodes);
+      } else {
+        mew = mew / double(number_of_nodes * (number_of_nodes - 1));
+      }
       Mean_Edge_Weights[MH_Counter] = mew;
       Storage_Counter = 0;
       MH_Counter += 1;
@@ -2267,7 +2442,7 @@ List Individual_Edge_Conditional_Prediction (
 
 // [[Rcpp::export]]
 List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
-                                           double shape_parameter,
+                                           double variance,
                                            int number_of_nodes,
                                            arma::vec statistics_to_use,
                                            arma::mat initial_network,
@@ -2295,7 +2470,6 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
                                            bool rowwise_distribution) {
 
   // Allocate variables and data structures
-  double variance = shape_parameter;
   // the list we will put stuff in to return it to R
   int list_length = 9;
   List to_return(list_length);
@@ -2344,51 +2518,101 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
     double log_prob_accept = 0;
     arma::mat proposed_edge_weights = current_edge_weights;
 
-    // int counter =  0;
-    // Run loop to sample new edge weights
-    for (int i = 0; i < number_of_nodes; ++i) {
-      for (int j = 0; j < number_of_nodes; ++j) {
-        if (i != j) {
-          double log_probability_of_current_under_new = 0;
-          double log_probability_of_new_under_current = 0;
-          //draw a new edge value centered at the old edge value
-          double current_edge_value = current_edge_weights(i,j);
-          //draw from a truncated normal
-          gergm::normal_distribution<double> proposal(current_edge_value,variance);
-          int in_zero_one = 0;
-          //NumericVector new_edge_value = 0.5;
-          double new_edge_value = 0.5;
-          while(in_zero_one == 0){
-            new_edge_value = proposal(generator);
-            if(new_edge_value > 0 & new_edge_value < 1){
-              in_zero_one = 1;
-            }
-          }
 
-          // calculate the probability of the new edge under current beta dist
-          double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
-          double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
-          double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
-          double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+    if (rowwise_distribution) {
+      // we go row by row
+      for (int i = 0; i < number_of_nodes; ++i) {
+        double log_probability_of_current_under_new = 0;
+        double log_probability_of_new_under_current = 0;
+        //draw a new edge value centered at the old edge value
+        arma::vec current_edge_values = arma::conv_to<arma::vec>::from(current_edge_weights.row(i));
 
-          // calculate the probability of the current edge under new beta dist
-          lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
-          upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
-          raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
-          double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+        // now draw new edge weights
+        arma::vec new_edge_values = gergm::uniform_dirichlet_draw(current_edge_values,
+                                    variance);
 
-          //save everything
-          proposed_edge_weights(i,j) = new_edge_value;
-          log_probability_of_new_under_current = log(prob_new_edge_under_old);
-          log_probability_of_current_under_new = log(prob_old_edge_under_new);
+        // now determine if each is in the other's high-prob distribution
 
-          // Calculate acceptance probability
-          log_prob_accept += (log_probability_of_current_under_new
-                                - log_probability_of_new_under_current);
+        bool old_in_new = gergm::point_in_simplex(new_edge_values,
+                                                  current_edge_values,
+                                                  variance);
+
+        bool new_in_old = gergm::point_in_simplex(current_edge_values,
+                                                  new_edge_values,
+                                                  variance);
+
+        if (old_in_new & new_in_old) {
+          // the case where both are in eachother means we have a q ratio of 1;
+          log_probability_of_new_under_current = 0;
+          log_probability_of_current_under_new = 0;
+        } else if (old_in_new & !new_in_old) {
+          log_probability_of_new_under_current = variance;
+          log_probability_of_current_under_new = 1;
+        } else if (!old_in_new & new_in_old) {
+          log_probability_of_new_under_current = 1;
+          log_probability_of_current_under_new = variance;
+        } else {
+          // the case where both are not also means we have a q ratio of 1;
+          log_probability_of_new_under_current = 0;
+          log_probability_of_current_under_new = 0;
+        }
+
+        //save everything
+        proposed_edge_weights.row(i) = arma::conv_to<arma::rowvec>::from(new_edge_values);
+        // Calculate acceptance probability
+        log_prob_accept += (log(log_probability_of_current_under_new)
+                              - log(log_probability_of_new_under_current));
+      }
+    } else {
+      //we are working with whole joint distribution proposals
+      double log_probability_of_current_under_new = 0;
+      double log_probability_of_new_under_current = 0;
+      //draw a new edge value centered at the old edge value
+      arma::vec current_edge_values = arma::vectorise(current_edge_weights);
+
+      // now draw new edge weights
+      arma::vec new_edge_values = gergm::uniform_dirichlet_draw(current_edge_values,
+                                                                variance);
+
+      // now determine if each is in the other's high-prob distribution
+
+      bool old_in_new = gergm::point_in_simplex(new_edge_values,
+                                                current_edge_values,
+                                                variance);
+
+      bool new_in_old = gergm::point_in_simplex(current_edge_values,
+                                                new_edge_values,
+                                                variance);
+
+      if (old_in_new & new_in_old) {
+        // the case where both are in eachother means we have a q ratio of 1;
+        log_probability_of_new_under_current = 0;
+        log_probability_of_current_under_new = 0;
+      } else if (old_in_new & !new_in_old) {
+        log_probability_of_new_under_current = variance;
+        log_probability_of_current_under_new = 1;
+      } else if (!old_in_new & new_in_old) {
+        log_probability_of_new_under_current = 1;
+        log_probability_of_current_under_new = variance;
+      } else {
+        // the case where both are not also means we have a q ratio of 1;
+        log_probability_of_new_under_current = 0;
+        log_probability_of_current_under_new = 0;
+      }
+
+      int index = 0;
+      for (int i = 0; i < number_of_nodes; ++i) {
+        for (int j = 0; j < number_of_nodes; ++j) {
+          //fill in by columns
+          proposed_edge_weights(j,i) = new_edge_values[index];
+          index += 1;
         }
       }
-    }
 
+      // Calculate acceptance probability
+      log_prob_accept += (log(log_probability_of_current_under_new)
+                            - log(log_probability_of_new_under_current));
+    }
 
     double proposed_addition = 0;
     double current_addition = 0;
