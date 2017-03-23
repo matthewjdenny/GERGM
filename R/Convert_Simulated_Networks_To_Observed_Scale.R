@@ -3,7 +3,7 @@ Convert_Simulated_Networks_To_Observed_Scale <- function(
   # determine the number of MCMC samples
   samples <- dim(GERGM_Object@MCMC_output$Networks)[3]
   num.nodes <- GERGM_Object@num_nodes
-  triples = t(combn(1:num.nodes, 3))
+  triples = GERGM_Object@statistic_auxiliary_data$triples
   stats <- rep(1,length(GERGM_Object@stats_to_use))
   transformation_type <- GERGM_Object@transformation_type
 
