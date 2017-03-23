@@ -96,8 +96,9 @@ mple <- function(net,
                  alphas,
                  together,
                  weighted_MPLE,
-                 verbose = TRUE) {
-  xy <- net2xy(net, statistics, directed, alphas, together)
+                 verbose = TRUE,
+                 include_diagonal = FALSE) {
+  xy <- net2xy(net, statistics, directed, alphas, together, include_diagonal)
   x <- xy$x
   y <- xy$y
   # why do we select this initialization
@@ -151,9 +152,8 @@ mple_weighted <- function(GERGM_Object,
                  verbose = TRUE,
                  prev_ests = NULL) {
   net <- GERGM_Object@network
-  num_nodes <- nrow(net)
-  triples = t(combn(1:num_nodes, 3))
-  pairs <- t(combn(1:num_nodes, 2))
+  triples <- GERGM_Object@statistic_auxiliary_data$triples
+  pairs <- GERGM_Object@statistic_auxiliary_data$pairs
 
   # we are removing this for now:
   # if (is.null(prev_ests)) {
@@ -284,26 +284,47 @@ extended_fast_pl_weighted <- function(theta,
 
 
 # Convert an observed network to edge weight vectors x and y
-net2xy <- function(net, statistics, directed, alphas, together) {
+net2xy <- function(net, statistics, directed, alphas, together, include_diagonal) {
   y <- NULL
   x <- NULL
   nodes <- nrow(net)
-  if (directed == TRUE) {
-    for (i in 1:nodes) {
-      for (j in (1:nodes)[-i]) {
-        y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j, alphas, together))
+  if (include_diagonal) {
+    if (directed == TRUE) {
+      for (i in 1:nodes) {
+        for (j in (1:nodes)) {
+          y <- c(y, net[i, j])
+          x <- rbind(x, dh(net, statistics, i, j, alphas, together))
+        }
+      }
+    }
+    if (directed == FALSE) {
+      for (i in 1:nodes) {
+        for (j in (1:nodes)) {
+          y <- c(y, net[i, j])
+          x <- rbind(x, dh(net, statistics, i, j, alphas, together))
+        }
+      }
+    }
+  } else {
+    # if we are not including the diagonal
+    if (directed == TRUE) {
+      for (i in 1:nodes) {
+        for (j in (1:nodes)[-i]) {
+          y <- c(y, net[i, j])
+          x <- rbind(x, dh(net, statistics, i, j, alphas, together))
+        }
+      }
+    }
+    if (directed == FALSE) {
+      for (i in 1:nodes) {
+        for (j in (1:nodes)[-i]) {
+          y <- c(y, net[i, j])
+          x <- rbind(x, dh(net, statistics, i, j, alphas, together))
+        }
       }
     }
   }
-  if (directed == FALSE) {
-    for (i in 1:nodes) {
-      for (j in (1:nodes)[-i]) {
-        y <- c(y, net[i, j])
-        x <- rbind(x, dh(net, statistics, i, j, alphas, together))
-      }
-    }
-  }
+
   return(list(y = y, x = x))
 }
 
