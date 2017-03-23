@@ -1,30 +1,62 @@
 GOF_statistic_names <- function(GERGM_Object){
-  if (!GERGM_Object@directed_network) {
-    column_names <- c("Two\nStars",
-         "Transitive\nTriads",
-         "Network\nDensity",
-         "Average\nIntensity")
-  } else {
-    if (length(which(colnames(GERGM_Object@stats)== "modularity")) == 1) {
-      column_names <- c("Out\n2-Stars",
-                        "In\n2-Stars",
-                        "Cyclic\nTriads",
-                        "Mutual\nDyads",
+
+  if (GERGM_Object@include_diagonal) {
+    if (!GERGM_Object@directed_network) {
+      column_names <- c("Two\nStars",
                         "Transitive\nTriads",
                         "Network\nDensity",
-                        "Average\nIntensity",
-                        "Modularity\n")
+                        "Diagonal\n",
+                        "Average\nIntensity")
     } else {
-      column_names <- c("Out\n2-Stars",
-                        "In\n2-Stars",
-                        "Cyclic\nTriads",
-                        "Mutual\nDyads",
+      if (length(which(colnames(GERGM_Object@stats)== "modularity")) == 1) {
+        column_names <- c("Out\n2-Stars",
+                          "In\n2-Stars",
+                          "Cyclic\nTriads",
+                          "Mutual\nDyads",
+                          "Transitive\nTriads",
+                          "Network\nDensity",
+                          "Diagonal\n",
+                          "Average\nIntensity",
+                          "Modularity\n")
+      } else {
+        column_names <- c("Out\n2-Stars",
+                          "In\n2-Stars",
+                          "Cyclic\nTriads",
+                          "Mutual\nDyads",
+                          "Transitive\nTriads",
+                          "Network\nDensity",
+                          "Diagonal\n",
+                          "Average\nIntensity")
+      }
+    }
+  } else {
+    if (!GERGM_Object@directed_network) {
+      column_names <- c("Two\nStars",
                         "Transitive\nTriads",
                         "Network\nDensity",
                         "Average\nIntensity")
+    } else {
+      if (length(which(colnames(GERGM_Object@stats)== "modularity")) == 1) {
+        column_names <- c("Out\n2-Stars",
+                          "In\n2-Stars",
+                          "Cyclic\nTriads",
+                          "Mutual\nDyads",
+                          "Transitive\nTriads",
+                          "Network\nDensity",
+                          "Average\nIntensity",
+                          "Modularity\n")
+      } else {
+        column_names <- c("Out\n2-Stars",
+                          "In\n2-Stars",
+                          "Cyclic\nTriads",
+                          "Mutual\nDyads",
+                          "Transitive\nTriads",
+                          "Network\nDensity",
+                          "Average\nIntensity")
+      }
     }
-
   }
+
 
   # store the number of base stats
   base_length <- length(column_names)
