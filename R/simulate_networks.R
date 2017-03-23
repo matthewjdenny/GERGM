@@ -137,14 +137,14 @@ simulate_networks <- function(formula,
   }
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges")
+  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges","diagonal")
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
                                             "edges")
   if (network_is_directed) {
-    possible_structural_term_indices <- 1:6
+    possible_structural_term_indices <- 1:7
   } else {
-    possible_structural_term_indices <- c(2,5,6)
+    possible_structural_term_indices <- c(2,5,6,7)
   }
   possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
   possible_network_terms <- "netcov"
