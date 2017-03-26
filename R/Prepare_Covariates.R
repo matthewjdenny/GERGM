@@ -370,9 +370,6 @@ Prepare_Network_and_Covariates <- function(formula,
     }
   }
 
-
-
-
   #3. return list object
   #
   #
