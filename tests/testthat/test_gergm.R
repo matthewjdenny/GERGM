@@ -13,28 +13,97 @@ test_that("Simple model with no covariates runs", {
   formula <- net ~ edges + ttriads
 
   test <- gergm(formula,
-                normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
                 thin = 1/40,
                 proposal_variance = 0.5,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
                 convergence_tolerance = 0.5)
 
   check_against <- c(-0.091)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
+})
+test_that("3 param model with no covariates runs", {
+  skip_on_cran()
+
+  set.seed(12345)
+  net <- matrix(rnorm(100,0,20),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
 
   # three parameter model
   formula <- net ~  edges + mutual + ttriads
 
   test <- gergm(formula,
-                normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
+                number_of_networks_to_simulate = 40000,
+                thin = 1/40,
+                proposal_variance = 0.5,
+                MCMC_burnin = 10000,
+                seed = 456,
+                convergence_tolerance = 0.5)
+
+  check_against <- c(1.999, -0.251)
+  expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
+
+})
+test_that("4 param model with no covariates runs", {
+  skip_on_cran()
+  skip("For time")
+
+  set.seed(12345)
+  net <- matrix(rnorm(100,0,20),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
+
+  # five parameter model
+  formula2 <- net ~  edges + mutual + ttriads + in2stars
+
+  test <- gergm(formula2,
+              number_of_networks_to_simulate = 40000,
+              thin = 1/40,
+              proposal_variance = 0.5,
+              downweight_statistics_together = TRUE,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.5)
+
+check_against <- c(2.414,  0.189, -0.693)
+expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
+
+})
+test_that("Unidrected model with no covariates runs", {
+  skip_on_cran()
+#check that code works for undirected network
+
+  set.seed(12345)
+  net <- matrix(rnorm(100,0,20),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
+
+  formula <- net ~ edges + ttriads + twostars
+
+  test <- gergm(formula,
+              network_is_directed = FALSE,
+              number_of_networks_to_simulate = 40000,
+              thin = 1/40,
+              proposal_variance = 0.5,
+              MCMC_burnin = 10000,
+              seed = 456,
+              convergence_tolerance = 0.5)
+
+  check_against <- c(0.099, -0.255)
+  expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
+
+})
+test_that("MPLE Only", {
+  skip_on_cran()
+#check that code works with MPLE only
+
+  set.seed(12345)
+  net <- matrix(rnorm(100,0,20),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
+
+  formula <- net ~ edges + ttriads + in2stars
+
+  test <- gergm(formula,
+                use_MPLE_only = TRUE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
                 thin = 1/40,
@@ -42,78 +111,10 @@ test_that("Simple model with no covariates runs", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 4)
+                convergence_tolerance = .5)
 
-  check_against <- c(2.075, -0.253)
+  check_against <- c(0.187, -0.451)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
-
-  # five parameter model
-  formula2 <- net ~  edges + mutual + ttriads + in2stars
-
-  test <- gergm(formula2,
-              normalization_type = "division",
-              network_is_directed = TRUE,
-              use_MPLE_only = FALSE,
-              estimation_method = "Metropolis",
-              number_of_networks_to_simulate = 40000,
-              thin = 1/40,
-              proposal_variance = 0.5,
-              downweight_statistics_together = TRUE,
-              MCMC_burnin = 10000,
-              seed = 456,
-              convergence_tolerance = 0.01,
-              MPLE_gain_factor = 0,
-              force_x_theta_updates = 4)
-
-check_against <- c(2.445,  0.053, -0.492)
-expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
-
-#check that code works for undirected network
-
-formula <- net ~ edges + ttriads + twostars
-
-test <- gergm(formula,
-              normalization_type = "division",
-              network_is_directed = FALSE,
-              use_MPLE_only = FALSE,
-              estimation_method = "Metropolis",
-              number_of_networks_to_simulate = 40000,
-              thin = 1/40,
-              proposal_variance = 0.5,
-              downweight_statistics_together = TRUE,
-              MCMC_burnin = 10000,
-              seed = 456,
-              convergence_tolerance = 0.01,
-              MPLE_gain_factor = 0,
-              force_x_theta_updates = 4)
-
-check_against <- c(0.096, -0.244)
-expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
-
-#check that code works with MPLE only
-
-formula <- net ~ edges + ttriads + in2stars
-
-test <- gergm(formula,
-              normalization_type = "division",
-              network_is_directed = TRUE,
-              use_MPLE_only = TRUE,
-              estimation_method = "Metropolis",
-              number_of_networks_to_simulate = 40000,
-              thin = 1/40,
-              proposal_variance = 0.5,
-              downweight_statistics_together = TRUE,
-              MCMC_burnin = 10000,
-              seed = 456,
-              convergence_tolerance = 0.01,
-              MPLE_gain_factor = 0,
-              force_x_theta_updates = 2,
-              force_x_lambda_updates = 3)
-
-check_against <- c(0.226, -0.610)
-expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
 
@@ -133,42 +134,44 @@ test_that("Model with covariates runs", {
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.5,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2)
+                convergence_tolerance = 0.5)
 
-  check_against <- c(0.824, -0.072, -0.016, -0.026, -0.024, -0.056, -0.055,
-                     -0.035,  0.002, -0.040, -0.050,  3.061, 0.129, -1.931)
+  check_against <- c(0.748, -0.071, -0.016, -0.025, -0.023, -0.056, -0.056,
+                     -0.034,  0.002, -0.039, -0.050,  3.096,  0.128, -1.933)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
+
+})
+
+test_that("Additional Model with covariates runs", {
+  skip_on_cran()
+  skip("Time")
+  set.seed(12345)
+  net <- matrix(runif(100,0,1),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
+  node_level_covariates <- data.frame(Age = c(25,30,34,27,36,39,27,28,35,40),
+                                      Height = c(70,70,67,58,65,67,64,74,76,80),
+                                      Type = c("A","B","B","A","A","A","B","B","C","C"))
+  rownames(node_level_covariates) <- letters[1:10]
+  network_covariate <- net + matrix(rnorm(100,0,.5),10,10)
 
   formula <- net ~ edges + mutual + ttriads + sender("Age") +
     netcov("network_covariate") + nodematch("Type")
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.5,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2)
+                convergence_tolerance = 0.5)
 
-  check_against <- c(1.434, -0.083, -0.017, -0.025,  3.117, 0.132, -1.837)
+  check_against <- c(1.389, -0.078, -0.017, -0.024,  3.098,  0.132, -1.837)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
