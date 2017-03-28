@@ -16,22 +16,15 @@ test_that("Hyperparameter optimization works", {
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.1,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2,
-                hyperparameter_optimization = TRUE
-                )
+                convergence_tolerance = 0.5,
+                hyperparameter_optimization = TRUE)
 
-  check_against <- c(1.485, -0.085, -0.017, -0.023,  3.093,  0.133, -1.836)
+  check_against <- c(1.319, -0.075, -0.017, -0.024,  3.091,  0.133, -1.837)
   check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
   expect_equal(check, check_against)
 
@@ -43,7 +36,6 @@ test_that("Hyperparameter optimization works", {
 
 test_that("Model works for correlation networks", {
   skip_on_cran()
-  skip("Skipping test as it takes a while.")
 
   set.seed(12345)
   #Function to generating a random positive-definite matrix with user-specified positive
@@ -76,7 +68,6 @@ test_that("Model works for correlation networks", {
   formula <- net ~ edges + ttriads
 
   test <- gergm(formula,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.2,
@@ -84,6 +75,10 @@ test_that("Model works for correlation networks", {
                 seed = 456,
                 convergence_tolerance = 0.5,
                 beta_correlation_model = TRUE)
+
+  check_against <- c(-0.029,  0.010, 39.907)
+  check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
+  expect_equal(check, check_against)
 
 })
 
