@@ -79,9 +79,10 @@ Update_Lambda_Estimates <- function(i,
     cat("Updating Estimates -- Iteration:", i," \n")
     GERGM_Object <- store_console_output(GERGM_Object,paste("Updating Estimates -- Iteration:", i," \n"))
     if (verbose) {
-      cat("Lambda Estimates", gpar$par,"\n")
+      cat("Initial Lambda Estimates:\n")
+      print(gpar$par)
     }
-    GERGM_Object <- store_console_output(GERGM_Object,paste("Lambda Estimates", gpar$par,"\n"))
+    GERGM_Object <- store_console_output(GERGM_Object,paste("Initial Lambda Estimates", gpar$par,"\n"))
     gpar.new <- NULL
     if (verbose) {
       gpar.new <- optim(par = as.numeric(gpar$par),
@@ -111,6 +112,7 @@ Update_Lambda_Estimates <- function(i,
     }
     GERGM_Object <- store_console_output(GERGM_Object, "Lambda estimates\n")
     if (verbose) {
+      names(gpar.new$par) <- c(dimnames(GERGM_Object@data_transformation)[[3]],"dispersion parameter")
       print(gpar.new$par)
     }
     GERGM_Object <- store_console_output(GERGM_Object, toString(gpar.new$par))
