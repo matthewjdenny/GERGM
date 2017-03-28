@@ -218,6 +218,9 @@
 #' ignored. Default is 10.
 #' @param maximum_number_of_theta_updates Maximum number of iterations within the
 #' MCMC inner loop which estimates the ERGM parameters. Default is 100.
+#' @param user_specified_initial_thetas Optional numeric vector of user specified
+#' theta values to be used for initialization (instead of MPLE). This option
+#' should not be used exept when MPLE performance is poor. Defaults to NULL.
 #' @param estimate_model Logical indicating whether a model should be estimated.
 #' Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
 #' a GERGM object containing the model specification. Useful for debugging.
@@ -285,6 +288,7 @@ gergm <- function(formula,
                   stop_for_degeneracy = FALSE,
                   maximum_number_of_lambda_updates = 10,
                   maximum_number_of_theta_updates = 10,
+                  user_specified_initial_thetas = NULL,
                   estimate_model = TRUE,
                   ...
                   ){
@@ -305,7 +309,8 @@ gergm <- function(formula,
                                  "diagonal")
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
-                                            "edges")
+                                            "edges",
+                                            "diagonal")
   possible_covariate_terms <- c("absdiff",
                                 "nodecov",
                                 "nodematch",
@@ -422,6 +427,11 @@ gergm <- function(formula,
     stop("You supplied a proposal variance that was less than or equal to zero.")
   }
 
+  # make sure than thin is always less than one, if not, just take its reciprocal.
+  if (thin > 1) {
+    thin <- 1/thin
+  }
+
   formula <- as.formula(formula)
 
   #0. Prepare the data
@@ -493,6 +503,12 @@ gergm <- function(formula,
   GERGM_Object@beta_correlation_model <- beta_correlation_model
   GERGM_Object@distribution_estimator <- distribution_estimator
   GERGM_Object@include_diagonal <- include_diagonal
+  GERGM_Object@user_specified_initial_thetas
+  GERGM_Object@use_user_specified_initial_thetas <- FALSE
+  if (!is.null(user_specified_initial_thetas)) {
+    GERGM_Object@user_specified_initial_thetas <- user_specified_initial_thetas
+    GERGM_Object@use_user_specified_initial_thetas <- TRUE
+  }
 
   # record the various optimizations we are using so that they can be used in
   # the main algorithm

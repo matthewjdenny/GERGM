@@ -23,7 +23,8 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   generate_plots = TRUE, verbose = TRUE,
   fine_grained_pv_optimization = FALSE, use_MPLE_only = c(FALSE, TRUE),
   stop_for_degeneracy = FALSE, maximum_number_of_lambda_updates = 10,
-  maximum_number_of_theta_updates = 10, estimate_model = TRUE, ...)
+  maximum_number_of_theta_updates = 10,
+  user_specified_initial_thetas = NULL, estimate_model = TRUE, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -281,6 +282,10 @@ ignored. Default is 10.}
 
 \item{maximum_number_of_theta_updates}{Maximum number of iterations within the
 MCMC inner loop which estimates the ERGM parameters. Default is 100.}
+
+\item{user_specified_initial_thetas}{Optional numeric vector of user specified
+theta values to be used for initialization (instead of MPLE). This option
+should not be used exept when MPLE performance is poor. Defaults to NULL.}
 
 \item{estimate_model}{Logical indicating whether a model should be estimated.
 Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
