@@ -25,15 +25,14 @@ test_that("calculating statistics based on a categorical node level covariate wo
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2,
+                convergence_tolerance = 0.5,
                 hyperparameter_optimization = TRUE
   )
 
-  check_against <- c(0.657,  0.212, -2.134,  0.234, -3.997,  2.960, -2.605,
-                     -0.013,  0.057,  2.586, 0.170, -1.944)
-  check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
+  check_against <- c(0.706,  0.372, -3.749, -0.113, -6.246,  3.601, -3.516,
+                     -0.013,  0.085,  2.501,  0.180, -2.026)
+  check <- c(round(as.numeric(test@theta.coef[1,]),3),
+             round(as.numeric(test@lambda.coef[1,]),3))
   expect_equal(check, check_against)
 
 })
@@ -44,6 +43,7 @@ test_that("calculating statistics based on a categorical node level covariate wo
 test_that("stochastic aproximation works", {
   skip_on_cran()
   skip("Still in development")
+  # have not messed with this in a while (3-27-17) may not work.
 
   # try some simulations
   system.time({
@@ -98,9 +98,6 @@ test_that("stochastic aproximation works", {
   formula <- net ~ edges + mutual + ttriads
 
   test <- gergm(formula,
-                covariate_data = NULL,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
                 estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 1000,
                 thin = 1/10,
@@ -108,9 +105,7 @@ test_that("stochastic aproximation works", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 500,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2,
+                convergence_tolerance = 0.5,
                 hyperparameter_optimization = TRUE,
                 use_stochastic_MH = TRUE,
                 stochastic_MH_proportion = 0.1
