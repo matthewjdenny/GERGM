@@ -112,7 +112,9 @@ MCMCMLE <- function(mc.num.iterations,
                          control = list(fnscale = -1, trace = 0))
     }
     if (verbose) {
-      cat("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = "")
+      cat("\nTheta Estimates:\n")
+      names(theta.new$par) <- colnames(GERGM_Object@theta.coef)
+      print(theta.new$par)
     }
     GERGM_Object <- store_console_output(GERGM_Object,paste("\n", "Theta Estimates: ", paste0(theta.new$par,collapse = " "), "\n",sep = ""))
 
@@ -152,7 +154,9 @@ MCMCMLE <- function(mc.num.iterations,
         }
         GERGM_Object <- store_console_output(GERGM_Object,"\np.values for two-sided z-test of difference between current and updated theta estimates:\n\n")
         if (verbose) {
-            cat(round(p.value,3), "\n \n")
+          names(p.value) <- colnames(GERGM_Object@theta.coef)
+          print(round(p.value))
+            cat("\n")
         }
         GERGM_Object <- store_console_output(GERGM_Object,paste(p.value, "\n \n"))
 

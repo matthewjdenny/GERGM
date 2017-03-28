@@ -76,6 +76,7 @@ llg <- function(par,
     last_term <- sum(log(dst(net[upper.tri(net)], BZ[upper.tri(net)], sig, Inf))) +
       sum(log(dst(net[lower.tri(net)], BZ[lower.tri(net)], sig, Inf)))
   }
+
   log.li <- rbind(theta) %*%
     calculate_h_statistics(
       GERGM_Object,
