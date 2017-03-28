@@ -94,10 +94,11 @@ hysteresis <- function(GERGM_Object,
                                  "ctriads",
                                  "mutual",
                                  "ttriads",
-                                 "edges")
+                                 "edges",
+                                 "diagonal")
   currentwd <- getwd()
 
-  if(!is.null(output_directory)){
+  if (!is.null(output_directory)) {
     setwd(output_directory)
   }
 
