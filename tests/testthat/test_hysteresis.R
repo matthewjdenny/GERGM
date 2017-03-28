@@ -17,8 +17,7 @@ test_that("Simple model with no covariates runs", {
                 thin = 1/100,
                 proposal_variance = 0.5,
                 MCMC_burnin = 10000,
-                seed = 456,
-                force_x_theta_updates = 4)
+                seed = 456)
 
   test2 <- hysteresis(test,
                       networks_to_simulate = 20000,
