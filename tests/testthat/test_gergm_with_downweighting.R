@@ -13,10 +13,6 @@ test_that("That gergm with exponential downweighting works", {
   formula <- net ~  edges + mutual(0.95) +  ttriads(0.95)
 
   test <- gergm(formula,
-                normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 40000,
                 thin = 1/40,
                 proposal_variance = 0.5,
@@ -24,14 +20,20 @@ test_that("That gergm with exponential downweighting works", {
                 MCMC_burnin = 10000,
                 seed = 456,
                 convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0.05,
-                force_x_theta_updates = 1)
+                MPLE_gain_factor = 0.05)
 
   check_against <- c(2.267, -0.311)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
-
+})
+test_that("undirected with exponential downweighting works", {
+  skip_on_cran()
+  skip("For time")
   #check that code works for undirected network
+  #
+  set.seed(12345)
+  net <- matrix(rnorm(100,0,20),10,10)
+  colnames(net) <- rownames(net) <- letters[1:10]
 
   formula <- net ~  edges + ttriads(alpha = 0.9) + twostars(0.9)
 
@@ -53,6 +55,11 @@ test_that("That gergm with exponential downweighting works", {
   check_against <- c(0.192, -0.477)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
+})
+test_that("covariates with exponential downweighting works", {
+  skip_on_cran()
+  skip("For time")
+
   set.seed(12345)
   net <- matrix(runif(100,0,1),10,10)
   colnames(net) <- rownames(net) <- letters[1:10]
@@ -66,9 +73,6 @@ test_that("That gergm with exponential downweighting works", {
 
   test <- gergm(formula,
                 covariate_data = node_level_covariates,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.1,
@@ -76,11 +80,10 @@ test_that("That gergm with exponential downweighting works", {
                 MCMC_burnin = 50000,
                 seed = 456,
                 convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0.05,
-                force_x_theta_updates = 1)
+                MPLE_gain_factor = 0.05)
 
-    check_against <- c(0.949, -0.093, -0.016, -0.026, -0.024, -0.056, -0.055,
-                       -0.035,  0.002, -0.040, -0.050,  3.067,  0.129, -1.931)
+    check_against <- c(0.851, -0.091, -0.016, -0.025, -0.023, -0.056, -0.056,
+                       -0.034,  0.002, -0.039, -0.050,  3.099,  0.128, -1.932)
     check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
     expect_equal(check, check_against)
 
