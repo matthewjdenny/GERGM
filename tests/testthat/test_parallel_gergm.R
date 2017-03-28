@@ -27,20 +27,12 @@ test_that("Parallel GERGMs", {
                 covariate_data_list = node_level_covariates,
                 network_data_list = network_data_list,
                 cores = 2,
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.1,
-                downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.01,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 2,
-                hyperparameter_optimization = TRUE
-  )
+                convergence_tolerance = 0.5)
 
   test <- testl[[1]]
   check_against <- c(1.288, -0.075, -0.017, -0.025,  3.127, 0.132, -1.837)
