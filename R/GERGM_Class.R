@@ -77,7 +77,9 @@ setClass(Class = "gergm",
            end_time = "character",
            elapsed_time = "character",
            distribution_estimator = "character",
-           include_diagonal = "logical"
+           include_diagonal = "logical",
+           user_specified_initial_thetas = "numeric",
+           use_user_specified_initial_thetas = "logical"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)
