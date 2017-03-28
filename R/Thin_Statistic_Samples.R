@@ -4,23 +4,26 @@ Thin_Statistic_Samples <- function(statistics){
     # we are going to test using ttriads statistics
     ttriads <- statistics$ttriads
     ar1 <- stats::cor(ttriads[2:length(ttriads)],ttriads[1:(length(ttriads)-1)])
-    if(is.na(ar1)){
+    if (is.na(ar1) | is.nan(ar1) | is.null(ar1)) {
       cat("There was perfect autocorrelation, unable to thin statistics...\n")
-    }else{
+    } else {
       #print(ar1)
-
       thin <- 1
-      while(ar1 > .01){
-        thin = thin +1
+      while (ar1 > .01) {
+        thin = thin + 1
         thinSeq <- round(seq(1,length(ttriads),by=thin))
         thinDens <- ttriads[thinSeq]
         ar1 <- stats::cor(thinDens[2:length(thinDens)],thinDens[1:(length(thinDens)-1)])
-        #print(ar1)
+        # break if thinning produces perfect autocorrelation
+        if (is.na(ar1) | is.nan(ar1) | is.null(ar1)) {
+          thin <- 1
+          break
+        }
       }
 
       thinSeq <- round(seq(1,nrow(statistics),by=thin))
 
-      if(length(thinSeq) > 99){
+      if (length(thinSeq) > 99) {
         cat("Thinning statistics to correct for autocorrelation in calculating fit diagnostics...\n")
         cat("Statistics were thinned by a factor of ",thin,", resulting in ",length(thinSeq)," samples.\n", sep = "")
         statistics <- statistics[thinSeq,]
