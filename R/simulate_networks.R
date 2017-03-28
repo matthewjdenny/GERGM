@@ -140,7 +140,8 @@ simulate_networks <- function(formula,
   possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges","diagonal")
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
-                                            "edges")
+                                            "edges",
+                                            "diagonal")
   if (network_is_directed) {
     possible_structural_term_indices <- 1:7
   } else {
@@ -149,6 +150,11 @@ simulate_networks <- function(formula,
   possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
+
+  # make sure than thin is always less than one, if not, just take its reciprocal.
+  if (thin > 1) {
+    thin <- 1/thin
+  }
 
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
@@ -295,6 +301,7 @@ simulate_networks <- function(formula,
     GERGM_Object@stochastic_MH_proportion <- stochastic_MH_proportion
     GERGM_Object@possible_endogenous_statistic_indices <- possible_structural_term_indices
     GERGM_Object@distribution_estimator <- distribution_estimator
+    GERGM_Object@use_user_specified_initial_thetas <- FALSE
 
     # prepare auxiliary data
     GERGM_Object@statistic_auxiliary_data <- prepare_statistic_auxiliary_data(
