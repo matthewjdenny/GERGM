@@ -93,6 +93,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mple_distribution_objective
+double mple_distribution_objective(int number_of_nodes, arma::vec statistics_to_use, arma::mat current_network, arma::Mat<double> triples, arma::Mat<double> pairs, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, arma::vec thetas, arma::vec alphas, int together, arma::vec integration_interval, bool parallel);
+RcppExport SEXP GERGM_mple_distribution_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP thetasSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type number_of_nodes(number_of_nodesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type statistics_to_use(statistics_to_useSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type current_network(current_networkSEXP);
+    Rcpp::traits::input_parameter< arma::Mat<double> >::type triples(triplesSEXP);
+    Rcpp::traits::input_parameter< arma::Mat<double> >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type save_statistics_selected_rows_matrix(save_statistics_selected_rows_matrixSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type rows_to_use(rows_to_useSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type base_statistics_to_save(base_statistics_to_saveSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type base_statistic_alphas(base_statistic_alphasSEXP);
+    Rcpp::traits::input_parameter< int >::type num_non_base_statistics(num_non_base_statisticsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type non_base_statistic_indicator(non_base_statistic_indicatorSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alphas(alphasSEXP);
+    Rcpp::traits::input_parameter< int >::type together(togetherSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type integration_interval(integration_intervalSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    rcpp_result_gen = Rcpp::wrap(mple_distribution_objective(number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_indiviual_triad_values
 arma::vec get_indiviual_triad_values(arma::mat net, arma::Mat<double> triples, double alpha, int together);
 RcppExport SEXP GERGM_get_indiviual_triad_values(SEXP netSEXP, SEXP triplesSEXP, SEXP alphaSEXP, SEXP togetherSEXP) {

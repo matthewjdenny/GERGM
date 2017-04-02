@@ -1088,6 +1088,71 @@ double CalculateNetworkStatistics(arma::mat current_network,
     return to_return;
   };
 
+  // Function that will calculate h statistics and multiply by theta for the
+  // distribution estimator
+  double distribution_integrand(arma::mat current_network,
+                   arma::vec statistics_to_use,
+                   arma::vec thetas,
+                   arma::Mat<double> triples,
+                   arma::Mat<double> pairs,
+                   arma::umat save_statistics_selected_rows_matrix,
+                   arma::vec rows_to_use,
+                   arma::vec base_statistics_to_save,
+                   arma::vec base_statistic_alphas,
+                   int num_non_base_statistics,
+                   arma::vec non_base_statistic_indicator,
+                   arma::vec alphas,
+                   int together,
+                   int row,
+                   int col1,
+                   int col2,
+                   double edge_value,
+                   double edge_value2) {
+
+    // note that for now, I am not removing col2. Edge_value2 is now the current
+    // true edge value
+    if (edge_value != -1) {
+      // assign the current edge value in the current spot
+      current_network(row,col1) = edge_value;
+      current_network(row,col2) = edge_value2;
+      // int num_nodes = current_network.n_cols;
+      // for (int i = 0; i < num_nodes; ++i) {
+      //   if (i != col1) {
+      //     double cur = current_network(row,i);
+      //     //deal with care of a point mass
+      //     if (edge_value2 == 1) {
+      //       current_network(row,i) = double(1/double(num_nodes - 1)) * (1 - edge_value);
+      //     } else {
+      //       current_network(row,i) = (cur / double(1 - edge_value2)) * (1 - edge_value);
+      //     }
+      //   }
+      // }
+    }
+
+    // calculate theta times the current statistics.
+    arma::vec save_stats = gergm::save_network_statistics(
+      current_network,
+      statistics_to_use,
+      base_statistics_to_save,
+      base_statistic_alphas,
+      triples,
+      pairs,
+      alphas,
+      together,
+      save_statistics_selected_rows_matrix,
+      rows_to_use,
+      num_non_base_statistics,
+      non_base_statistic_indicator);
+
+    // now multiply thetas by the statistics
+    int num_theta = thetas.n_elem;
+    double to_return = 0;
+    for (int i = 0; i < num_theta; ++i) {
+      to_return += thetas[i] * save_stats[i];
+    }
+    return to_return;
+  };
+
 
   // create a RcppParallel::Worker struct that we can use to fill in the
   // entries in our token topic distribution in parallel
@@ -1178,6 +1243,114 @@ double CalculateNetworkStatistics(arma::mat current_network,
     }
   };
 
+  // do the same thing but for distributions
+  // create a RcppParallel::Worker struct that we can use to fill in the
+  // entries in our token topic distribution in parallel
+  struct Distribution_Parallel_Integrand : public RcppParallel::Worker {
+
+    // Instantiate all of our input variables which will then be initialized
+    // via the Function initializer below. This is how the struct makes sure
+    // that everything has the right type
+    arma::mat current_network;
+    arma::vec statistics_to_use;
+    arma::vec thetas;
+    arma::Mat<double> triples;
+    arma::Mat<double> pairs;
+    arma::umat save_statistics_selected_rows_matrix;
+    arma::vec rows_to_use;
+    arma::vec base_statistics_to_save;
+    arma::vec base_statistic_alphas;
+    int num_non_base_statistics;
+    arma::vec non_base_statistic_indicator;
+    arma::vec alphas;
+    int together;
+    int row;
+    int col1;
+    int col2;
+    arma::vec integration_interval;
+
+    // We need to initialize the output vector to an RcppParallel::RVector
+    // vector (which is compatible with an Rcpp::NumericVector but not an
+    // arma::vec). This is what will be implicitly returned
+    RcppParallel::RVector<double> return_dist;
+
+    // Function initializer
+    Distribution_Parallel_Integrand(arma::mat current_network,
+                       arma::vec statistics_to_use,
+                       arma::vec thetas,
+                       arma::Mat<double> triples,
+                       arma::Mat<double> pairs,
+                       arma::umat save_statistics_selected_rows_matrix,
+                       arma::vec rows_to_use,
+                       arma::vec base_statistics_to_save,
+                       arma::vec base_statistic_alphas,
+                       int num_non_base_statistics,
+                       arma::vec non_base_statistic_indicator,
+                       arma::vec alphas,
+                       int together,
+                       int row,
+                       int col1,
+                       int col2,
+                       arma::vec integration_interval,
+                       Rcpp::NumericVector return_dist)
+      : current_network(current_network),
+        statistics_to_use(statistics_to_use),
+        thetas(thetas),
+        triples(triples),
+        pairs(pairs),
+        save_statistics_selected_rows_matrix(save_statistics_selected_rows_matrix),
+        rows_to_use(rows_to_use),
+        base_statistics_to_save(base_statistics_to_save),
+        base_statistic_alphas(base_statistic_alphas),
+        num_non_base_statistics(num_non_base_statistics),
+        non_base_statistic_indicator(non_base_statistic_indicator),
+        alphas(alphas),
+        together(together),
+        row(row),
+        col1(col1),
+        col2(col2),
+        integration_interval(integration_interval),
+        return_dist(return_dist) {}
+
+    // function call operator that works for the specified range (begin/end)
+    void operator()(std::size_t begin, std::size_t end) {
+      for (std::size_t i = begin; i < end; i++) {
+        //get the current values
+        // double edge1 = integration_interval[i];
+        // double edge2 = current_network(row,col1);
+
+        // for the pairwise version
+        double edge1 = current_network(row,col1);
+        double edge2 = current_network(row,col2);
+        // sum them
+        double cur_sum = edge1 + edge2;
+        //divy them up to the two new edge values to try
+        edge1 = integration_interval[i] * cur_sum;
+        edge2 = (1 - integration_interval[i]) * cur_sum;
+
+        double integ = distribution_integrand(current_network,
+                                               statistics_to_use,
+                                               thetas,
+                                               triples,
+                                               pairs,
+                                               save_statistics_selected_rows_matrix,
+                                               rows_to_use,
+                                               base_statistics_to_save,
+                                               base_statistic_alphas,
+                                               num_non_base_statistics,
+                                               non_base_statistic_indicator,
+                                               alphas,
+                                               together,
+                                               row,
+                                               col1,
+                                               col2,
+                                               edge1,
+                                               edge2);
+        return_dist[i] = integ;
+      }
+    }
+  };
+
 
   arma::vec parallel_integration(
       arma::mat current_network,
@@ -1232,6 +1405,73 @@ double CalculateNetworkStatistics(arma::mat current_network,
     RcppParallel::parallelFor(0,
                               innterval_size,
                               Parallel_Integrand);
+
+    // Take the NumericVector output and put it in the arma::vec to actually
+    // return
+    for (int i = 0; i < innterval_size; i++) {
+      // write to output vector
+      return_vec[i] = output_vec[i];
+    }
+
+    return return_vec;
+  };
+
+  // do the same thing for distributions
+  arma::vec distribution_parallel_integration(
+      arma::mat current_network,
+      arma::vec statistics_to_use,
+      arma::vec thetas,
+      arma::Mat<double> triples,
+      arma::Mat<double> pairs,
+      arma::umat save_statistics_selected_rows_matrix,
+      arma::vec rows_to_use,
+      arma::vec base_statistics_to_save,
+      arma::vec base_statistic_alphas,
+      int num_non_base_statistics,
+      arma::vec non_base_statistic_indicator,
+      arma::vec alphas,
+      int together,
+      int row,
+      int col1,
+      int col2,
+      arma::vec integration_interval) {
+
+    int innterval_size = integration_interval.n_elem;
+    // the vector that will be operated on by RcppParallel::parallelFor.
+    // This vector must be an Rcpp::NumericVector or the parallelization
+    // will not work. THis makes everything slower, but I have not found an
+    // alternative
+    Rcpp::NumericVector output_vec(innterval_size);
+    // Once we have the token topic distribution back from the parallel for
+    // function, we will put it in to an arma::vec of the same length.
+    arma::vec return_vec = arma::zeros(innterval_size);
+
+    // create the RcppParallel::Worker function which will iterate over the
+    // distribution
+    Distribution_Parallel_Integrand Distribution_Parallel_Integrand(
+        current_network,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        save_statistics_selected_rows_matrix,
+        rows_to_use,
+        base_statistics_to_save,
+        base_statistic_alphas,
+        num_non_base_statistics,
+        non_base_statistic_indicator,
+        alphas,
+        together,
+        row,
+        col1,
+        col2,
+        integration_interval,
+        output_vec);
+
+    // Call our Parallel_Token_Topic_Distribution with parallelFor
+    RcppParallel::parallelFor(0,
+                              innterval_size,
+                              Distribution_Parallel_Integrand);
 
     // Take the NumericVector output and put it in the arma::vec to actually
     // return
@@ -1300,6 +1540,105 @@ double CalculateNetworkStatistics(arma::mat current_network,
                                             sender,
                                             recipient,
                                             integration_interval[i]);
+      }
+    }
+
+    //Rcpp::Rcout << "integral_evaluations " << integral_evaluations << std::endl;
+
+    // find the max on the interval
+    double max_val = arma::max(integral_evaluations);
+
+    // now calculate log sum exp
+    double sum_term = 0;
+    for (int i = 0; i < num_evaluations; ++i) {
+      sum_term += exp(integral_evaluations[i] - max_val);
+    }
+
+    // we are taking the average
+    sum_term = sum_term/double(num_evaluations);
+
+    sum_term = max_val + log(sum_term);
+
+    return sum_term;
+
+  };
+
+  // now do the same thing for the distribution estimator
+  double distribution_log_sum_exp_integrator (arma::mat current_network,
+                                 arma::vec statistics_to_use,
+                                 arma::vec thetas,
+                                 arma::Mat<double> triples,
+                                 arma::Mat<double> pairs,
+                                 arma::umat save_statistics_selected_rows_matrix,
+                                 arma::vec rows_to_use,
+                                 arma::vec base_statistics_to_save,
+                                 arma::vec base_statistic_alphas,
+                                 int num_non_base_statistics,
+                                 arma::vec non_base_statistic_indicator,
+                                 arma::vec alphas,
+                                 int together,
+                                 int row,
+                                 int col1,
+                                 int col2,
+                                 arma::vec integration_interval,
+                                 bool parallel) {
+
+    int num_evaluations = integration_interval.n_elem;
+    arma::vec integral_evaluations = arma::zeros(num_evaluations);
+
+    if (parallel) {
+      integral_evaluations = distribution_parallel_integration(
+        current_network,
+        statistics_to_use,
+        thetas,
+        triples,
+        pairs,
+        save_statistics_selected_rows_matrix,
+        rows_to_use,
+        base_statistics_to_save,
+        base_statistic_alphas,
+        num_non_base_statistics,
+        non_base_statistic_indicator,
+        alphas,
+        together,
+        row,
+        col1,
+        col2,
+        integration_interval);
+    } else {
+      for (int i = 0; i < num_evaluations; ++i) {
+        //determine hte edge values to pass in
+        //get the current values
+        // double edge1 = integration_interval[i];
+        // double edge2 = current_network(row,col1);
+
+
+        double edge1 = current_network(row,col1);
+        double edge2 = current_network(row,col2);
+        // sum them
+        double cur_sum = edge1 + edge2;
+        //divy them up to the two new edge values to try
+        edge1 = integration_interval[i] * cur_sum;
+        edge2 = (1 - integration_interval[i]) * cur_sum;
+
+        integral_evaluations[i] = distribution_integrand(current_network,
+                                            statistics_to_use,
+                                            thetas,
+                                            triples,
+                                            pairs,
+                                            save_statistics_selected_rows_matrix,
+                                            rows_to_use,
+                                            base_statistics_to_save,
+                                            base_statistic_alphas,
+                                            num_non_base_statistics,
+                                            non_base_statistic_indicator,
+                                            alphas,
+                                            together,
+                                            row,
+                                            col1,
+                                            col2,
+                                            edge1,
+                                            edge2);
       }
     }
 
@@ -2003,6 +2342,82 @@ double extended_weighted_mple_objective ( int number_of_nodes,
 
 
 // [[Rcpp::export]]
+double mple_distribution_objective (int number_of_nodes,
+                                    arma::vec statistics_to_use,
+                                    arma::mat current_network,
+                                    arma::Mat<double> triples,
+                                    arma::Mat<double> pairs,
+                                    arma::umat save_statistics_selected_rows_matrix,
+                                    arma::vec rows_to_use,
+                                    arma::vec base_statistics_to_save,
+                                    arma::vec base_statistic_alphas,
+                                    int num_non_base_statistics,
+                                    arma::vec non_base_statistic_indicator,
+                                    arma::vec thetas,
+                                    arma::vec alphas,
+                                    int together,
+                                    arma::vec integration_interval,
+                                    bool parallel) {
+
+  double objective = 0;
+  // loop over rows
+  for (int i = 0; i < number_of_nodes; ++i) {
+    // so now we have to do all undirected pairs of nodes for each row
+    for (int j = 0; j < number_of_nodes; ++j) {
+      for (int k = 0; k < j; ++k) {
+        // here we just stick in the true network, do not mess with anything
+        // and get out h times theta. Very vanilla.
+        double temp1 = gergm::distribution_integrand(current_network,
+                                        statistics_to_use,
+                                        thetas,
+                                        triples,
+                                        pairs,
+                                        save_statistics_selected_rows_matrix,
+                                        rows_to_use,
+                                        base_statistics_to_save,
+                                        base_statistic_alphas,
+                                        num_non_base_statistics,
+                                        non_base_statistic_indicator,
+                                        alphas,
+                                        together,
+                                        i,
+                                        j,
+                                        k,
+                                        -1,
+                                        -1);
+
+        // here we considder the tradeoff between the two selected nodes (j and k)
+        // in row i. We use the integration interval to reweight the probability
+        // mass between them.
+        double temp2 = gergm::distribution_log_sum_exp_integrator(current_network,
+                                                     statistics_to_use,
+                                                     thetas,
+                                                     triples,
+                                                     pairs,
+                                                     save_statistics_selected_rows_matrix,
+                                                     rows_to_use,
+                                                     base_statistics_to_save,
+                                                     base_statistic_alphas,
+                                                     num_non_base_statistics,
+                                                     non_base_statistic_indicator,
+                                                     alphas,
+                                                     together,
+                                                     i,
+                                                     j,
+                                                     k,
+                                                     integration_interval,
+                                                     parallel);
+
+        objective += temp1 - temp2;
+      }
+    }
+  }
+
+  return objective;
+}
+
+
+// [[Rcpp::export]]
 arma::vec get_indiviual_triad_values (
                         arma::mat net,
                         arma::Mat<double> triples,
@@ -2517,102 +2932,143 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
     //Rcpp::Rcout << "Iteration: " << n << std::endl;
     double log_prob_accept = 0;
     arma::mat proposed_edge_weights = current_edge_weights;
+    arma::mat current_edge_weights_for_updating = current_edge_weights;
 
 
     if (rowwise_distribution) {
       // we go row by row
       for (int i = 0; i < number_of_nodes; ++i) {
-        double log_probability_of_current_under_new = 0;
-        double log_probability_of_new_under_current = 0;
-        //draw a new edge value centered at the old edge value
-        arma::vec current_edge_values = arma::conv_to<arma::vec>::from(current_edge_weights.row(i));
+        // go from the first entry to the second to last
+        for (int j = 0; j < (number_of_nodes - 1); ++j) {
+            double log_probability_of_current_under_new = 0;
+            double log_probability_of_new_under_current = 0;
 
-        // now draw new edge weights
-        arma::vec new_edge_values = gergm::uniform_dirichlet_draw(current_edge_values,
-                                    variance);
+            //get the current and j+1 edge valeus
+            double edge1 = current_edge_weights_for_updating(i,j);
+            double edge2 = current_edge_weights_for_updating(i,j+1);
 
-        // now determine if each is in the other's high-prob distribution
+            //now get their sum and make them sum to one
+            double cur_edge_sum = edge1 + edge2;
 
-        bool old_in_new = gergm::point_in_simplex(new_edge_values,
-                                                  current_edge_values,
-                                                  variance);
+            // now represent the normalized first edge value
+            double current_edge_value = edge1 / cur_edge_sum;
+            //draw from a truncated normal
+            gergm::normal_distribution<double> proposal(current_edge_value,variance);
+            int in_zero_one = 0;
+            //NumericVector new_edge_value = 0.5;
+            double new_edge_value = 0.5;
+            while(in_zero_one == 0){
+              new_edge_value = proposal(generator);
+              if(new_edge_value > 0 & new_edge_value < 1){
+                in_zero_one = 1;
+              }
+            }
 
-        bool new_in_old = gergm::point_in_simplex(current_edge_values,
-                                                  new_edge_values,
-                                                  variance);
+            // calculate the probability of the new edge under current beta dist
+            double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+            double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+            double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
+            double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
 
-        if (old_in_new & new_in_old) {
-          // the case where both are in eachother means we have a q ratio of 1;
-          log_probability_of_new_under_current = 0;
-          log_probability_of_current_under_new = 0;
-        } else if (old_in_new & !new_in_old) {
-          log_probability_of_new_under_current = log(variance);
-          log_probability_of_current_under_new = 0;
-        } else if (!old_in_new & new_in_old) {
-          log_probability_of_new_under_current = 0;
-          log_probability_of_current_under_new = log(variance);
-        } else {
-          // the case where both are not also means we have a q ratio of 1;
-          log_probability_of_new_under_current = 0;
-          log_probability_of_current_under_new = 0;
+            // calculate the probability of the current edge under new beta dist
+            lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+            upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+            raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
+            double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+            //save everything
+            // here we just need to revert the edge values
+            proposed_edge_weights(i,j) = cur_edge_sum * new_edge_value;
+            proposed_edge_weights(i,j+1) = cur_edge_sum * (1 - new_edge_value);
+
+            //update the current edgeweights to be used for the next pair
+            current_edge_weights_for_updating(i,j) = cur_edge_sum * new_edge_value;
+            current_edge_weights_for_updating(i,j+1) = cur_edge_sum * (1 - new_edge_value);
+            log_probability_of_new_under_current = log(prob_new_edge_under_old);
+            log_probability_of_current_under_new = log(prob_old_edge_under_new);
+
+            // Calculate acceptance probability
+            log_prob_accept += (log_probability_of_current_under_new
+                                  - log_probability_of_new_under_current);
+          }
         }
-
-        //save everything
-        proposed_edge_weights.row(i) = arma::conv_to<arma::rowvec>::from(new_edge_values);
-        // Calculate acceptance probability
-        log_prob_accept += (log_probability_of_current_under_new
-                              - log_probability_of_new_under_current);
-      }
     } else {
-      //we are working with whole joint distribution proposals
-      double log_probability_of_current_under_new = 0;
-      double log_probability_of_new_under_current = 0;
-      //draw a new edge value centered at the old edge value
-      arma::vec current_edge_values = arma::vectorise(current_edge_weights);
-
-      // now draw new edge weights
-      arma::vec new_edge_values = gergm::uniform_dirichlet_draw(current_edge_values,
-                                                                variance);
-
-      // now determine if each is in the other's high-prob distribution
-
-      bool old_in_new = gergm::point_in_simplex(new_edge_values,
-                                                current_edge_values,
-                                                variance);
-
-      bool new_in_old = gergm::point_in_simplex(current_edge_values,
-                                                new_edge_values,
-                                                variance);
-
-      if (old_in_new & new_in_old) {
-        // the case where both are in eachother means we have a q ratio of 1;
-        log_probability_of_new_under_current = 0;
-        log_probability_of_current_under_new = 0;
-      } else if (old_in_new & !new_in_old) {
-        log_probability_of_new_under_current = log(variance);
-        log_probability_of_current_under_new = 0;
-      } else if (!old_in_new & new_in_old) {
-        log_probability_of_new_under_current = 0;
-        log_probability_of_current_under_new = log(variance);
-      } else {
-        // the case where both are not also means we have a q ratio of 1;
-        log_probability_of_new_under_current = 0;
-        log_probability_of_current_under_new = 0;
-      }
-
-      int index = 0;
+      // we go row by row
       for (int i = 0; i < number_of_nodes; ++i) {
+        // go from the first entry to the second to last
         for (int j = 0; j < number_of_nodes; ++j) {
-          //fill in by columns
-          proposed_edge_weights(j,i) = new_edge_values[index];
-          index += 1;
+          // need to make sure we are not on the last entry in the bottom of the
+          // matrix
+          if (j == (number_of_nodes - 1) & i == (number_of_nodes - 1)) {
+            // do nothing
+          } else {
+            double log_probability_of_current_under_new = 0;
+            double log_probability_of_new_under_current = 0;
+
+            //get the current and j+1 edge values, unless we are at teh end of a
+            //row, then we get the first one from the next row.
+            double edge1 = current_edge_weights_for_updating(i,j);
+            double edge2 = 0;
+            if (j < (number_of_nodes - 1)) {
+              edge2 = current_edge_weights_for_updating(i,j+1);
+            } else {
+              // the first entry in the next row
+              edge2 = current_edge_weights_for_updating(i+1,0);
+            }
+
+
+            //now get their sum and make them sum to one
+            double cur_edge_sum = edge1 + edge2;
+
+            // now represent the normalized first edge value
+            double current_edge_value = edge1 / cur_edge_sum;
+            //draw from a truncated normal
+            gergm::normal_distribution<double> proposal(current_edge_value,variance);
+            int in_zero_one = 0;
+            //NumericVector new_edge_value = 0.5;
+            double new_edge_value = 0.5;
+            while(in_zero_one == 0){
+              new_edge_value = proposal(generator);
+              if(new_edge_value > 0 & new_edge_value < 1){
+                in_zero_one = 1;
+              }
+            }
+
+            // calculate the probability of the new edge under current beta dist
+            double lower_bound = R::pnorm(0,current_edge_value,variance, 1, 0);
+            double upper_bound = R::pnorm(1,current_edge_value,variance, 1, 0);
+            double raw_prob = R::dnorm(new_edge_value,current_edge_value,variance,0);
+            double prob_new_edge_under_old = (raw_prob/(upper_bound - lower_bound));
+
+            // calculate the probability of the current edge under new beta dist
+            lower_bound = R::pnorm(0,new_edge_value,variance, 1, 0);
+            upper_bound = R::pnorm(1,new_edge_value,variance, 1, 0);
+            raw_prob = R::dnorm(current_edge_value,new_edge_value,variance,0);
+            double prob_old_edge_under_new = (raw_prob/(upper_bound - lower_bound));
+
+            //save everything
+            // here we just need to revert the edge values
+            proposed_edge_weights(i,j) = cur_edge_sum * new_edge_value;
+            current_edge_weights_for_updating(i,j) = cur_edge_sum * new_edge_value;
+            if (j < (number_of_nodes - 1)) {
+              proposed_edge_weights(i,j+1) = cur_edge_sum * (1 - new_edge_value);
+              current_edge_weights_for_updating(i,j+1) = cur_edge_sum * (1 - new_edge_value);
+            } else {
+              // the first entry in the next row
+              proposed_edge_weights(i+1,0) = cur_edge_sum * (1 - new_edge_value);
+              current_edge_weights_for_updating(i+1,0) = cur_edge_sum * (1 - new_edge_value);
+            }
+
+            log_probability_of_new_under_current = log(prob_new_edge_under_old);
+            log_probability_of_current_under_new = log(prob_old_edge_under_new);
+
+            // Calculate acceptance probability
+            log_prob_accept += (log_probability_of_current_under_new
+                                  - log_probability_of_new_under_current);
+          }
         }
       }
-
-      // Calculate acceptance probability
-      log_prob_accept += (log_probability_of_current_under_new
-                            - log_probability_of_new_under_current);
-    }
+    } // end of joint distribtuion conditional
 
     double proposed_addition = 0;
     double current_addition = 0;

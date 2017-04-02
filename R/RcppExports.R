@@ -13,6 +13,10 @@ extended_weighted_mple_objective <- function(number_of_nodes, statistics_to_use,
     .Call('GERGM_extended_weighted_mple_objective', PACKAGE = 'GERGM', number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
 }
 
+mple_distribution_objective <- function(number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel) {
+    .Call('GERGM_mple_distribution_objective', PACKAGE = 'GERGM', number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
+}
+
 get_indiviual_triad_values <- function(net, triples, alpha, together) {
     .Call('GERGM_get_indiviual_triad_values', PACKAGE = 'GERGM', net, triples, alpha, together)
 }
