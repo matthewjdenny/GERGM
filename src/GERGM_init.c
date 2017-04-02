@@ -17,6 +17,7 @@ extern SEXP GERGM_get_triad_weights(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP GERGM_h_statistics(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP GERGM_Individual_Edge_Conditional_Prediction(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP GERGM_Metropolis_Hastings_Sampler(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP GERGM_mple_distribution_objective(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP GERGM_weighted_mple_objective(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
@@ -29,6 +30,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"GERGM_h_statistics",                             (DL_FUNC) &GERGM_h_statistics,                             12},
     {"GERGM_Individual_Edge_Conditional_Prediction",   (DL_FUNC) &GERGM_Individual_Edge_Conditional_Prediction,   30},
     {"GERGM_Metropolis_Hastings_Sampler",              (DL_FUNC) &GERGM_Metropolis_Hastings_Sampler,              16},
+    {"GERGM_mple_distribution_objective",              (DL_FUNC) &GERGM_mple_distribution_objective,              16},
     {"GERGM_weighted_mple_objective",                  (DL_FUNC) &GERGM_weighted_mple_objective,                  10},
     {NULL, NULL, 0}
 };
