@@ -17,7 +17,10 @@ run_mple <- function(GERGM_Object,
   }
   GERGM_Object <- store_console_output(GERGM_Object,"Estimating Initial Values for Theta via MPLE... \n")
 
-  if (GERGM_Object@is_correlation_network) {
+  if (GERGM_Object@distribution_estimator != "none") {
+    theta.init <- mple_distribution(GERGM_Object,
+                                    verbose = verbose)
+  } else if (GERGM_Object@is_correlation_network) {
     theta.init <- mple.corr(GERGM_Object@network,
                             GERGM_Object@bounded.network,
                             statistics = GERGM_Object@stats_to_use,
