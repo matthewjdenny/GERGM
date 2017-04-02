@@ -1,4 +1,4 @@
-test_that("Diagonal model with no covariates runs", {
+  test_that("Diagonal model with no covariates runs", {
   skip_on_cran()
 
   set.seed(12345)
@@ -44,20 +44,21 @@ test_that("Row-wise distribution model runs", {
   formula <- net ~ mutual + ttriads
 
   test <- gergm(formula,
-                normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
                 number_of_networks_to_simulate = 200000,
                 thin = 1/100,
-                proposal_variance = 0.99,
-                downweight_statistics_together = TRUE,
+                proposal_variance = 0.3,
                 MCMC_burnin = 100000,
                 seed = 456,
                 distribution_estimator = "rowwise-marginal",
-                convergence_tolerance = 0.1)
+                convergence_tolerance = 0.5,
+                parallel = TRUE,
+                cores = 2,
+                hyperparameter_optimization = TRUE,
+                integration_intervals = 150,
+                distribution_mple_regularization_weight = 0.02,
+                force_x_theta_updates = 3)
 
-  check_against <- c(-2.649,  5.944,  8.490)
+  check_against <- c(1.311, -13.889, 5.779)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 
