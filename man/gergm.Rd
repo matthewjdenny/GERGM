@@ -24,7 +24,9 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   fine_grained_pv_optimization = FALSE, use_MPLE_only = c(FALSE, TRUE),
   stop_for_degeneracy = FALSE, maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 10,
-  user_specified_initial_thetas = NULL, estimate_model = TRUE, ...)
+  user_specified_initial_thetas = NULL, integration_intervals = 150,
+  distribution_mple_regularization_weight = 0.05, estimate_model = TRUE,
+  ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -286,6 +288,16 @@ MCMC inner loop which estimates the ERGM parameters. Default is 100.}
 \item{user_specified_initial_thetas}{Optional numeric vector of user specified
 theta values to be used for initialization (instead of MPLE). This option
 should not be used exept when MPLE performance is poor. Defaults to NULL.}
+
+\item{integration_intervals}{The number of intervals to be used for numerical
+integration in weighted MPLE and in MPLE for the distribution estimator.
+Defaults to 150 but may be increased if more accuracy is required.}
+
+\item{distribution_mple_regularization_weight}{L2 regularization of the MPLE
+theta estimates may be necessary to provide an adequate starting position
+when using the distribtuion estimator. We suggest a value of 0.05, but the
+optimal L2 penalty will be application specific. Setting to zero removes all
+L2 regularization.}
 
 \item{estimate_model}{Logical indicating whether a model should be estimated.
 Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
