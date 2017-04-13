@@ -7,8 +7,9 @@ An R package to estimate Generalized Exponential Random Graph Models. To get sta
 
 **[04/13/17]** New estimation functionality, bug fixes.
 
-* A bug fix was added for the initialization of the covariate parameter estimates which will lead to faster convergence and mosr stable estimation.
+* A bug fix was added for the initialization of the covariate parameter estimates which will lead to faster convergence and more stable estimation.
 * New option to estimate structural features (no covariates currently) for rowwise marginal distributions. See the `distribution_estimator` argument.
+* More updates to the documentation to make it easier to read.
 
 **[03/12/17]** A number of minor updates to the GERGM package (mostly in the documentation) and bump to version 0.11.0 on CRAN:
 
