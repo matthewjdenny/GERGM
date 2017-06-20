@@ -12,7 +12,8 @@ simulate_networks(formula, thetas, simulation_method = c("Metropolis",
   optimize_proposal_variance = FALSE, target_accept_rate = 0.25,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 1,
   beta_correlation_model = FALSE, distribution_estimator = c("none",
-  "rowwise-marginal", "joint"), covariate_data = NULL, lambdas = NULL, ...)
+  "rowwise-marginal", "joint"), covariate_data = NULL, lambdas = NULL,
+  include_diagonal = FALSE, ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies which statistics the user would
@@ -108,6 +109,10 @@ added.}
 \item{lambdas}{A vector of lambda parameters given in the same order as the
 formula terms, which the user would like to use to parameterize the model.
 Covariate effects should be specified after endogenous effects.}
+
+\item{include_diagonal}{Logical indicating whether the diagonal should be
+included in the estimation proceedure. If TRUE, then a "diagonal" statistic
+is added to the model. Defaults to FALSE.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }

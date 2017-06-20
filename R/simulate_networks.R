@@ -75,6 +75,9 @@
 #' @param lambdas A vector of lambda parameters given in the same order as the
 #' formula terms, which the user would like to use to parameterize the model.
 #' Covariate effects should be specified after endogenous effects.
+#' @param include_diagonal Logical indicating whether the diagonal should be
+#' included in the estimation proceedure. If TRUE, then a "diagonal" statistic
+#' is added to the model. Defaults to FALSE.
 #' @param ... Optional arguments, currently unsupported.
 #' @examples
 #' \dontrun{
@@ -128,6 +131,7 @@ simulate_networks <- function(formula,
   distribution_estimator = c("none","rowwise-marginal","joint"),
   covariate_data = NULL,
   lambdas = NULL,
+  include_diagonal = FALSE,
   ...
 ){
 
@@ -137,17 +141,25 @@ simulate_networks <- function(formula,
   }
 
   # hard coded possible stats
-  possible_structural_terms <- c("out2stars", "in2stars", "ctriads", "mutual", "ttriads","edges","diagonal")
+  possible_structural_terms <- c("out2stars",
+                                 "in2stars",
+                                 "ctriads",
+                                 "mutual",
+                                 "ttriads",
+                                 "edges",
+                                 "diagonal")
   possible_structural_terms_undirected <- c("twostars",
                                             "ttriads",
                                             "edges",
                                             "diagonal")
-  if (network_is_directed) {
-    possible_structural_term_indices <- 1:7
-  } else {
-    possible_structural_term_indices <- c(2,5,6,7)
-  }
-  possible_covariate_terms <- c("absdiff", "nodecov", "nodematch", "sender", "receiver", "intercept", "nodemix")
+
+  possible_covariate_terms <- c("absdiff",
+                                "nodecov",
+                                "nodematch",
+                                "sender",
+                                "receiver",
+                                "intercept",
+                                "nodemix")
   possible_network_terms <- "netcov"
   # possible_transformations <- c("cauchy", "logcauchy", "gaussian", "lognormal")
 
@@ -155,6 +167,9 @@ simulate_networks <- function(formula,
   if (thin > 1) {
     thin <- 1/thin
   }
+
+  distribution_estimator <- distribution_estimator[1]
+  using_distribution_estimator <- FALSE
 
   if (is.null(GERGM_Object)) {
     # pass in experimental correlation network feature through elipsis
@@ -179,6 +194,14 @@ simulate_networks <- function(formula,
       }
     } else {
       stop("distribution_estimator must be one of 'none','rowwise-marginal', or 'joint'")
+    }
+
+    # check terms for undirected network
+    if (!network_is_directed) {
+      formula <- parse_undirected_structural_terms(
+        formula,
+        possible_structural_terms,
+        possible_structural_terms_undirected)
     }
 
     # check to see if we are using a regression intercept term, and if we are,
@@ -208,12 +231,10 @@ simulate_networks <- function(formula,
     transformation_type <- "cauchy"
     normalization_type <- "division"
 
-    # check terms for undirected network
-    if (!network_is_directed) {
-      formula <- parse_undirected_structural_terms(
-        formula,
-        possible_structural_terms,
-        possible_structural_terms_undirected)
+    if (network_is_directed) {
+      possible_structural_term_indices <- 1:7
+    } else {
+      possible_structural_term_indices <- c(2,5,6,7)
     }
 
     if (simulate_correlation_network & beta_correlation_model) {
@@ -302,6 +323,7 @@ simulate_networks <- function(formula,
     GERGM_Object@possible_endogenous_statistic_indices <- possible_structural_term_indices
     GERGM_Object@distribution_estimator <- distribution_estimator
     GERGM_Object@use_user_specified_initial_thetas <- FALSE
+    GERGM_Object@include_diagonal <- include_diagonal
 
     # prepare auxiliary data
     GERGM_Object@statistic_auxiliary_data <- prepare_statistic_auxiliary_data(
