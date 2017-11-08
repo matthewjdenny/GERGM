@@ -10,7 +10,8 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   number_of_networks_to_simulate = 500, MCMC_burnin = 100, thin = 1,
   proposal_variance = 0.1, target_accept_rate = 0.25, seed = 123,
   hyperparameter_optimization = FALSE, theta_grid_optimization_list = NULL,
-  weighted_MPLE = FALSE, parallel = FALSE,
+  weighted_MPLE = FALSE, convex_hull_proportion = NULL,
+  convex_hull_convergence_proportion = 0.9, parallel = FALSE,
   parallel_statistic_calculation = FALSE, cores = 1,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 0.25,
   slackr_integration_list = NULL, convergence_tolerance = 0.5,
@@ -22,7 +23,8 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   force_x_lambda_updates = 1, output_directory = NULL, output_name = NULL,
   generate_plots = TRUE, verbose = TRUE,
   fine_grained_pv_optimization = FALSE, use_MPLE_only = c(FALSE, TRUE),
-  stop_for_degeneracy = FALSE, maximum_number_of_lambda_updates = 10,
+  start_with_zeros = FALSE, stop_for_degeneracy = FALSE,
+  maximum_number_of_lambda_updates = 10,
   maximum_number_of_theta_updates = 10,
   user_specified_initial_thetas = NULL, integration_intervals = 150,
   distribution_mple_regularization_weight = 0.05, estimate_model = TRUE,
@@ -151,6 +153,21 @@ down weighting and the MPLE_gain_factor).}
 specifying statistics with alpha down weighting. Tends to provide better
 initialization when downweight_statistics_together = FALSE.}
 
+\item{convex_hull_proportion}{Defaults to NULL. Otherwise, must be a number
+between 0 and 1, with values between 0.5 and 0.9 preferred. Setting a value
+for this parameter makes use of the initialization method introduced by
+Hummel, Hunter and Handcock (2012), which can provide a much more stable
+initialization method than MPLE. Selecting this method will not supercede
+other initialization methods, as it will be run after MPLE or grid search.
+However, in practice, it should often preclude the need for other
+initialization methods.}
+
+\item{convex_hull_convergence_proportion}{Defaults to 0.9. This must be a
+number between 0 and 1, with values between 0.7 and 0.95 preferred. This
+parameter controls the stopping behavior of the convex hull initialization
+proceedure, with a higher value requiring a better fit before moving to
+standard estimation.}
+
 \item{parallel}{Logical indicating whether the weighted MPLE objective and any
 other operations that can be easily parallelized should be calculated in
 parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
@@ -272,6 +289,10 @@ recommended if running a correlation model.}
 \item{use_MPLE_only}{Logical specifying whether or not only the maximum pseudo
 likelihood estimates should be obtained. In this case, no simulations will be
 performed. Default is FALSE.}
+
+\item{start_with_zeros}{Defaults to FALSE. IF TRUE, then no MPLE is used and
+allendogenous parameters are initialized to zero. This method will still work
+with convex_hull_proportion.}
 
 \item{stop_for_degeneracy}{When TRUE, automatically stops estimation when
 degeneracy is detected, even when hyperparameter_optimization is set to TRUE.

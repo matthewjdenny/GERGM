@@ -108,6 +108,19 @@
 #' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
 #' specifying statistics with alpha down weighting. Tends to provide better
 #' initialization when downweight_statistics_together = FALSE.
+#' @param convex_hull_proportion Defaults to NULL. Otherwise, must be a number
+#' between 0 and 1, with values between 0.5 and 0.9 preferred. Setting a value
+#' for this parameter makes use of the initialization method introduced by
+#' Hummel, Hunter and Handcock (2012), which can provide a much more stable
+#' initialization method than MPLE. Selecting this method will not supercede
+#' other initialization methods, as it will be run after MPLE or grid search.
+#' However, in practice, it should often preclude the need for other
+#' initialization methods.
+#' @param convex_hull_convergence_proportion Defaults to 0.9. This must be a
+#' number between 0 and 1, with values between 0.7 and 0.95 preferred. This
+#' parameter controls the stopping behavior of the convex hull initialization
+#' proceedure, with a higher value requiring a better fit before moving to
+#' standard estimation.
 #' @param parallel Logical indicating whether the weighted MPLE objective and any
 #' other operations that can be easily parallelized should be calculated in
 #' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
@@ -209,6 +222,9 @@
 #' @param use_MPLE_only Logical specifying whether or not only the maximum pseudo
 #' likelihood estimates should be obtained. In this case, no simulations will be
 #' performed. Default is FALSE.
+#' @param start_with_zeros Defaults to FALSE. IF TRUE, then no MPLE is used and
+#' allendogenous parameters are initialized to zero. This method will still work
+#' with convex_hull_proportion.
 #' @param stop_for_degeneracy When TRUE, automatically stops estimation when
 #' degeneracy is detected, even when hyperparameter_optimization is set to TRUE.
 #' Defaults to FALSE.
@@ -272,6 +288,8 @@ gergm <- function(formula,
                   hyperparameter_optimization = FALSE,
                   theta_grid_optimization_list = NULL,
                   weighted_MPLE = FALSE,
+                  convex_hull_proportion = NULL,
+                  convex_hull_convergence_proportion = 0.9,
                   parallel = FALSE,
                   parallel_statistic_calculation = FALSE,
                   cores = 1,
@@ -293,6 +311,7 @@ gergm <- function(formula,
                   verbose = TRUE,
                   fine_grained_pv_optimization = FALSE,
                   use_MPLE_only = c(FALSE, TRUE),
+                  start_with_zeros = FALSE,
                   stop_for_degeneracy = FALSE,
                   maximum_number_of_lambda_updates = 10,
                   maximum_number_of_theta_updates = 10,
@@ -543,6 +562,18 @@ gergm <- function(formula,
   GERGM_Object@burnin <- MCMC_burnin
   GERGM_Object@MPLE_gain_factor <- MPLE_gain_factor
   GERGM_Object@start_time <- toString(start_time)
+  GERGM_Object@start_with_zeros <- start_with_zeros
+
+  if (is.null(convex_hull_proportion)) {
+    GERGM_Object@convex_hull_proportion <- -1
+  } else {
+    GERGM_Object@convex_hull_proportion <- convex_hull_proportion
+  }
+
+  GERGM_Object@convex_hull_convergence_proportion <-  convex_hull_convergence_proportion
+
+
+
 
   GERGM_Object@using_slackr_integration <- FALSE
   if (!is.null(slackr_integration_list)) {
