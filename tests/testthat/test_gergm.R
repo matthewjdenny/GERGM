@@ -169,7 +169,8 @@ test_that("Additional Model with covariates runs", {
                 proposal_variance = 0.5,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.5)
+                convergence_tolerance = 0.5,
+                convex_hull_proportion = 0.8)
 
   check_against <- c(1.389, -0.078, -0.017, -0.024,  3.098,  0.132, -1.837)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
