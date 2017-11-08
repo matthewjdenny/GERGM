@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // Extended_Metropolis_Hastings_Sampler
 List Extended_Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, bool include_diagonal);
-RcppExport SEXP GERGM_Extended_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP include_diagonalSEXP) {
+RcppExport SEXP _GERGM_Extended_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP include_diagonalSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,7 +47,7 @@ END_RCPP
 }
 // h_statistics
 arma::vec h_statistics(arma::vec statistics_to_use, arma::mat current_edge_weights, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator);
-RcppExport SEXP GERGM_h_statistics(SEXP statistics_to_useSEXP, SEXP current_edge_weightsSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP) {
+RcppExport SEXP _GERGM_h_statistics(SEXP statistics_to_useSEXP, SEXP current_edge_weightsSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -69,7 +69,7 @@ END_RCPP
 }
 // extended_weighted_mple_objective
 double extended_weighted_mple_objective(int number_of_nodes, arma::vec statistics_to_use, arma::mat current_network, arma::Mat<double> triples, arma::Mat<double> pairs, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, arma::vec thetas, arma::vec alphas, int together, arma::vec integration_interval, bool parallel);
-RcppExport SEXP GERGM_extended_weighted_mple_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP thetasSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
+RcppExport SEXP _GERGM_extended_weighted_mple_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP thetasSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -95,7 +95,7 @@ END_RCPP
 }
 // mple_distribution_objective
 double mple_distribution_objective(int number_of_nodes, arma::vec statistics_to_use, arma::mat current_network, arma::Mat<double> triples, arma::Mat<double> pairs, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, arma::vec thetas, arma::vec alphas, int together, arma::vec integration_interval, bool parallel);
-RcppExport SEXP GERGM_mple_distribution_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP thetasSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
+RcppExport SEXP _GERGM_mple_distribution_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP thetasSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -121,7 +121,7 @@ END_RCPP
 }
 // get_indiviual_triad_values
 arma::vec get_indiviual_triad_values(arma::mat net, arma::Mat<double> triples, double alpha, int together);
-RcppExport SEXP GERGM_get_indiviual_triad_values(SEXP netSEXP, SEXP triplesSEXP, SEXP alphaSEXP, SEXP togetherSEXP) {
+RcppExport SEXP _GERGM_get_indiviual_triad_values(SEXP netSEXP, SEXP triplesSEXP, SEXP alphaSEXP, SEXP togetherSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -135,7 +135,7 @@ END_RCPP
 }
 // get_triad_weights
 arma::vec get_triad_weights(arma::mat net, arma::Mat<double> triples, double alpha, int together, double smoothing_parameter);
-RcppExport SEXP GERGM_get_triad_weights(SEXP netSEXP, SEXP triplesSEXP, SEXP alphaSEXP, SEXP togetherSEXP, SEXP smoothing_parameterSEXP) {
+RcppExport SEXP _GERGM_get_triad_weights(SEXP netSEXP, SEXP triplesSEXP, SEXP alphaSEXP, SEXP togetherSEXP, SEXP smoothing_parameterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -150,7 +150,7 @@ END_RCPP
 }
 // Individual_Edge_Conditional_Prediction
 List Individual_Edge_Conditional_Prediction(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, int i, int j);
-RcppExport SEXP GERGM_Individual_Edge_Conditional_Prediction(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP iSEXP, SEXP jSEXP) {
+RcppExport SEXP _GERGM_Individual_Edge_Conditional_Prediction(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP iSEXP, SEXP jSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -190,7 +190,7 @@ END_RCPP
 }
 // Distribution_Metropolis_Hastings_Sampler
 List Distribution_Metropolis_Hastings_Sampler(int number_of_iterations, double variance, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, bool rowwise_distribution);
-RcppExport SEXP GERGM_Distribution_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP varianceSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP rowwise_distributionSEXP) {
+RcppExport SEXP _GERGM_Distribution_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP varianceSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP rowwise_distributionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -227,7 +227,7 @@ END_RCPP
 }
 // frobenius_norm
 double frobenius_norm(arma::mat mat1, arma::mat mat2);
-RcppExport SEXP GERGM_frobenius_norm(SEXP mat1SEXP, SEXP mat2SEXP) {
+RcppExport SEXP _GERGM_frobenius_norm(SEXP mat1SEXP, SEXP mat2SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -239,7 +239,7 @@ END_RCPP
 }
 // Metropolis_Hastings_Sampler
 List Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel);
-RcppExport SEXP GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP) {
+RcppExport SEXP _GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -265,7 +265,7 @@ END_RCPP
 }
 // weighted_mple_objective
 double weighted_mple_objective(int number_of_nodes, arma::vec statistics_to_use, arma::mat current_network, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, arma::vec integration_interval, bool parallel);
-RcppExport SEXP GERGM_weighted_mple_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
+RcppExport SEXP _GERGM_weighted_mple_objective(SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP current_networkSEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP integration_intervalSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -282,4 +282,24 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(weighted_mple_objective(number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval, parallel));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_GERGM_Extended_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Extended_Metropolis_Hastings_Sampler, 29},
+    {"_GERGM_h_statistics", (DL_FUNC) &_GERGM_h_statistics, 12},
+    {"_GERGM_extended_weighted_mple_objective", (DL_FUNC) &_GERGM_extended_weighted_mple_objective, 16},
+    {"_GERGM_mple_distribution_objective", (DL_FUNC) &_GERGM_mple_distribution_objective, 16},
+    {"_GERGM_get_indiviual_triad_values", (DL_FUNC) &_GERGM_get_indiviual_triad_values, 4},
+    {"_GERGM_get_triad_weights", (DL_FUNC) &_GERGM_get_triad_weights, 5},
+    {"_GERGM_Individual_Edge_Conditional_Prediction", (DL_FUNC) &_GERGM_Individual_Edge_Conditional_Prediction, 30},
+    {"_GERGM_Distribution_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Distribution_Metropolis_Hastings_Sampler, 27},
+    {"_GERGM_frobenius_norm", (DL_FUNC) &_GERGM_frobenius_norm, 2},
+    {"_GERGM_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Metropolis_Hastings_Sampler, 16},
+    {"_GERGM_weighted_mple_objective", (DL_FUNC) &_GERGM_weighted_mple_objective, 10},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_GERGM(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

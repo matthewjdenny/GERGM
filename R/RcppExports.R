@@ -2,46 +2,46 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 Extended_Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, include_diagonal) {
-    .Call(GERGM_Extended_Metropolis_Hastings_Sampler, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, include_diagonal)
+    .Call(`_GERGM_Extended_Metropolis_Hastings_Sampler`, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, include_diagonal)
 }
 
 h_statistics <- function(statistics_to_use, current_edge_weights, triples, pairs, alphas, together, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator) {
-    .Call(GERGM_h_statistics, statistics_to_use, current_edge_weights, triples, pairs, alphas, together, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator)
+    .Call(`_GERGM_h_statistics`, statistics_to_use, current_edge_weights, triples, pairs, alphas, together, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator)
 }
 
 extended_weighted_mple_objective <- function(number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel) {
-    .Call(GERGM_extended_weighted_mple_objective, number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
+    .Call(`_GERGM_extended_weighted_mple_objective`, number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
 }
 
 mple_distribution_objective <- function(number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel) {
-    .Call(GERGM_mple_distribution_objective, number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
+    .Call(`_GERGM_mple_distribution_objective`, number_of_nodes, statistics_to_use, current_network, triples, pairs, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, thetas, alphas, together, integration_interval, parallel)
 }
 
 get_indiviual_triad_values <- function(net, triples, alpha, together) {
-    .Call(GERGM_get_indiviual_triad_values, net, triples, alpha, together)
+    .Call(`_GERGM_get_indiviual_triad_values`, net, triples, alpha, together)
 }
 
 get_triad_weights <- function(net, triples, alpha, together, smoothing_parameter) {
-    .Call(GERGM_get_triad_weights, net, triples, alpha, together, smoothing_parameter)
+    .Call(`_GERGM_get_triad_weights`, net, triples, alpha, together, smoothing_parameter)
 }
 
 Individual_Edge_Conditional_Prediction <- function(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j) {
-    .Call(GERGM_Individual_Edge_Conditional_Prediction, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j)
+    .Call(`_GERGM_Individual_Edge_Conditional_Prediction`, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, i, j)
 }
 
 Distribution_Metropolis_Hastings_Sampler <- function(number_of_iterations, variance, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, rowwise_distribution) {
-    .Call(GERGM_Distribution_Metropolis_Hastings_Sampler, number_of_iterations, variance, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, rowwise_distribution)
+    .Call(`_GERGM_Distribution_Metropolis_Hastings_Sampler`, number_of_iterations, variance, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, random_triad_sample_list, random_dyad_sample_list, use_triad_sampling, num_unique_random_triad_samples, rowwise_distribution)
 }
 
 frobenius_norm <- function(mat1, mat2) {
-    .Call(GERGM_frobenius_norm, mat1, mat2)
+    .Call(`_GERGM_frobenius_norm`, mat1, mat2)
 }
 
 Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel) {
-    .Call(GERGM_Metropolis_Hastings_Sampler, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel)
+    .Call(`_GERGM_Metropolis_Hastings_Sampler`, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel)
 }
 
 weighted_mple_objective <- function(number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval, parallel) {
-    .Call(GERGM_weighted_mple_objective, number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval, parallel)
+    .Call(`_GERGM_weighted_mple_objective`, number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval, parallel)
 }
 
