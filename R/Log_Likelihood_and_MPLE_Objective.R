@@ -6,7 +6,10 @@ log.l <- function(thetas,
                   ltheta,
                   together = together,
                   possible.stats,
-                  GERGM_Object = GERGM_Object) {
+                  GERGM_Object = GERGM_Object,
+                  override_statistics = NULL) {
+
+  # we use override_statistics if we are doing the convex hull initialization:
   #turn dataframe into matrix
   hsnet <- as.matrix(hsnet)
   if (nrow(hsnet) == 1) {
@@ -27,12 +30,16 @@ log.l <- function(thetas,
                    together = together,
                    GERGM_Object)[1, ]
   }else{
-    temp <- calculate_h_statistics(
-      GERGM_Object,
-      GERGM_Object@statistic_auxiliary_data,
-      all_weights_are_one = FALSE,
-      calculate_all_statistics = FALSE,
-      use_constrained_network = TRUE)
+    if (!is.null(override_statistics)) {
+      temp <- override_statistics
+    } else {
+      temp <- calculate_h_statistics(
+        GERGM_Object,
+        GERGM_Object@statistic_auxiliary_data,
+        all_weights_are_one = FALSE,
+        calculate_all_statistics = FALSE,
+        use_constrained_network = TRUE)
+    }
   }
   ret <- rbind(theta) %*% temp - max(z) - log(sum(exp(z - max(z))))
   return(ret)
