@@ -9,6 +9,7 @@ MCMCMLE <- function(mc.num.iterations,
 					          outter_iteration_number = 1,
 					          stop_for_degeneracy = FALSE) {
 
+
   # get MPLE thetas
   MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
                            verbose = verbose,
@@ -20,6 +21,26 @@ MCMCMLE <- function(mc.num.iterations,
   theta <- MPLE_Results$theta
   statistics <- MPLE_Results$statistics
   init.statistics <- MPLE_Results$init.statistics
+
+  # if we are initializing with all zeros, then reset theta to be all zeros.
+  if (GERGM_Object@start_with_zeros) {
+    cat("Zeroing out initial thetas becasue start_with_zeros = TRUE...\n")
+    theta$par <- rep(0, length(theta))
+  }
+
+  # make sure we store the current value of theta in the GERGM object:
+  GERGM_Object@theta.par <- theta$par
+
+  # now if we are using convex_hull_proportion, then call convex hull
+  # initialization.
+  if (GERGM_Object@convex_hull_proportion != -1) {
+    GERGM_Object <- convex_hull_initialization(GERGM_Object,
+                                               seed2,
+                                               possible.stats,
+                                               verbose)
+    theta$par <- GERGM_Object@theta.par
+  }
+
 
   ##########################################################################
   ## Simulate new networks
