@@ -248,6 +248,10 @@
 #' @param estimate_model Logical indicating whether a model should be estimated.
 #' Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
 #' a GERGM object containing the model specification. Useful for debugging.
+#' @param optimization_method The optimization method used by the 'optim'
+#' function in estimating theta and lambda parameter estimates. Defualts to
+#' "BFGS", but can also be any one of "L-BFGS-B", "Nelder-Mead", "CG", "SANN",
+#' or "Brent". "L-BFGS-B" is preferred for fitting beta correlation models.
 #' @param ... Optional arguments, currently unsupported.
 #' @return A gergm object containing parameter estimates.
 #' @examples
@@ -319,6 +323,7 @@ gergm <- function(formula,
                   integration_intervals = 150,
                   distribution_mple_regularization_weight = 0.05,
                   estimate_model = TRUE,
+                  optimization_method = c("BFGS", "L-BFGS-B", "Nelder-Mead", "CG", "SANN", "Brent"),
                   ...
                   ){
 
@@ -365,6 +370,7 @@ gergm <- function(formula,
   normalization_type <- normalization_type[1]
   distribution_estimator <- distribution_estimator[1]
   using_distribution_estimator <- FALSE
+  optimization_method <- optimization_method[1]
 
   # deal with the case where we are using a distribution estimator
   if (distribution_estimator %in%  c("none","rowwise-marginal","joint")) {
@@ -572,6 +578,7 @@ gergm <- function(formula,
 
   GERGM_Object@convex_hull_convergence_proportion <-  convex_hull_convergence_proportion
 
+  GERGM_Object@optimization_method <- optimization_method
 
 
 

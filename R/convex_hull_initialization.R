@@ -113,7 +113,7 @@ convex_hull_initialization <- function(GERGM_Object,
                            possible.stats = possible.stats,
                            GERGM_Object = GERGM_Object,
                            override_statistics = target_stats, # select an easier target
-                           method = "BFGS",
+                           method = GERGM_Object@optimization_method,
                            hessian = T,
                            control = list(fnscale = -1, trace = 6))
       } else {
@@ -126,7 +126,7 @@ convex_hull_initialization <- function(GERGM_Object,
                            possible.stats = possible.stats,
                            GERGM_Object = GERGM_Object,
                            override_statistics = target_stats, # select an easier target
-                           method = "BFGS",
+                           method = GERGM_Object@optimization_method,
                            hessian = T,
                            control = list(fnscale = -1, trace = 0))
       }

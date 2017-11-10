@@ -84,7 +84,8 @@ setClass(Class = "gergm",
            regularization_weight = "numeric",
            convex_hull_proportion = "numeric",
            start_with_zeros = "logical",
-           convex_hull_convergence_proportion = "numeric"
+           convex_hull_convergence_proportion = "numeric",
+           optimization_method = "character"
          ),
          validity = function(object) {
            if (!"matrix" %in% class(object@network) & is.null(object@network)

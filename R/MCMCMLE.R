@@ -116,7 +116,7 @@ MCMCMLE <- function(mc.num.iterations,
                        together = GERGM_Object@downweight_statistics_together,
                        possible.stats = possible.stats,
                        GERGM_Object = GERGM_Object,
-                       method = "BFGS",
+                       method = GERGM_Object@optimization_method,
                        hessian = T,
                        control = list(fnscale = -1, trace = 6))
     } else {
@@ -128,7 +128,7 @@ MCMCMLE <- function(mc.num.iterations,
                          together = GERGM_Object@downweight_statistics_together,
                          possible.stats = possible.stats,
                          GERGM_Object = GERGM_Object,
-                         method = "BFGS",
+                         method = GERGM_Object@optimization_method,
                          hessian = T,
                          control = list(fnscale = -1, trace = 0))
     }

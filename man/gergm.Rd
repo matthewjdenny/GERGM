@@ -28,7 +28,8 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   maximum_number_of_theta_updates = 10,
   user_specified_initial_thetas = NULL, integration_intervals = 150,
   distribution_mple_regularization_weight = 0.05, estimate_model = TRUE,
-  ...)
+  optimization_method = c("BFGS", "L-BFGS-B", "Nelder-Mead", "CG", "SANN",
+  "Brent"), ...)
 }
 \arguments{
 \item{formula}{A formula object that specifies the relationship between
@@ -323,6 +324,11 @@ L2 regularization.}
 \item{estimate_model}{Logical indicating whether a model should be estimated.
 Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
 a GERGM object containing the model specification. Useful for debugging.}
+
+\item{optimization_method}{The optimization method used by the 'optim'
+function in estimating theta and lambda parameter estimates. Defualts to
+"BFGS", but can also be any one of "L-BFGS-B", "Nelder-Mead", "CG", "SANN",
+or "Brent". "L-BFGS-B" is preferred for fitting beta correlation models.}
 
 \item{...}{Optional arguments, currently unsupported.}
 }
