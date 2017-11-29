@@ -232,14 +232,16 @@ conditional_edge_prediction <- function(
                 h_stats <- calculate_h_statistics(GERGM_Object,
                                                   statistic_auxiliary_data)
                 # h_stats <- h_stats[statistic_auxiliary_data$specified_statistic_indexes_in_full_statistics]
-                numerator_term <- exp(sum(GERGM_Object@theta.coef[1,]*h_stats))
+                #  no longer taking exp here as we are going to work in log space
+                numerator_term <- sum(GERGM_Object@theta.coef[1,]*h_stats)
+
                 product_term <- dbt(net,
                                     GERGM_Object@mu,
                                     GERGM_Object@phi)[lower_diag_index]
 
-                sampling_weights[n] <- numerator_term * product_term
+                sampling_weights[n] <- numerator_term + log(product_term)
                 exp_theta_h[n] <- numerator_term
-                pdf_term[n] <- product_term
+                pdf_term[n] <- log(product_term)
               }
               cat("Summary of sampling weights\n")
               print(summary(sampling_weights/sum(sampling_weights)))
@@ -259,10 +261,16 @@ conditional_edge_prediction <- function(
               #        col = "blue")
               # par(mfrow = c(1,1))
 
-              edge_values <- sample(x = max_ent_observed_scale,
-                                    size = number_of_networks_to_simulate,
-                                    replace = TRUE,
-                                    prob = sampling_weights)
+              edge_values <- samples_from_log_distribution(sampling_weights,
+                                            max_ent_observed_scale,
+                                            number_of_networks_to_simulate)
+
+              # we are going to use a log space sampler becasue we get underflow
+              # with very large networks
+              # edge_values <- sample(x = max_ent_observed_scale,
+              #                       size = number_of_networks_to_simulate,
+              #                       replace = TRUE,
+              #                       prob = sampling_weights)
               # make simulated and observed scale the same for correlation networks.
               simulated_scale <- edge_values
 
@@ -362,37 +370,32 @@ conditional_edge_prediction <- function(
                 h_stats <- calculate_h_statistics(GERGM_Object,
                                                   statistic_auxiliary_data)
                 # h_stats <- h_stats[statistic_auxiliary_data$specified_statistic_indexes_in_full_statistics]
-                numerator_term <- exp(sum(GERGM_Object@theta.coef[1,]*h_stats))
+                #  no longer taking exp here as we are going to work in log space
+                numerator_term <- sum(GERGM_Object@theta.coef[1,]*h_stats)
                 product_term <- dbt(net,
                                     GERGM_Object@mu,
                                     GERGM_Object@phi)[lower_diag_index]
 
-                sampling_weights[n] <- numerator_term * product_term
+                #cat("Sampling_Weight = ",numerator_term + log(product_term),"\n")
+
+                sampling_weights[n] <- numerator_term + log(product_term)
                 exp_theta_h[n] <- numerator_term
-                pdf_term[n] <- product_term
+                pdf_term[n] <- log(product_term)
               }
               cat("Summary of sampling weights\n")
               print(summary(sampling_weights/sum(sampling_weights)))
 
-              # par(mfrow = c(3,1))
-              # plot(x = max_ent_observed_scale,
-              #      y = sampling_weights)
-              # abline(v = GERGM_Object@network[i,j],
-              #        col = "blue")
-              # plot(x = max_ent_observed_scale,
-              #      y = exp_theta_h)
-              # abline(v = GERGM_Object@network[i,j],
-              #        col = "blue")
-              # plot(x = max_ent_observed_scale,
-              #      y = pdf_term)
-              # abline(v = GERGM_Object@network[i,j],
-              #        col = "blue")
-              # par(mfrow = c(1,1))
 
-              edge_values <- sample(x = max_ent_observed_scale,
-                                    size = number_of_networks_to_simulate,
-                                    replace = TRUE,
-                                    prob = sampling_weights)
+              edge_values <- samples_from_log_distribution(sampling_weights,
+                                                           max_ent_observed_scale,
+                                                           number_of_networks_to_simulate)
+
+              # we are going to use a log space sampler becasue we get underflow
+              # with very large networks
+              # edge_values <- sample(x = max_ent_observed_scale,
+              #                       size = number_of_networks_to_simulate,
+              #                       replace = TRUE,
+              #                       prob = sampling_weights)
               # make simulated and observed scale the same for correlation networks.
               simulated_scale <- edge_values
 
