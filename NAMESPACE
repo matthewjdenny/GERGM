@@ -2,6 +2,7 @@
 
 export(Estimate_Plot)
 export(GOF)
+export(Thin_Statistic_Samples)
 export(Trace_Plot)
 export(calculate_network_statistics)
 export(conditional_edge_prediction)
