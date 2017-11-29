@@ -225,6 +225,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// log_space_multinomial_sampler
+int log_space_multinomial_sampler(arma::vec unnormalized_discrete_distribution, double uniform_draw);
+RcppExport SEXP _GERGM_log_space_multinomial_sampler(SEXP unnormalized_discrete_distributionSEXP, SEXP uniform_drawSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type unnormalized_discrete_distribution(unnormalized_discrete_distributionSEXP);
+    Rcpp::traits::input_parameter< double >::type uniform_draw(uniform_drawSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_space_multinomial_sampler(unnormalized_discrete_distribution, uniform_draw));
+    return rcpp_result_gen;
+END_RCPP
+}
 // frobenius_norm
 double frobenius_norm(arma::mat mat1, arma::mat mat2);
 RcppExport SEXP _GERGM_frobenius_norm(SEXP mat1SEXP, SEXP mat2SEXP) {
@@ -293,6 +305,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_GERGM_get_triad_weights", (DL_FUNC) &_GERGM_get_triad_weights, 5},
     {"_GERGM_Individual_Edge_Conditional_Prediction", (DL_FUNC) &_GERGM_Individual_Edge_Conditional_Prediction, 30},
     {"_GERGM_Distribution_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Distribution_Metropolis_Hastings_Sampler, 27},
+    {"_GERGM_log_space_multinomial_sampler", (DL_FUNC) &_GERGM_log_space_multinomial_sampler, 2},
     {"_GERGM_frobenius_norm", (DL_FUNC) &_GERGM_frobenius_norm, 2},
     {"_GERGM_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Metropolis_Hastings_Sampler, 16},
     {"_GERGM_weighted_mple_objective", (DL_FUNC) &_GERGM_weighted_mple_objective, 10},
