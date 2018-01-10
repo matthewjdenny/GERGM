@@ -4,14 +4,33 @@
 #' GERGM function.
 #' @param observed_network The observed network used as the dependent variable
 #' in the original gergm() specification.
-#' @param collapse_to_correlation_space If TRUE, then all simulated networks are
-#' normalized so the maximum absolute edge value is less than one. Defaults to
-#' FALSE.
+#' @param objective Defaults to "Frobenius", in which case the Frobenius norm
+#' is used to find the simulated network that is most similar to the observed
+#' network. Can also be "Likelihood", in which case the model log likelihood is
+#' used to select the network to display.
 #' @return A simulated network (as a matrix object).
 #' @export
 find_example_simulated_network <- function(GERGM_Object,
                                            observed_network,
-                                           collapse_to_correlation_space = F){
+                                           objective = c("Frobenius","Likelihood")){
+
+  # should not need this:
+  collapse_to_correlation_space = F
+
+  possible_structural_terms <- c("out2stars",
+                                 "in2stars",
+                                 "ctriads",
+                                 "mutual",
+                                 "ttriads",
+                                 "edges",
+                                 "diagonal")
+
+  # deal with objective choice
+  objective <- objective[1]
+  if (!(objective %in% c("Frobenius","Likelihood"))) {
+    stop("objective must be one of 'Frobenius' or 'Likelihood'")
+  }
+
 
     # loop over network samples and calculate similarity metric
     samples <- GERGM_Object@MCMC_output$Networks
@@ -32,15 +51,53 @@ find_example_simulated_network <- function(GERGM_Object,
         } else {
             net <- samples[,,i]
         }
-        distances[i] <- frobenius_norm(observed_network,net)
+
+        if (objective == "Frobenius") {
+          distances[i] <- frobenius_norm(observed_network,net)
+        }
+        if (objective == "Likelihood") {
+
+          # sad <- GERGM_Object@statistic_auxiliary_data
+          # hsn <- GERGM_Object@MCMC_output$Statistics[,sad$specified_statistic_indexes_in_full_statistics]
+
+
+          # endogenous_contribution <- log.l(
+          #   par = GERGM_Object@theta.coef[1,],
+          #   alpha = GERGM_Object@weights,
+          #   hsnet = hsn,
+          #   ltheta = as.numeric(GERGM_Object@theta.coef[1,]),
+          #   together = GERGM_Object@downweight_statistics_together,
+          #   possible.stats = possible_structural_terms,
+          #   GERGM_Object = GERGM_Object)
+
+          log_likelihood <- llg(
+            par = as.numeric(GERGM_Object@lambda.coef[1,]),
+            alpha = GERGM_Object@weights,
+            theta = as.numeric(GERGM_Object@theta.coef[1,]),
+            z = GERGM_Object@data_transformation,
+            together = GERGM_Object@downweight_statistics_together,
+            possible.stats = possible_structural_terms,
+            GERGM_Object = GERGM_Object)
+
+          distances[i] <- log_likelihood
+        }
+
     }
     cat("\n")
 
-    #find minimum distance
-    index <- which(distances == min(distances))[1]
 
-    cat("Minimum Frobenius Distance was:",min(distances),
-        "for simulated network index number:",index, "\n")
+    if (objective == "Frobenius") {
+      index <- which(distances == min(distances))[1]
+      cat("Minimum Frobenius Distance was:",min(distances),
+          "for simulated network index number:",index, "\n")
+    }
+    if (objective == "Likelihood") {
+      index <- which(distances == max(distances))[1]
+      cat("Maximum (unnormalized) log likelihood was:",max(distances),
+          "for simulated network index number:",index, "\n")
+    }
+
+
 
     if (collapse_to_correlation_space) {
         net <- samples[,,index]/max(abs(samples[,,index]))

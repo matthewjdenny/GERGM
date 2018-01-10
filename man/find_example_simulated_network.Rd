@@ -5,7 +5,7 @@
 \title{Find an example simulated network that is the minimum Frobenius  distance from the observed network.}
 \usage{
 find_example_simulated_network(GERGM_Object, observed_network,
-  collapse_to_correlation_space = F)
+  objective = c("Frobenius", "Likelihood"))
 }
 \arguments{
 \item{GERGM_Object}{The object returned by the estimation procedure using the
@@ -14,9 +14,10 @@ GERGM function.}
 \item{observed_network}{The observed network used as the dependent variable
 in the original gergm() specification.}
 
-\item{collapse_to_correlation_space}{If TRUE, then all simulated networks are
-normalized so the maximum absolute edge value is less than one. Defaults to
-FALSE.}
+\item{objective}{Defaults to "Frobenius", in which case the Frobenius norm
+is used to find the simulated network that is most similar to the observed
+network. Can also be "Likelihood", in which case the model log likelihood is
+used to select the network to display.}
 }
 \value{
 A simulated network (as a matrix object).
