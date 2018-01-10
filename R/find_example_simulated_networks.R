@@ -70,14 +70,28 @@ find_example_simulated_network <- function(GERGM_Object,
           #   possible.stats = possible_structural_terms,
           #   GERGM_Object = GERGM_Object)
 
-          log_likelihood <- llg(
-            par = as.numeric(GERGM_Object@lambda.coef[1,]),
-            alpha = GERGM_Object@weights,
-            theta = as.numeric(GERGM_Object@theta.coef[1,]),
-            z = GERGM_Object@data_transformation,
-            together = GERGM_Object@downweight_statistics_together,
-            possible.stats = possible_structural_terms,
-            GERGM_Object = GERGM_Object)
+          # sub in the current simulated network
+          GERGM_Object@network <- net
+
+          if (GERGM_Object@beta_correlation_model) {
+            log_likelihood <- llg.beta( par = as.numeric(GERGM_Object@lambda.coef[1,]),
+                                       theta = as.numeric(GERGM_Object@theta.coef[1,]),
+                                       z = GERGM_Object@data_transformation,
+                                       together = GERGM_Object@downweight_statistics_together,
+                                       possible.stats = possible_structural_terms,
+                                 GERGM_Object = GERGM_Object)
+          } else {
+            log_likelihood <- llg(
+              par = as.numeric(GERGM_Object@lambda.coef[1,]),
+              alpha = GERGM_Object@weights,
+              theta = as.numeric(GERGM_Object@theta.coef[1,]),
+              z = GERGM_Object@data_transformation,
+              together = GERGM_Object@downweight_statistics_together,
+              possible.stats = possible_structural_terms,
+              GERGM_Object = GERGM_Object)
+          }
+
+
 
           distances[i] <- log_likelihood
         }
