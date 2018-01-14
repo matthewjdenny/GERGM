@@ -72,8 +72,18 @@ find_example_simulated_network <- function(GERGM_Object,
 
           # sub in the current simulated network
           GERGM_Object@network <- net
-
           if (GERGM_Object@beta_correlation_model) {
+            if (net[1,1] == 0) {
+              symnet <- GERGM_Object@MCMC_output$Networks[,,i]
+
+              # note that we stored these in the Update_Lambda_Estimates() function
+              # using BZ and BZstdev as containers for mu and phi respectively.
+              P <- 2*qbt(symnet, GERGM_Object@mu , GERGM_Object@phi) - 1
+
+              # Transform P to a correlation matrix R
+              GERGM_Object@network <- partials.to.correlations(P)
+
+            }
             log_likelihood <- llg.beta( par = as.numeric(GERGM_Object@lambda.coef[1,]),
                                        theta = as.numeric(GERGM_Object@theta.coef[1,]),
                                        z = GERGM_Object@data_transformation,
