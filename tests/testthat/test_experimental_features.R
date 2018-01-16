@@ -65,9 +65,14 @@ test_that("Model works for correlation networks", {
   net <- (correlations + t(correlations)) / 2
   colnames(net) <- rownames(net) <- letters[1:10]
 
-  formula <- net ~ edges + ttriads
+  node_level_covariates <- data.frame(Type = c("A","B","B","A","A","A","B","B","C","C"))
+  rownames(node_level_covariates) <- letters[1:10]
+
+
+  formula <- net ~ edges + ttriads + nodematch("Type",base = "A")
 
   test <- gergm(formula,
+                covariate_data = node_level_covariates,
                 number_of_networks_to_simulate = 100000,
                 thin = 1/100,
                 proposal_variance = 0.2,
@@ -76,7 +81,10 @@ test_that("Model works for correlation networks", {
                 convergence_tolerance = 0.5,
                 beta_correlation_model = TRUE)
 
-  check_against <- c(-0.029,  0.010, 39.907)
+  # make sure we are on observed scale:
+  # test@MCMC_output$Networks[,,1]
+
+  check_against <- c(-0.029,  0.069, -0.026, 40.317)
   check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
   expect_equal(check, check_against)
 
