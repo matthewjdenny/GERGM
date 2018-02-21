@@ -114,7 +114,7 @@ conditional_edge_prediction <- function(
                                  j = j)
           simulated_scale <- temp@MCMC_output$Networks[i,j,]
           # covert back to observed scale (so we incorporate in covariate effects)
-          temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+          temp2 <- convert_simulated_networks_to_observed_scale(temp)
           obs_scale <- temp2@MCMC_output$Networks[i,j,]
           #now get and save the edge sample
           edge_values <- temp2@MCMC_output$Networks[i,j,]
@@ -123,7 +123,7 @@ conditional_edge_prediction <- function(
           # put the edges in the GERGM object
           temp@MCMC_output$Networks[i,j,] <- max_ent_values
           # covert back to observed scale (so we incorporate in covariate effects)
-          temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+          temp2 <- convert_simulated_networks_to_observed_scale(temp)
           #now get and save the edge sample
           max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
 
@@ -158,7 +158,7 @@ conditional_edge_prediction <- function(
                                    j = j)
             simulated_scale <- temp@MCMC_output$Networks[i,j,]
             # covert back to observed scale (so we incorporate in covariate effects)
-            temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+            temp2 <- convert_simulated_networks_to_observed_scale(temp)
             obs_scale <- temp2@MCMC_output$Networks[i,j,]
             #now get and save the edge sample
             edge_values <- temp2@MCMC_output$Networks[i,j,]
@@ -167,7 +167,7 @@ conditional_edge_prediction <- function(
             # put the edges in the GERGM object
             temp@MCMC_output$Networks[i,j,] <- max_ent_values
             # covert back to observed scale (so we incorporate in covariate effects)
-            temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+            temp2 <- convert_simulated_networks_to_observed_scale(temp)
             #now get and save the edge sample
             max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
 
@@ -285,7 +285,7 @@ conditional_edge_prediction <- function(
                                      j = j)
               simulated_scale <- temp@MCMC_output$Networks[i,j,]
               # covert back to observed scale (so we incorporate in covariate effects)
-              temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+              temp2 <- convert_simulated_networks_to_observed_scale(temp)
               obs_scale <- temp2@MCMC_output$Networks[i,j,]
               #now get and save the edge sample
               edge_values <- temp2@MCMC_output$Networks[i,j,]
@@ -294,7 +294,7 @@ conditional_edge_prediction <- function(
               # put the edges in the GERGM object
               temp@MCMC_output$Networks[i,j,] <- max_ent_values
               # covert back to observed scale (so we incorporate in covariate effects)
-              temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+              temp2 <- convert_simulated_networks_to_observed_scale(temp)
               #now get and save the edge sample
               max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
             }
@@ -410,7 +410,7 @@ conditional_edge_prediction <- function(
                                      j = j)
               simulated_scale <- temp@MCMC_output$Networks[i,j,]
               # covert back to observed scale (so we incorporate in covariate effects)
-              temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+              temp2 <- convert_simulated_networks_to_observed_scale(temp)
               obs_scale <- temp2@MCMC_output$Networks[i,j,]
               #now get and save the edge sample
               edge_values <- temp2@MCMC_output$Networks[i,j,]
@@ -419,7 +419,7 @@ conditional_edge_prediction <- function(
               # put the edges in the GERGM object
               temp@MCMC_output$Networks[i,j,] <- max_ent_values
               # covert back to observed scale (so we incorporate in covariate effects)
-              temp2 <- Convert_Simulated_Networks_To_Observed_Scale(temp)
+              temp2 <- convert_simulated_networks_to_observed_scale(temp)
               #now get and save the edge sample
               max_ent_observed_scale <- temp2@MCMC_output$Networks[i,j,]
             }

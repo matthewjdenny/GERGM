@@ -463,7 +463,7 @@ simulate_networks <- function(formula,
   if (!return_constrained_networks) {
     cat("Transforming networks simulated via MCMC as part of the fit diagnostics back on to the scale of observed network. You can access these networks through the '@MCMC_output$Networks' field returned by this function...\n")
     GERGM_Object@simulated_bounded_networks_for_GOF <- GERGM_Object@MCMC_output$Networks
-    GERGM_Object <- Convert_Simulated_Networks_To_Observed_Scale(GERGM_Object)
+    GERGM_Object <- convert_simulated_networks_to_observed_scale(GERGM_Object)
   } else {
     cat("Returning constrained [0,1] simulated networks...\n")
   }
