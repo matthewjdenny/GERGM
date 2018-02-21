@@ -11,8 +11,8 @@ gergm(formula, covariate_data = NULL, beta_correlation_model = FALSE,
   proposal_variance = 0.1, target_accept_rate = 0.25, seed = 123,
   hyperparameter_optimization = FALSE, theta_grid_optimization_list = NULL,
   weighted_MPLE = FALSE, convex_hull_proportion = NULL,
-  convex_hull_convergence_proportion = 0.9, parallel = FALSE,
-  parallel_statistic_calculation = FALSE, cores = 1,
+  convex_hull_convergence_proportion = 0.9, sample_edges_at_a_time = 0,
+  parallel = FALSE, parallel_statistic_calculation = FALSE, cores = 1,
   use_stochastic_MH = FALSE, stochastic_MH_proportion = 0.25,
   slackr_integration_list = NULL, convergence_tolerance = 0.5,
   MPLE_gain_factor = 0, acceptable_fit_p_value_threshold = 0.05,
@@ -168,6 +168,11 @@ number between 0 and 1, with values between 0.7 and 0.95 preferred. This
 parameter controls the stopping behavior of the convex hull initialization
 proceedure, with a higher value requiring a better fit before moving to
 standard estimation.}
+
+\item{sample_edges_at_a_time}{Defaults to 0. If greater than zero, then this
+is the number of edges to be updated at once during MCMCMLE. The lower this
+number is set, the higher the Metropolis Hastings acceptance rate should be.
+This option will primarily be relevant for large networks.}
 
 \item{parallel}{Logical indicating whether the weighted MPLE objective and any
 other operations that can be easily parallelized should be calculated in

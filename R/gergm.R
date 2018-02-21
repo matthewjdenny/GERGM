@@ -121,6 +121,10 @@
 #' parameter controls the stopping behavior of the convex hull initialization
 #' proceedure, with a higher value requiring a better fit before moving to
 #' standard estimation.
+#' @param sample_edges_at_a_time Defaults to 0. If greater than zero, then this
+#' is the number of edges to be updated at once during MCMCMLE. The lower this
+#' number is set, the higher the Metropolis Hastings acceptance rate should be.
+#' This option will primarily be relevant for large networks.
 #' @param parallel Logical indicating whether the weighted MPLE objective and any
 #' other operations that can be easily parallelized should be calculated in
 #' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
@@ -294,6 +298,7 @@ gergm <- function(formula,
                   weighted_MPLE = FALSE,
                   convex_hull_proportion = NULL,
                   convex_hull_convergence_proportion = 0.9,
+                  sample_edges_at_a_time = 0,
                   parallel = FALSE,
                   parallel_statistic_calculation = FALSE,
                   cores = 1,
@@ -569,6 +574,7 @@ gergm <- function(formula,
   GERGM_Object@MPLE_gain_factor <- MPLE_gain_factor
   GERGM_Object@start_time <- toString(start_time)
   GERGM_Object@start_with_zeros <- start_with_zeros
+  GERGM_Object@sample_edges_at_a_time <- sample_edges_at_a_time
 
   if (is.null(convex_hull_proportion)) {
     GERGM_Object@convex_hull_proportion <- -1
