@@ -79,12 +79,15 @@ test_that("Model works for correlation networks", {
                 MCMC_burnin = 100000,
                 seed = 456,
                 convergence_tolerance = 0.5,
-                beta_correlation_model = TRUE)
+                beta_correlation_model = TRUE,
+                convex_hull_proportion = 0.9,
+                convex_hull_convergence_proportion = 0.9,
+                sample_edges_at_a_time = 59)
 
   # make sure we are on observed scale:
   # test@MCMC_output$Networks[,,1]
 
-  check_against <- c(-0.029,  0.069, -0.026, 40.317)
+  check_against <- c(-0.021,  0.070, -0.039, 40.285)
   check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
   expect_equal(check, check_against)
 
@@ -184,7 +187,7 @@ test_that("sample at a time works", {
                   covariate_data = node_level_covariates,
                   network_is_directed = TRUE,
                   number_of_networks_to_simulate = 100000,
-                  thin = 1/1000,
+                  thin = 1/100,
                   proposal_variance = 0.1,
                   MCMC_burnin = 100000,
                   seed = 456,
