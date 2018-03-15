@@ -1,7 +1,9 @@
 ##Transformation functions for correlation matrices
 ##James D. Wilson 2/18/15
 #-----------------------------------------------------
-correlations.to.partials <- function(correlations){
+# older version has slow R implementation, has been replaced by
+# faster version below:
+correlations.to.partials.slow <- function(correlations){
   #INPUT:
   #      correlations - d x d matrix whose (i,j)th entry is the
   #                     correlation between i and j
@@ -41,6 +43,7 @@ correlations.to.partials <- function(correlations){
       r1 <- correlations[i, (i + 1):(i + k - 1)]
       r3 <- correlations[i + k, (i + 1):(i + k - 1)]
 
+
       D <- sqrt((1 - t(r1) %*% solve(R2) %*% r1) *
                   (1 - t(r3) %*% solve(R2) %*% r3))
 
@@ -52,6 +55,50 @@ correlations.to.partials <- function(correlations){
   }
   return(partials)
 }
+
+
+# faster version implemented in C++
+correlations.to.partials <- function(correlations){
+  #INPUT:
+  #      correlations - d x d matrix whose (i,j)th entry is the
+  #                     correlation between i and j
+  #                     NOTE: diagonal should be all set to 1
+  #OUTPUT:
+  #       partials - d x d matrix whose (i,j)th entry is the partial
+  #                  correlation between i and j given all variables
+  #                  in between i and j
+
+  #Initialize
+  d <- dim(correlations)[1]
+  partials <- matrix(1, d, d)
+
+  #NOTE: partials should be symmetric. If not, send an error
+  if (isSymmetric(correlations) == FALSE) {
+    stop("The correlation matrix must be symmetric.")
+  }
+
+  #if(sum(eigen(correlations)$values < 0) > 0){
+  #  stop("The correlation matrix must be positive definite.")
+  #}
+
+  #Set the super- and sub- diagonal of the partials matrix
+  #super-diagonal
+  diag(partials[-nrow(partials), -1]) <- diag(correlations[-nrow(correlations), -1])
+
+  #sub-diagonal
+  diag(partials[-1, -ncol(partials)]) <- diag(correlations[-1, -ncol(correlations)])
+
+  #Recursively obtain the remaining correlations using the transformation
+  #given in the Harry Joe paper - in C++
+  partials <- Corr_to_Part(d, correlations, partials)
+
+  return(partials)
+}
+
+
+
+
+
 #-----------------------------------------------------
 partials.to.correlations <- function(partials){
   #INPUT:

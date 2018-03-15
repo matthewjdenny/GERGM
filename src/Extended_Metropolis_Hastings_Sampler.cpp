@@ -3601,5 +3601,3 @@ List Edge_Group_MH_Sampler (int number_of_iterations,
 
 
 
-
-

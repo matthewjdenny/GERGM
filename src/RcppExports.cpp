@@ -6,6 +6,19 @@
 
 using namespace Rcpp;
 
+// Corr_to_Part
+arma::mat Corr_to_Part(int d, arma::mat correlations, arma::mat partials);
+RcppExport SEXP _GERGM_Corr_to_Part(SEXP dSEXP, SEXP correlationsSEXP, SEXP partialsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type correlations(correlationsSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type partials(partialsSEXP);
+    rcpp_result_gen = Rcpp::wrap(Corr_to_Part(d, correlations, partials));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Extended_Metropolis_Hastings_Sampler
 List Extended_Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::Mat<double> triples, arma::Mat<double> pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel, arma::umat use_selected_rows, arma::umat save_statistics_selected_rows_matrix, arma::vec rows_to_use, arma::vec base_statistics_to_save, arma::vec base_statistic_alphas, int num_non_base_statistics, arma::vec non_base_statistic_indicator, double p_ratio_multaplicative_factor, Rcpp::List random_triad_sample_list, Rcpp::List random_dyad_sample_list, bool use_triad_sampling, int num_unique_random_triad_samples, bool include_diagonal);
 RcppExport SEXP _GERGM_Extended_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP, SEXP use_selected_rowsSEXP, SEXP save_statistics_selected_rows_matrixSEXP, SEXP rows_to_useSEXP, SEXP base_statistics_to_saveSEXP, SEXP base_statistic_alphasSEXP, SEXP num_non_base_statisticsSEXP, SEXP non_base_statistic_indicatorSEXP, SEXP p_ratio_multaplicative_factorSEXP, SEXP random_triad_sample_listSEXP, SEXP random_dyad_sample_listSEXP, SEXP use_triad_samplingSEXP, SEXP num_unique_random_triad_samplesSEXP, SEXP include_diagonalSEXP) {
@@ -333,6 +346,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_GERGM_Corr_to_Part", (DL_FUNC) &_GERGM_Corr_to_Part, 3},
     {"_GERGM_Extended_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Extended_Metropolis_Hastings_Sampler, 29},
     {"_GERGM_h_statistics", (DL_FUNC) &_GERGM_h_statistics, 12},
     {"_GERGM_extended_weighted_mple_objective", (DL_FUNC) &_GERGM_extended_weighted_mple_objective, 16},
