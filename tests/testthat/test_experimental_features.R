@@ -71,18 +71,27 @@ test_that("Model works for correlation networks", {
 
   formula <- net ~ edges + ttriads + nodematch("Type",base = "A")
 
-  test <- gergm(formula,
-                covariate_data = node_level_covariates,
-                number_of_networks_to_simulate = 100000,
-                thin = 1/100,
-                proposal_variance = 0.2,
-                MCMC_burnin = 100000,
-                seed = 456,
-                convergence_tolerance = 0.5,
-                beta_correlation_model = TRUE,
-                convex_hull_proportion = 0.9,
-                convex_hull_convergence_proportion = 0.9,
-                sample_edges_at_a_time = 59)
+  system.time({
+    test <- gergm(formula,
+                  covariate_data = node_level_covariates,
+                  number_of_networks_to_simulate = 100000,
+                  thin = 1/100,
+                  proposal_variance = 0.2,
+                  MCMC_burnin = 100000,
+                  seed = 456,
+                  convergence_tolerance = 0.5,
+                  beta_correlation_model = TRUE,
+                  convex_hull_proportion = 0.9,
+                  convex_hull_convergence_proportion = 0.9,
+                  sample_edges_at_a_time = 59,
+                  use_previous_thetas = TRUE)
+  })
+
+  user  system elapsed
+  38.320   0.624  43.158
+  Theta Estimates:
+    ttriads
+  -0.02083058
 
   # make sure we are on observed scale:
   # test@MCMC_output$Networks[,,1]
