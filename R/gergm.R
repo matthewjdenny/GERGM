@@ -125,6 +125,15 @@
 #' is the number of edges to be updated at once during MCMCMLE. The lower this
 #' number is set, the higher the Metropolis Hastings acceptance rate should be.
 #' This option will primarily be relevant for large networks.
+#' @param use_previous_thetas Logical, defaults to FALSE. IF TRUE, then at each
+#' iteration covariate parameter updates beyond the first, the MPLE
+#' initialization for theta parameters will be skipped, and the previous
+#' iteration thetas will be used as a starting point. This option will only work
+#' with convex hull initialization. The intuition here is that if MPLE is poor,
+#' the previous theta estimates may be a better starting point for convex hull
+#' initialization. In some cases this can lead to a very large speedup in
+#' estimation. However, this can lead to arbitrarily poor performance in
+#' some situations. Use with caution.
 #' @param parallel Logical indicating whether the weighted MPLE objective and any
 #' other operations that can be easily parallelized should be calculated in
 #' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
@@ -299,6 +308,7 @@ gergm <- function(formula,
                   convex_hull_proportion = NULL,
                   convex_hull_convergence_proportion = 0.9,
                   sample_edges_at_a_time = 0,
+                  use_previous_thetas = FALSE,
                   parallel = FALSE,
                   parallel_statistic_calculation = FALSE,
                   cores = 1,
@@ -585,6 +595,7 @@ gergm <- function(formula,
   GERGM_Object@convex_hull_convergence_proportion <-  convex_hull_convergence_proportion
 
   GERGM_Object@optimization_method <- optimization_method
+  GERGM_Object@use_previous_thetas <- use_previous_thetas
 
 
 

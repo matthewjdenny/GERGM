@@ -9,23 +9,28 @@ MCMCMLE <- function(mc.num.iterations,
 					          outter_iteration_number = 1,
 					          stop_for_degeneracy = FALSE) {
 
+  if (GERGM_Object@convex_hull_proportion != -1 &
+      GERGM_Object@use_previous_thetas &
+      outter_iteration_number > 1) {
+    # skip MPLE intiialization
+  } else {
+    # get MPLE thetas
+    MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
+                             verbose = verbose,
+                             seed2 = seed2,
+                             possible.stats = possible.stats,
+                             outter_iteration_number = outter_iteration_number)
 
-  # get MPLE thetas
-  MPLE_Results <- run_mple(GERGM_Object = GERGM_Object,
-                           verbose = verbose,
-                           seed2 = seed2,
-                           possible.stats = possible.stats,
-                           outter_iteration_number = outter_iteration_number)
+    GERGM_Object <- MPLE_Results$GERGM_Object
+    theta <- MPLE_Results$theta
+    statistics <- MPLE_Results$statistics
+    init.statistics <- MPLE_Results$init.statistics
 
-  GERGM_Object <- MPLE_Results$GERGM_Object
-  theta <- MPLE_Results$theta
-  statistics <- MPLE_Results$statistics
-  init.statistics <- MPLE_Results$init.statistics
-
-  # if we are initializing with all zeros, then reset theta to be all zeros.
-  if (GERGM_Object@start_with_zeros) {
-    cat("Zeroing out initial thetas becasue start_with_zeros = TRUE...\n")
-    theta$par <- rep(0, length(theta))
+    # if we are initializing with all zeros, then reset theta to be all zeros.
+    if (GERGM_Object@start_with_zeros) {
+      cat("Zeroing out initial thetas becasue start_with_zeros = TRUE...\n")
+      theta$par <- rep(0, length(theta))
+    }
   }
 
   # make sure we store the current value of theta in the GERGM object:

@@ -171,9 +171,7 @@ Estimate_GERGM <- function(formula_object,
         }
         theta <- theta.new
         gpar <- gpar.new
-      }
-
-      if (MPLE.only != TRUE) {
+      } else {
         # Estimate lambda
         updates <- Update_Lambda_Estimates(
           i = i,
@@ -237,7 +235,9 @@ Estimate_GERGM <- function(formula_object,
           p.value2[i] <- 2*pnorm(-abs((gpar.new$par[i] - gpar$par[i]) /
                                         gpar.std.errors[i]))
           #if we reject any of the tests then convergence has not been reached!
-          if (p.value2[i] < tolerance) {count2[i] = 1}
+          if (p.value2[i] < tolerance) {
+            count2[i] <- 1
+          }
         }
 
         if (verbose) {
@@ -246,7 +246,8 @@ Estimate_GERGM <- function(formula_object,
         GERGM_Object <- store_console_output(GERGM_Object,
                                              paste("Lambda p.values", "\n"))
         if (verbose) {
-          names(p.value2) <- c(dimnames(GERGM_Object@data_transformation)[[3]],"dispersion parameter")
+          names(p.value2) <- c(dimnames(GERGM_Object@data_transformation)[[3]],
+                               "dispersion parameter")
           print(p.value2)
         }
         GERGM_Object <- store_console_output(GERGM_Object,
