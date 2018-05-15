@@ -261,8 +261,9 @@ ates.pdf", "Test_GERGM_Object.Rdata", "Test_Estimation_Log.txt", and
 parameter plots are generated.}
 
 \item{verbose}{Defaults to TRUE (providing lots of output while model is
-running). Can be set to FALSE if the user wishes to see less output.
-#' @param use_previous_thetas Logical, defaults to TRUE. IF TRUE, then at each
+running). Can be set to FALSE if the user wishes to see less output.}
+
+\item{use_previous_thetas}{Logical, defaults to TRUE. IF TRUE, then at each
 iteration of covariate parameter updates beyond the first, the MPLE
 initialization for theta parameters will be skipped, and the previous
 iteration thetas will be used as a starting point. This option will only work
@@ -309,8 +310,9 @@ Defaults to 150 but may be increased if more accuracy is required.}
 theta estimates may be necessary to provide an adequate starting position
 when using the distribtuion estimator. We suggest a value of 0.05, but the
 optimal L2 penalty will be application specific. Setting to zero removes all
-L2 regularization.
-#' @param theta_grid_optimization_list Defaults to NULL. This highly
+L2 regularization.}
+
+\item{theta_grid_optimization_list}{Defaults to NULL. This highly
 experimental feature may allow the user to address model degeneracy arising
 from a suboptimal theta initialization. It performs a grid search around the
 theta values calculated via MPLE to select a potentially improved

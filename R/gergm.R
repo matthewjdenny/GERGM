@@ -197,7 +197,7 @@
 #' parameter plots are generated.
 #' @param verbose Defaults to TRUE (providing lots of output while model is
 #' running). Can be set to FALSE if the user wishes to see less output.
-#' #' @param use_previous_thetas Logical, defaults to TRUE. IF TRUE, then at each
+#' @param use_previous_thetas Logical, defaults to TRUE. IF TRUE, then at each
 #' iteration of covariate parameter updates beyond the first, the MPLE
 #' initialization for theta parameters will be skipped, and the previous
 #' iteration thetas will be used as a starting point. This option will only work
@@ -236,7 +236,7 @@
 #' when using the distribtuion estimator. We suggest a value of 0.05, but the
 #' optimal L2 penalty will be application specific. Setting to zero removes all
 #' L2 regularization.
-#' #' @param theta_grid_optimization_list Defaults to NULL. This highly
+#' @param theta_grid_optimization_list Defaults to NULL. This highly
 #' experimental feature may allow the user to address model degeneracy arising
 #' from a suboptimal theta initialization. It performs a grid search around the
 #' theta values calculated via MPLE to select a potentially improved
