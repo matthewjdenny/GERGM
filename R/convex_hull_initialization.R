@@ -71,6 +71,9 @@ convex_hull_initialization <- function(GERGM_Object,
       sim_center_distances[i] <- calc_dists(simulated_center, hsn[i,])
     }
 
+    if (class(observed_distances) == "list") {
+      observed_distances <- as.numeric(unlist(observed_distances))
+    }
     # find the closest points
     ordering <- order(observed_distances, decreasing = FALSE)
 
