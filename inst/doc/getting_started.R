@@ -96,7 +96,7 @@ MSE_results <- conditional_edge_prediction_MSE(test2)
 #      return(Z)
 #    }
 #  
-#    # Generate eignevalues
+#    # Generate eigenvalues
 #    x <- rnorm(10)
 #    # generate a positive definite matrix
 #    pdmat <- Posdef(n = 10)
@@ -123,24 +123,18 @@ MSE_results <- conditional_edge_prediction_MSE(test2)
 #                  beta_correlation_model = TRUE)
 
 ## ----eval=FALSE----------------------------------------------------------
-#  formula <- net ~  mutual(0.8) + ttriads(0.8) + out2stars(0.8) +
-#    sender("log_GDP") + netcov(net_exports) +
+#  formula <- lending_2005 ~  mutual(0.8) + ttriads(0.8) + out2stars(0.8) +
+#    sender("log_GDP") + netcov(net_exports_2005) +
 #    receiver("log_GDP") + nodemix("G8", base = "No")
 #  
 #  
 #  result <- gergm(formula,
 #                covariate_data = covariate_data_2005,
-#                number_of_networks_to_simulate = 400000,
+#                number_of_networks_to_simulate = 100000,
 #                thin = 1/100,
 #                proposal_variance = 0.05,
-#                MCMC_burnin = 200000,
+#                MCMC_burnin = 50000,
 #                seed = 456,
 #                convergence_tolerance = 0.8,
-#                hyperparameter_optimization = TRUE,
-#                target_accept_rate = 0.25,
-#                weighted_MPLE = TRUE,
-#                theta_grid_optimization_list = list(grid_steps = 2,
-#                                                    step_size = 0.1,
-#                                                    cores = 30,
-#                                                    iteration_fraction = 1))
+#                target_accept_rate = 0.25)
 
