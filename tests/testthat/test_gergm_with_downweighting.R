@@ -19,10 +19,9 @@ test_that("That gergm with exponential downweighting works", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0.05)
+                convergence_tolerance = 0.5)
 
-  check_against <- c(2.267, -0.311)
+  check_against <- c(2.347, -0.323)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -48,11 +47,9 @@ test_that("undirected with exponential downweighting works", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 10000,
                 seed = 456,
-                convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0.08,
-                force_x_theta_updates = 1)
+                convergence_tolerance = 0.5)
 
-  check_against <- c(0.192, -0.477)
+  check_against <- c(0.276, -0.587)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -79,11 +76,10 @@ test_that("covariates with exponential downweighting works", {
                 downweight_statistics_together = TRUE,
                 MCMC_burnin = 50000,
                 seed = 456,
-                convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0.05)
+                convergence_tolerance = 0.5)
 
-    check_against <- c(0.851, -0.091, -0.016, -0.025, -0.023, -0.056, -0.056,
-                       -0.034,  0.002, -0.039, -0.050,  3.099,  0.128, -1.932)
+    check_against <- c(0.901, -0.090, -0.016, -0.025, -0.024, -0.056, -0.056,
+                       -0.035, 0.002, -0.040, -0.050,  3.065,  0.129, -1.931)
     check <- c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3))
     expect_equal(check, check_against)
 
@@ -122,29 +118,7 @@ test_that("That weighted MPLE works", {
                 force_x_theta_updates = 1,
                 weighted_MPLE = TRUE)
 
-  check_against <- c(5.244, -0.861)
+  check_against <- c(-9.440,  1.428)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
-
-
-  test <- gergm(formula,
-                normalization_type = "division",
-                network_is_directed = TRUE,
-                use_MPLE_only = FALSE,
-                estimation_method = "Metropolis",
-                number_of_networks_to_simulate = 40000,
-                thin = 1/40,
-                proposal_variance = 0.5,
-                downweight_statistics_together = TRUE,
-                MCMC_burnin = 10000,
-                seed = 456,
-                convergence_tolerance = 0.5,
-                MPLE_gain_factor = 0,
-                force_x_theta_updates = 1,
-                weighted_MPLE = TRUE)
-
-  check_against <- c(4.122, -0.731)
-  expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
-
-
 
 })

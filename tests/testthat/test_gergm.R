@@ -20,7 +20,7 @@ test_that("Simple model with no covariates runs", {
                 seed = 456,
                 convergence_tolerance = 0.5)
 
-  check_against <- c(-0.091)
+  check_against <- c(-0.081)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 })
 test_that("3 param model with no covariates runs", {
@@ -41,7 +41,7 @@ test_that("3 param model with no covariates runs", {
                 seed = 456,
                 convergence_tolerance = 0.5)
 
-  check_against <- c(1.999, -0.251)
+  check_against <- c(2.180, -0.268)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -65,7 +65,7 @@ test_that("4 param model with no covariates runs", {
               seed = 456,
               convergence_tolerance = 0.5)
 
-check_against <- c(2.414,  0.189, -0.693)
+check_against <- c(2.329,  0.064, -0.498)
 expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -88,7 +88,7 @@ test_that("Unidrected model with no covariates runs", {
               seed = 456,
               convergence_tolerance = 0.5)
 
-  check_against <- c(0.099, -0.255)
+  check_against <- c(0.120, -0.282)
   expect_equal(round(as.numeric(test@theta.coef[1,]),3), check_against)
 
 })
@@ -141,8 +141,8 @@ test_that("Model with covariates runs", {
                 seed = 456,
                 convergence_tolerance = 0.5)
 
-  check_against <- c(0.748, -0.071, -0.016, -0.025, -0.023, -0.056, -0.056,
-                     -0.034,  0.002, -0.039, -0.050,  3.096,  0.128, -1.933)
+  check_against <- c(0.764, -0.071, -0.016, -0.025, -0.023, -0.056, -0.056, -0.034,
+                     0.002, -0.039, -0.050,  3.096,  0.128, -1.933)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
@@ -170,9 +170,9 @@ test_that("Additional Model with covariates runs", {
                 MCMC_burnin = 50000,
                 seed = 456,
                 convergence_tolerance = 0.5,
-                convex_hull_proportion = 0.8)
+                convex_hull_proportion = 0.9)
 
-  check_against <- c(1.389, -0.078, -0.017, -0.024,  3.098,  0.132, -1.837)
+  check_against <- c(1.339, -0.074, -0.017, -0.024,  3.098,  0.132, -1.837)
   expect_equal(c(round(as.numeric(test@theta.coef[1,]),3),round(as.numeric(test@lambda.coef[1,]),3)), check_against)
 
 })
