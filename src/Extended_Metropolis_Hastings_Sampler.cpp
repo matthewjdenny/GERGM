@@ -1835,7 +1835,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
@@ -1871,7 +1871,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
               double new_edge_value = 0.5;
               while(in_zero_one == 0){
                 new_edge_value = proposal(generator);
-                if(new_edge_value > 0 & new_edge_value < 1){
+                if((new_edge_value > 0) & (new_edge_value < 1)){
                   in_zero_one = 1;
                 }
               }
@@ -1917,7 +1917,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
@@ -1955,7 +1955,7 @@ List Extended_Metropolis_Hastings_Sampler (int number_of_iterations,
               double new_edge_value = 0.5;
               while(in_zero_one == 0){
                 new_edge_value = proposal(generator);
-                if(new_edge_value > 0 & new_edge_value < 1){
+                if((new_edge_value > 0) & (new_edge_value < 1)){
                   in_zero_one = 1;
                 }
               }
@@ -2556,7 +2556,7 @@ List Individual_Edge_Conditional_Prediction (
       double new_edge_value = 0.5;
       while(in_zero_one == 0){
         new_edge_value = proposal(generator);
-        if(new_edge_value > 0 & new_edge_value < 1){
+        if((new_edge_value > 0) & (new_edge_value < 1)){
           in_zero_one = 1;
         }
       }
@@ -2594,7 +2594,7 @@ List Individual_Edge_Conditional_Prediction (
       double new_edge_value = 0.5;
       while(in_zero_one == 0){
         new_edge_value = proposal(generator);
-        if(new_edge_value > 0 & new_edge_value < 1){
+        if((new_edge_value > 0) & (new_edge_value < 1)){
           in_zero_one = 1;
         }
       }
@@ -2959,7 +2959,7 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
@@ -2999,7 +2999,7 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
         for (int j = 0; j < number_of_nodes; ++j) {
           // need to make sure we are not on the last entry in the bottom of the
           // matrix
-          if (j == (number_of_nodes - 1) & i == (number_of_nodes - 1)) {
+          if ((j == (number_of_nodes - 1)) & (i == (number_of_nodes - 1))) {
             // do nothing
           } else {
             double log_probability_of_current_under_new = 0;
@@ -3029,7 +3029,7 @@ List Distribution_Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
@@ -3405,7 +3405,7 @@ List Edge_Group_MH_Sampler (int number_of_iterations,
       double new_edge_value = 0.5;
       while(in_zero_one == 0){
         new_edge_value = proposal(generator);
-        if(new_edge_value > 0 & new_edge_value < 1){
+        if((new_edge_value > 0) & (new_edge_value < 1)){
           in_zero_one = 1;
         }
       }

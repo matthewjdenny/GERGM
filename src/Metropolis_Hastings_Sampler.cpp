@@ -520,27 +520,27 @@ struct Parallel_CalculateNetworkStatistics : public RcppParallel::Worker {
 
   void operator()(std::size_t begin, std::size_t end) {
     for (std::size_t i = begin; i < end; i++) {
-      if (i == 0 & statistics_to_use[0] == 1) {
+      if ((i == 0) & (statistics_to_use[0] == 1)) {
         return_dist[i] = thetas[0] * Out2Star(current_network, triples, alphas[0],
                                               together);
       }
-      if (i == 1 & statistics_to_use[1] == 1) {
+      if ((i == 1) & (statistics_to_use[1] == 1)) {
         return_dist[i] = thetas[1] * In2Star(current_network, triples, alphas[1],
                                              together);
       }
-      if (i == 2 & statistics_to_use[2] == 1) {
+      if ((i == 2) & (statistics_to_use[2] == 1)) {
         return_dist[i] = thetas[2] * CTriads(current_network, triples, alphas[2],
                                              together);
       }
-      if (i == 3 & statistics_to_use[3] == 1) {
+      if ((i == 3) & (statistics_to_use[3] == 1)) {
         return_dist[i] = thetas[3] * Recip(current_network, pairs, alphas[3],
                                            together);
       }
-      if (i == 4 & statistics_to_use[4] == 1) {
+      if ((i == 4) & (statistics_to_use[4] == 1)) {
         return_dist[i] = thetas[4] * TTriads(current_network, triples, alphas[4],
                                              together);
       }
-      if (i == 5 & statistics_to_use[5] == 1) {
+      if ((i == 5) & (statistics_to_use[5] == 1)) {
         return_dist[i] = thetas[5] * EdgeDensity(current_network, pairs,
                                                  alphas[5], together);
       }
@@ -769,7 +769,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
@@ -820,7 +820,7 @@ List Metropolis_Hastings_Sampler (int number_of_iterations,
             double new_edge_value = 0.5;
             while(in_zero_one == 0){
               new_edge_value = proposal(generator);
-              if(new_edge_value > 0 & new_edge_value < 1){
+              if((new_edge_value > 0) & (new_edge_value < 1)){
                 in_zero_one = 1;
               }
             }
