@@ -5,6 +5,13 @@ An R package to estimate Generalized Exponential Random Graph Models. To get sta
 
 ## News
 
+**[05/15/18]** Major estimation updates with version 0.13.x.
+
+* I have implemented the convex hull initialization method of Hummel et al (2012) as the default option in the package. This method is often vastly more efficient and effective at initializing the model parameter for Metropolis Hastings, and can result in a 99%+ reduction in model runtime in some situations.
+* The covariate parameter estiamtion proceedure has been sped up by reimplementing in C++.
+* The gergm() function now skips MPLE after the first iteration of covariate parameter estimation and uses the previous theta values instead. This often dramatically speeds up estimation, but can be controlled with a logical argument.
+* For large networks, or networks yielding a very low MH acceptance rate, the `sample_edges_at_a_time` option allows the user to propose blocks of edges at a time in the MH updates. This can be used to optimally tune the model acceptance rate.
+
 **[04/13/17]** New estimation functionality, bug fixes.
 
 * A bug fix was added for the initialization of the covariate parameter estimates which will lead to faster convergence and more stable estimation.
