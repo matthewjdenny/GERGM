@@ -85,37 +85,15 @@
 #' will attempt to adress the issue automatically. WARNING: This feature is
 #' experimental, and may greatly increase runtime. Please monitor console
 #' output!
-#' @param theta_grid_optimization_list Defaults to NULL. This highly
-#' experimental feature may allow the user to address model degeneracy arising
-#' from a suboptimal theta initialization. It performs a grid search around the
-#' theta values calculated via MPLE to select a potentially improved
-#' initialization. The runtime complexity of this feature grows exponentially in
-#' the size of the grid and number of parameters -- use with great care. This
-#' feature may only be used if hyperparameter_optimization = TRUE, and if a list
-#' object of the following form is provided: list(grid_steps = 2,
-#' step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
-#' the number of steps out the grid search will perform, step_size indicates the
-#' fraction of the MPLE theta estimate that each grid search step will change by,
-#' cores indicates the number of cores to be used for parallel optimization, and
-#' iteration_fraction indicates the fraction of the number of MCMC iterations
-#' that will be used for each grid point (should be set less than 1 to speed up
-#' optimization). In general grid_steps should be smaller the more structural
-#' parameters the user wishes to specify. For example, with 5 structural
-#' parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
-#' = 16807 parameter grid search. Again this feature is highly experimental and
-#' should only be used as a last resort (after playing with exponential
-#' down weighting and the MPLE_gain_factor).
-#' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
-#' specifying statistics with alpha down weighting. Tends to provide better
-#' initialization when downweight_statistics_together = FALSE.
-#' @param convex_hull_proportion Defaults to NULL. Otherwise, must be a number
+#' @param convex_hull_proportion Defaults to 0.9. Must be a number
 #' between 0 and 1, with values between 0.5 and 0.9 preferred. Setting a value
 #' for this parameter makes use of the initialization method introduced by
 #' Hummel, Hunter and Handcock (2012), which can provide a much more stable
 #' initialization method than MPLE. Selecting this method will not supercede
 #' other initialization methods, as it will be run after MPLE or grid search.
 #' However, in practice, it should often preclude the need for other
-#' initialization methods.
+#' initialization methods. If NULL, then standard MPLE an grid search methods
+#' may be used. Not recommended
 #' @param convex_hull_convergence_proportion Defaults to 0.9. This must be a
 #' number between 0 and 1, with values between 0.7 and 0.95 preferred. This
 #' parameter controls the stopping behavior of the convex hull initialization
@@ -125,15 +103,6 @@
 #' is the number of edges to be updated at once during MCMCMLE. The lower this
 #' number is set, the higher the Metropolis Hastings acceptance rate should be.
 #' This option will primarily be relevant for large networks.
-#' @param use_previous_thetas Logical, defaults to FALSE. IF TRUE, then at each
-#' iteration covariate parameter updates beyond the first, the MPLE
-#' initialization for theta parameters will be skipped, and the previous
-#' iteration thetas will be used as a starting point. This option will only work
-#' with convex hull initialization. The intuition here is that if MPLE is poor,
-#' the previous theta estimates may be a better starting point for convex hull
-#' initialization. In some cases this can lead to a very large speedup in
-#' estimation. However, this can lead to arbitrarily poor performance in
-#' some situations. Use with caution.
 #' @param parallel Logical indicating whether the weighted MPLE objective and any
 #' other operations that can be easily parallelized should be calculated in
 #' parallel. Defaults to FALSE. If TRUE, a significant speedup in computation
@@ -228,6 +197,15 @@
 #' parameter plots are generated.
 #' @param verbose Defaults to TRUE (providing lots of output while model is
 #' running). Can be set to FALSE if the user wishes to see less output.
+#' #' @param use_previous_thetas Logical, defaults to TRUE. IF TRUE, then at each
+#' iteration of covariate parameter updates beyond the first, the MPLE
+#' initialization for theta parameters will be skipped, and the previous
+#' iteration thetas will be used as a starting point. This option will only work
+#' with convex hull initialization. The intuition here is that if MPLE is poor,
+#' the previous theta estimates may be a better starting point for convex hull
+#' initialization. In some cases this can lead to a very large speedup in
+#' estimation. However, this can lead to arbitrarily poor performance in
+#' some situations.
 #' @param fine_grained_pv_optimization Logical indicating whether fine grained
 #' proposal variance optimization should be used. This will often slow down
 #' proposal variance optimization, but may provide better results. Highly
@@ -258,6 +236,29 @@
 #' when using the distribtuion estimator. We suggest a value of 0.05, but the
 #' optimal L2 penalty will be application specific. Setting to zero removes all
 #' L2 regularization.
+#' #' @param theta_grid_optimization_list Defaults to NULL. This highly
+#' experimental feature may allow the user to address model degeneracy arising
+#' from a suboptimal theta initialization. It performs a grid search around the
+#' theta values calculated via MPLE to select a potentially improved
+#' initialization. The runtime complexity of this feature grows exponentially in
+#' the size of the grid and number of parameters -- use with great care. This
+#' feature may only be used if hyperparameter_optimization = TRUE, and if a list
+#' object of the following form is provided: list(grid_steps = 2,
+#' step_size = 0.5, cores = 2, iteration_fraction = 0.5). grid_steps indicates
+#' the number of steps out the grid search will perform, step_size indicates the
+#' fraction of the MPLE theta estimate that each grid search step will change by,
+#' cores indicates the number of cores to be used for parallel optimization, and
+#' iteration_fraction indicates the fraction of the number of MCMC iterations
+#' that will be used for each grid point (should be set less than 1 to speed up
+#' optimization). In general grid_steps should be smaller the more structural
+#' parameters the user wishes to specify. For example, with 5 structural
+#' parameters (mutual, ttriads, etc.), grid_steps = 3 will result in a (2*3+1)^5
+#' = 16807 parameter grid search. Again this feature is highly experimental and
+#' should only be used as a last resort (after playing with exponential
+#' down weighting and the MPLE_gain_factor).
+#' @param weighted_MPLE Defaults to FALSE. Should be used whenever the user is
+#' specifying statistics with alpha down weighting. Tends to provide better
+#' initialization when downweight_statistics_together = FALSE.
 #' @param estimate_model Logical indicating whether a model should be estimated.
 #' Defaults to TRUE, but can be set to FALSE if the user simply wishes to return
 #' a GERGM object containing the model specification. Useful for debugging.
@@ -303,12 +304,9 @@ gergm <- function(formula,
                   target_accept_rate = 0.25,
                   seed = 123,
                   hyperparameter_optimization = FALSE,
-                  theta_grid_optimization_list = NULL,
-                  weighted_MPLE = FALSE,
-                  convex_hull_proportion = NULL,
+                  convex_hull_proportion = 0.9,
                   convex_hull_convergence_proportion = 0.9,
                   sample_edges_at_a_time = 0,
-                  use_previous_thetas = FALSE,
                   parallel = FALSE,
                   parallel_statistic_calculation = FALSE,
                   cores = 1,
@@ -328,6 +326,7 @@ gergm <- function(formula,
                   output_name = NULL,
                   generate_plots = TRUE,
                   verbose = TRUE,
+                  use_previous_thetas = TRUE,
                   fine_grained_pv_optimization = FALSE,
                   use_MPLE_only = c(FALSE, TRUE),
                   start_with_zeros = FALSE,
@@ -337,6 +336,8 @@ gergm <- function(formula,
                   user_specified_initial_thetas = NULL,
                   integration_intervals = 150,
                   distribution_mple_regularization_weight = 0.05,
+                  theta_grid_optimization_list = NULL,
+                  weighted_MPLE = FALSE,
                   estimate_model = TRUE,
                   optimization_method = c("BFGS", "L-BFGS-B", "Nelder-Mead", "CG", "SANN", "Brent"),
                   ...
