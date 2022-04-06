@@ -422,6 +422,15 @@ gergm <- function(formula,
     RcppParallel::setThreadOptions(numThreads = cores)
   }
 
+  if (number_of_networks_to_simulate * thin < 1) {
+    stop("number_of_networks_to_simulate * thin must be greater than 1 or no networks will be returned from simulation. Increase number_of_networks_to_simulate or increase thin closer to 1.")
+  }
+
+  if (thin > 1) {
+    cat("Setting thin = 1")
+    thin <- 1
+  }
+
   # if we are using a correlation network, then the network must be undirected.
   if (beta_correlation_model) {
     if (network_is_directed) {

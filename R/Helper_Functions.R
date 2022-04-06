@@ -289,7 +289,7 @@ parse_formula_term <- function(term,
         temp_net <- dynGet(as.character(as.character(return_list$network)),
                ifnotfound = get(as.character(as.character(return_list$network))))
           return_list$network_matrix_object <- temp_net
-        if(class(return_list$network_matrix_object)!= "matrix"){
+        if(class(return_list$network_matrix_object)[1]!= "matrix"){
           stop(paste("You must supply network covariates as matrix objects."))
         }
       }else{

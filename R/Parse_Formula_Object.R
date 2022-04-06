@@ -28,7 +28,7 @@ Parse_Formula_Object <- function(formula,
   }
 
   # check that the response is a matrix
-  if (class(net) != "matrix") {
+  if (class(net)[1] != "matrix") {
     stop("Response must be a matrix object.")
   }
 

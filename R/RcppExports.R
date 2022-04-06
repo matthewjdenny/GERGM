@@ -45,12 +45,12 @@ Edge_Group_MH_Sampler <- function(number_of_iterations, shape_parameter, number_
     .Call(`_GERGM_Edge_Group_MH_Sampler`, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, undirect_network, parallel, use_selected_rows, save_statistics_selected_rows_matrix, rows_to_use, base_statistics_to_save, base_statistic_alphas, num_non_base_statistics, non_base_statistic_indicator, p_ratio_multaplicative_factor, use_triad_sampling, include_diagonal, sample_edges_at_a_time)
 }
 
-frobenius_norm <- function(mat1, mat2) {
-    .Call(`_GERGM_frobenius_norm`, mat1, mat2)
-}
-
 Metropolis_Hastings_Sampler <- function(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel) {
     .Call(`_GERGM_Metropolis_Hastings_Sampler`, number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel)
+}
+
+frobenius_norm <- function(mat1, mat2) {
+    .Call(`_GERGM_frobenius_norm`, mat1, mat2)
 }
 
 weighted_mple_objective <- function(number_of_nodes, statistics_to_use, current_network, thetas, triples, pairs, alphas, together, integration_interval, parallel) {

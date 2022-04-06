@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // Corr_to_Part
 arma::mat Corr_to_Part(int d, arma::mat correlations, arma::mat partials);
 RcppExport SEXP _GERGM_Corr_to_Part(SEXP dSEXP, SEXP correlationsSEXP, SEXP partialsSEXP) {
@@ -286,18 +291,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// frobenius_norm
-double frobenius_norm(arma::mat mat1, arma::mat mat2);
-RcppExport SEXP _GERGM_frobenius_norm(SEXP mat1SEXP, SEXP mat2SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
-    rcpp_result_gen = Rcpp::wrap(frobenius_norm(mat1, mat2));
-    return rcpp_result_gen;
-END_RCPP
-}
 // Metropolis_Hastings_Sampler
 List Metropolis_Hastings_Sampler(int number_of_iterations, double shape_parameter, int number_of_nodes, arma::vec statistics_to_use, arma::mat initial_network, int take_sample_every, arma::vec thetas, arma::mat triples, arma::mat pairs, arma::vec alphas, int together, int seed, int number_of_samples_to_store, int using_correlation_network, int undirect_network, bool parallel);
 RcppExport SEXP _GERGM_Metropolis_Hastings_Sampler(SEXP number_of_iterationsSEXP, SEXP shape_parameterSEXP, SEXP number_of_nodesSEXP, SEXP statistics_to_useSEXP, SEXP initial_networkSEXP, SEXP take_sample_everySEXP, SEXP thetasSEXP, SEXP triplesSEXP, SEXP pairsSEXP, SEXP alphasSEXP, SEXP togetherSEXP, SEXP seedSEXP, SEXP number_of_samples_to_storeSEXP, SEXP using_correlation_networkSEXP, SEXP undirect_networkSEXP, SEXP parallelSEXP) {
@@ -321,6 +314,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type undirect_network(undirect_networkSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     rcpp_result_gen = Rcpp::wrap(Metropolis_Hastings_Sampler(number_of_iterations, shape_parameter, number_of_nodes, statistics_to_use, initial_network, take_sample_every, thetas, triples, pairs, alphas, together, seed, number_of_samples_to_store, using_correlation_network, undirect_network, parallel));
+    return rcpp_result_gen;
+END_RCPP
+}
+// frobenius_norm
+double frobenius_norm(arma::mat mat1, arma::mat mat2);
+RcppExport SEXP _GERGM_frobenius_norm(SEXP mat1SEXP, SEXP mat2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type mat1(mat1SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mat2(mat2SEXP);
+    rcpp_result_gen = Rcpp::wrap(frobenius_norm(mat1, mat2));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -357,8 +362,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_GERGM_Distribution_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Distribution_Metropolis_Hastings_Sampler, 27},
     {"_GERGM_log_space_multinomial_sampler", (DL_FUNC) &_GERGM_log_space_multinomial_sampler, 2},
     {"_GERGM_Edge_Group_MH_Sampler", (DL_FUNC) &_GERGM_Edge_Group_MH_Sampler, 26},
-    {"_GERGM_frobenius_norm", (DL_FUNC) &_GERGM_frobenius_norm, 2},
     {"_GERGM_Metropolis_Hastings_Sampler", (DL_FUNC) &_GERGM_Metropolis_Hastings_Sampler, 16},
+    {"_GERGM_frobenius_norm", (DL_FUNC) &_GERGM_frobenius_norm, 2},
     {"_GERGM_weighted_mple_objective", (DL_FUNC) &_GERGM_weighted_mple_objective, 10},
     {NULL, NULL, 0}
 };

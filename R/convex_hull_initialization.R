@@ -102,6 +102,38 @@ convex_hull_initialization <- function(GERGM_Object,
         "\nProportion of simulated stats that are further away:",
         closer_than_prop,"\n")
 
+    convex_hull_plots <- FALSE
+    if (convex_hull_plots & ncol(hsn) >=2) {
+      to_plot <- as.data.frame(hsn)
+      temp <- colnames(hsn)
+      colnames(to_plot) <- paste("col",1:ncol(to_plot),sep = "-")
+      to_plot$Type <- rep("simulated",nrow(to_plot))
+
+      tp2 <- observed_network_stats
+      tp2 <- as.data.frame(t(tp2))
+      colnames(tp2) <- paste("col",1:ncol(tp2),sep = "-")
+      tp2$Type <- "observed"
+      to_plot <- rbind(to_plot,tp2)
+
+      colnames(to_plot) <- c(temp,"Type")
+
+      plt <- GGally::ggpairs(to_plot,
+                             ggplot2::aes(colour = Type,
+                                          alpha = 0.4))
+
+      print(plt)
+
+      # plt <- ggplot2::ggplot(to_plot, ggplot2::aes(x = Statistic_1,
+      #                                              y = Statistic_2,
+      #                                              color = Type)) +
+      #   ggplot2::geom_point() +
+      #   ggplot2::xlab("First Statistic") +
+      #   ggplot2::ylab("Second Statistic")
+      #
+      # print(plt)
+      Sys.sleep(1)
+    }
+
     if (closer_than_prop > GERGM_Object@convex_hull_convergence_proportion) {
       converged <- TRUE
       cat("Converged!\n")
