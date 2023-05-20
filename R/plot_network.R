@@ -55,7 +55,7 @@ plot_network <- function(sociomatrix,
 
   par(mar = c(1,0,1,0))
   # check input
-  if (class(sociomatrix) != "matrix" & class(sociomatrix) != "data.frame") {
+  if (class(sociomatrix)[1] != "matrix" & class(sociomatrix)[1] != "data.frame") {
     stop("You must provide the network as a numeric matrix.")
   }
 
@@ -120,7 +120,7 @@ plot_network <- function(sociomatrix,
     temp[which(abs(temp ) < cutoff)] <- 0
 
     # create a network object using adjacency matrix with edges removed
-    net3 <- igraph::graph.adjacency(temp ,mode="directed",
+    net3 <- igraph::graph.adjacency(temp - min(c(0,min(c(temp)))) ,mode="directed",
                                    weighted=TRUE,diag=FALSE)
 
     #create layout with Fuchterman Reingold
@@ -159,7 +159,7 @@ plot_network <- function(sociomatrix,
   temp[which(abs(temp ) < cutoff)] <- 0
 
   # create a network object using adjacency matrix with edges removed
-  net <- igraph::graph.adjacency(temp ,mode="directed",
+  net <- igraph::graph.adjacency(temp - min(c(0,min(c(temp)))),mode="directed",
                                  weighted=TRUE,diag=FALSE)
 
   #create layout with Fuchterman Reingold
